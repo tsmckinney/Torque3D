@@ -959,7 +959,7 @@ Var *LinearEyeDepthConditioner::_conditionOutput( Var *unconditionedOutput, Mult
 {
    Var *retVar = NULL;
 
-   String fracMethodName = (GFX->getAdapterType() == OpenGL) ? "fract" : "frac";
+   String fracMethodName = (GFX->getAdapterType() == OpenGL || GFX->getAdapterType() == Vulkan) ? "fract" : "frac";
 
    switch(getBufferFormat())
    {
@@ -984,7 +984,7 @@ Var *LinearEyeDepthConditioner::_conditionOutput( Var *unconditionedOutput, Mult
 
 Var *LinearEyeDepthConditioner::_unconditionInput( Var *conditionedInput, MultiLine *meta )
 {
-   String float4Typename = (GFX->getAdapterType() == OpenGL) ? "vec4" : "float4";
+   String float4Typename = (GFX->getAdapterType() == OpenGL || GFX->getAdapterType() == Vulkan) ? "vec4" : "float4";
 
    Var *retVar = conditionedInput;
    if(getBufferFormat() != GFXFormat_COUNT)
@@ -1029,7 +1029,7 @@ Var* LinearEyeDepthConditioner::printMethodHeader( MethodType methodType, const 
    {
       Var *methodVar = new Var;
       methodVar->setName(methodName);
-      if (GFX->getAdapterType() == OpenGL)
+      if (GFX->getAdapterType() == OpenGL || GFX->getAdapterType() == Vulkan)
          methodVar->setType("vec4");
       else
          methodVar->setType("inline float4");
@@ -1056,7 +1056,7 @@ Var* LinearEyeDepthConditioner::printMethodHeader( MethodType methodType, const 
 
       Var *screenUV = new Var;
       screenUV->setName("screenUVVar");
-      if (GFX->getAdapterType() == OpenGL)
+      if (GFX->getAdapterType() == OpenGL || GFX->getAdapterType() == Vulkan)
          screenUV->setType("vec2");
       else
          screenUV->setType("float2");
@@ -1064,7 +1064,7 @@ Var* LinearEyeDepthConditioner::printMethodHeader( MethodType methodType, const 
 
       Var *bufferSample = new Var;
       bufferSample->setName("bufferSample");
-      if (GFX->getAdapterType() == OpenGL)
+      if (GFX->getAdapterType() == OpenGL || GFX->getAdapterType() == Vulkan)
          bufferSample->setType("vec4");
       else
          bufferSample->setType("float4");
@@ -1081,7 +1081,7 @@ Var* LinearEyeDepthConditioner::printMethodHeader( MethodType methodType, const 
 
       // The linear depth target has no mipmaps, so use tex2dlod when
       // possible so that the shader compiler can optimize.
-      if (GFX->getAdapterType() == OpenGL)
+      if (GFX->getAdapterType() == OpenGL || GFX->getAdapterType() == Vulkan)
          meta->addStatement(new GenOp("@ = texture2DLod(@, @, 0); \r\n", bufferSampleDecl, deferredSampler, screenUV));
       else
       {
