@@ -33,7 +33,7 @@ Vector<LangElement*> LangElement::elementList( __FILE__, __LINE__ );
 const char* LangElement::constTypeToString(GFXShaderConstType constType)
 {
    // Determine shader language based on GFXAdapterAPI
-   if (GFX->getAdapterType() == OpenGL)
+   if (GFX->getAdapterType() == OpenGL || GFX->getAdapterType() == Vulkan)
    {
       switch (constType)
       {
@@ -254,7 +254,7 @@ void Var::print( Stream &stream )
    if( structName[0] != '\0' )
    {
       stream.write( dStrlen((char*)structName), structName );
-      if(GFX->getAdapterType() == OpenGL)
+      if(GFX->getAdapterType() == OpenGL || GFX->getAdapterType() == Vulkan)
          stream.write( 1, "_" );
       else
       stream.write( 1, "." );

@@ -25,7 +25,7 @@
 #ifdef TORQUE_D3D11
 #include "shaderGen/HLSL/customFeatureHLSL.h"
 #endif
-#ifdef TORQUE_OPENGL
+#if defined(TORQUE_OPENGL) || defined(TORQUE_VULKAN)
 #include "shaderGen/GLSL/customFeatureGLSL.h"
 #endif
 
@@ -94,6 +94,13 @@ bool CustomShaderFeatureData::onAdd()
       mFeatureGLSL->mOwner = this;
    }
 #endif
+#ifdef TORQUE_VULKAN
+   if (GFX->getAdapterType() == GFXAdapterType::Vulkan)
+   {
+      mFeatureGLSL = new CustomFeatureGLSL();
+      mFeatureGLSL->mOwner = this;
+   }
+#endif
 
    return true;
 }
@@ -114,6 +121,10 @@ void CustomShaderFeatureData::addVariable(String name, String type, String defau
    if (GFX->getAdapterType() == GFXAdapterType::OpenGL)
       mFeatureGLSL->addVariable(name, type, defaultValue);
 #endif
+#ifdef TORQUE_VULKAN
+   if (GFX->getAdapterType() == GFXAdapterType::Vulkan)
+      mFeatureGLSL->addVariable(name, type, defaultValue);
+#endif
 }
 
 void CustomShaderFeatureData::addUniform(String name, String type, String defaultValue, U32 arraySize)
@@ -124,6 +135,10 @@ void CustomShaderFeatureData::addUniform(String name, String type, String defaul
 #endif
 #ifdef TORQUE_OPENGL
    if (GFX->getAdapterType() == GFXAdapterType::OpenGL)
+      mFeatureGLSL->addUniform(name, type, defaultValue, arraySize);
+#endif
+#ifdef TORQUE_VULKAN
+   if (GFX->getAdapterType() == GFXAdapterType::Vulkan)
       mFeatureGLSL->addUniform(name, type, defaultValue, arraySize);
 #endif
 }
@@ -138,6 +153,10 @@ void CustomShaderFeatureData::addSampler(String name, String type, U32 arraySize
    if (GFX->getAdapterType() == GFXAdapterType::OpenGL)
       mFeatureGLSL->addSampler(name, type, arraySize);
 #endif
+#ifdef TORQUE_VULKAN
+   if (GFX->getAdapterType() == GFXAdapterType::Vulkan)
+      mFeatureGLSL->addSampler(name, type, arraySize);
+#endif
 }
 
 void CustomShaderFeatureData::addTexture(String name, String type, String samplerState, U32 arraySize)
@@ -148,6 +167,10 @@ void CustomShaderFeatureData::addTexture(String name, String type, String sample
 #endif
 #ifdef TORQUE_OPENGL
    if (GFX->getAdapterType() == GFXAdapterType::OpenGL)
+      mFeatureGLSL->addTexture(name, type, samplerState, arraySize);
+#endif
+#ifdef TORQUE_VULKAN
+   if (GFX->getAdapterType() == GFXAdapterType::Vulkan)
       mFeatureGLSL->addTexture(name, type, samplerState, arraySize);
 #endif
 }
@@ -162,6 +185,10 @@ void CustomShaderFeatureData::addConnector(String name, String type, String elem
    if (GFX->getAdapterType() == GFXAdapterType::OpenGL)
       mFeatureGLSL->addConnector(name, type, elementName);
 #endif
+#ifdef TORQUE_VULKAN
+   if (GFX->getAdapterType() == GFXAdapterType::Vulkan)
+      mFeatureGLSL->addConnector(name, type, elementName);
+#endif
 }
 
 void CustomShaderFeatureData::addVertTexCoord(String name)
@@ -172,6 +199,10 @@ void CustomShaderFeatureData::addVertTexCoord(String name)
 #endif
 #ifdef TORQUE_OPENGL
    if (GFX->getAdapterType() == GFXAdapterType::OpenGL)
+      mFeatureGLSL->addVertTexCoord(name);
+#endif
+#ifdef TORQUE_VULKAN
+   if (GFX->getAdapterType() == GFXAdapterType::Vulkan)
       mFeatureGLSL->addVertTexCoord(name);
 #endif
 }
@@ -186,6 +217,10 @@ bool CustomShaderFeatureData::hasFeature(String name)
    if (GFX->getAdapterType() == GFXAdapterType::OpenGL)
       return mFeatureGLSL->hasFeature(name);
 #endif
+#ifdef TORQUE_VULKAN
+   if (GFX->getAdapterType() == GFXAdapterType::Vulkan)
+      mFeatureGLSL->addVertTexCoord(name);
+#endif
 
    return false;
 }
@@ -198,6 +233,10 @@ void CustomShaderFeatureData::writeLine(String format, S32 argc, ConsoleValue* a
 #endif
 #ifdef TORQUE_OPENGL
    if (GFX->getAdapterType() == GFXAdapterType::OpenGL)
+      mFeatureGLSL->writeLine(format, argc, argv);
+#endif
+#ifdef TORQUE_VULKAN
+   if (GFX->getAdapterType() == GFXAdapterType::Vulkan)
       mFeatureGLSL->writeLine(format, argc, argv);
 #endif
 }

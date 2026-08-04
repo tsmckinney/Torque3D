@@ -35,7 +35,7 @@
 #ifdef TORQUE_D3D11
 #include "shaderGen/HLSL/customFeatureHLSL.h"
 #endif
-#ifdef TORQUE_OPENGL
+#if defined(TORQUE_OPENGL) || defined(TORQUE_VULKAN)
 #include "shaderGen/GLSL/customFeatureGLSL.h"
 #endif
 
