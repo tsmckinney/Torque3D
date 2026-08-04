@@ -78,8 +78,8 @@ class GFXTextureManager;
 
 /// GFXDevice is the TSE graphics interface layer. This allows the TSE to
 /// do many things, such as use multiple render devices for multi-head systems,
-/// and allow a game to render in DirectX 9, OpenGL or any other API which has
-/// a GFX implementation seamlessly. There are many concepts in GFX device which
+/// and allow a game to render in DirectX 11, OpenGL, Vulkan or any other API which
+/// has a GFX implementation seamlessly. There are many concepts in GFX device which
 /// may not be familiar to you, especially if you have not used DirectX.
 /// @n
 /// <b>Buffers</b>

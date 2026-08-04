@@ -74,7 +74,7 @@ LangElement *ConditionerFeature::assignOutput( Var *unconditionedOutput, ShaderF
       // create color var
       color = new Var;
 
-      if(GFX->getAdapterType() == OpenGL)
+      if(GFX->getAdapterType() == OpenGL || GFX->getAdapterType() == Vulkan)
       {
          color->setName( getOutputTargetVarName(outputTarget) );
          color->setType( "vec4" );
@@ -93,7 +93,7 @@ LangElement *ConditionerFeature::assignOutput( Var *unconditionedOutput, ShaderF
    }
    else
    {
-      if (GFX->getAdapterType() == OpenGL)
+      if (GFX->getAdapterType() == OpenGL || GFX->getAdapterType() == Vulkan)
          assign = new GenOp( "@ = vec4(@)", color, conditionedOutput);
       else
          assign = new GenOp( "@ = @", color, conditionedOutput );
@@ -171,7 +171,7 @@ Var *ConditionerFeature::printMethodHeader( MethodType methodType, const String 
    paramVar->setName(avar("%sconditioned%sput", isCondition ? "un" : "", isCondition ? "Out" : "In"));
    DecOp *paramDecl = new DecOp(paramVar);
 
-   if(GFX->getAdapterType() == OpenGL)
+   if(GFX->getAdapterType() == OpenGL || GFX->getAdapterType() == Vulkan)
    {
       methodVar->setType("vec4");
       paramVar->setType("vec4");

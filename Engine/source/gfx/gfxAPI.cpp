@@ -42,6 +42,7 @@ ImplementEnumType( GFXAdapterType,
    "@ingroup GFX" )
    { OpenGL, "OpenGL", "OpenGL." },
    { Direct3D11, "D3D11", "Direct3D 11." },
+   { Vulkan, "Vulkan", "Vulkan, which is currently very much in development and not recommended for general use." },
    { NullDevice, "NullDevice", "Null device for dedicated servers." }
 EndImplementEnumType;
 

@@ -43,7 +43,7 @@ ConsoleDocClass( ShaderData,
 
 	"To use hand written shaders, a ShaderData datablock must be used. This datablock "
 	"refers only to the vertex and pixel shader filenames and a hardware target level. "
-	"Shaders are API specific, so DirectX and OpenGL shaders must be explicitly identified.\n\n "
+	"Shaders are API specific, so DirectX and OpenGL/Vulkan shaders must be explicitly identified.\n\n "
 
 	"@tsexample\n"
 	"// Used for the procedural clould system\n"
@@ -113,7 +113,7 @@ void ShaderData::initPersistFields()
 
    addField("OGLGeometryShaderFile", TypeStringFilename, Offset(mOGLGeometryShaderName, ShaderData),
       "@brief %Path to the OpenGL Geometry shader file to use for this ShaderData.\n\n");
-
+ 
    addField("useDevicePixVersion", TypeBool, Offset(mUseDevicePixVersion, ShaderData),
       "@brief If true, the maximum pixel shader version offered by the graphics card will be used.\n\n"
       "Otherwise, the script-defined pixel shader version will be used.\n\n");
@@ -290,6 +290,22 @@ GFXShader* ShaderData::_createShader( const Vector<GFXShaderMacro> &macros )
          break;
       }
 
+      case Vulkan:
+      {
+         if(mOGLVertexShaderName != StringTable->EmptyString())
+            shader->setShaderStageFile(GFXShaderStage::VERTEX_SHADER, mOGLVertexShaderName);
+         if (mOGLPixelShaderName != StringTable->EmptyString())
+            shader->setShaderStageFile(GFXShaderStage::PIXEL_SHADER, mOGLPixelShaderName);
+         if (mOGLGeometryShaderName != StringTable->EmptyString())
+            shader->setShaderStageFile(GFXShaderStage::GEOMETRY_SHADER, mOGLGeometryShaderName);
+
+         success = shader->init( pixver,
+                                 macros,
+                                 samplers,
+                                 mInstancingFormat);
+         break;
+      }
+
       default:
          // Other device types are assumed to not support shaders.
          success = false;
@@ -329,7 +345,7 @@ GFXShader* ShaderData::_createShader( const Vector<GFXShaderMacro> &macros )
 
 void ShaderData::setShaderStageFile(GFXShaderStage stage, String fileName)
 {
-   const bool isGL = GFX->getAdapterType() == GFXAdapterType::OpenGL;
+   const bool isGL = GFX->getAdapterType() == GFXAdapterType::OpenGL || GFX->getAdapterType() == GFXAdapterType::Vulkan;
    switch (stage)
    {
    case VERTEX_SHADER:

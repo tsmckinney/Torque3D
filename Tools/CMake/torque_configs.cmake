@@ -84,7 +84,7 @@ if (NOT GIT_IN_USE)
         --triplet=${VCPKG_TARGET_TRIPLET}
         --overlay-ports=${VCPKG_OVERLAY_PORTS}
         --overlay-triplets=${VCPKG_OVERLAY_TRIPLETS}
-        libflac libogg libsndfile[external-libs] libtheora libvorbis opus
+        libflac libogg libsndfile[external-libs] libtheora libvorbis opus vulkan glslang
         WORKING_DIRECTORY ${VCPKG_ROOT})
 endif()
 # All library binaries to install. Modules should append to this the path of any library binaries (.so, .dylib, .dll)
@@ -139,7 +139,8 @@ advanced_option(TORQUE_SFX_OPENAL "OpenAL Sound" ON)
 advanced_option(TORQUE_DEBUG_GFX_MODE "triggers graphics debug mode" OFF)
 advanced_option(TORQUE_ADVANCED_LIGHTING "Advanced Lighting" ON)
 advanced_option(TORQUE_BASIC_LIGHTING "Basic Lighting" ON)
-advanced_option(TORQUE_OPENGL "Allow OpenGL render" ON) # we need OpenGL to render on Linux/Mac
+advanced_option(TORQUE_OPENGL "Allow OpenGL render" ON) # we use OpenGL as a fallback and (right now) the default renderer on Mac/Linux.
+advanced_option(TORQUE_VULKAN "Allow Vulkan render" ON) # we can use Vulkan on Windows or Linux
 if(WIN32)
 	advanced_option(TORQUE_D3D11 "Allow Direct3D 11 render" ON)
 	addDef(TORQUE_D3D11)

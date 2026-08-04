@@ -35,7 +35,7 @@
 #  include "lighting/advanced/hlsl/gBufferConditionerHLSL.h"
 #  include "lighting/advanced/hlsl/advancedLightingFeaturesHLSL.h"
 #endif
-#if defined( TORQUE_OPENGL )
+#if defined( TORQUE_OPENGL ) || defined( TORQUE_VULKAN )
 #  include "lighting/advanced/glsl/gBufferConditionerGLSL.h"
 #  include "lighting/advanced/glsl/advancedLightingFeaturesGLSL.h"
 #endif
@@ -53,9 +53,9 @@ void AdvancedLightingFeatures::registerFeatures( const GFXFormat &deferredTarget
 
    ConditionerFeature *cond = NULL;
 
-   if(GFX->getAdapterType() == OpenGL)
+   if(GFX->getAdapterType() == OpenGL || GFX->getAdapterType() == Vulkan)
    {
-#if defined( TORQUE_OPENGL ) 
+#if defined( TORQUE_OPENGL ) || defined( TORQUE_VULKAN )
       cond = new GBufferConditionerGLSL( deferredTargetFormat, GBufferConditionerGLSL::ViewSpace );
       FEATUREMGR->registerFeature(MFT_DeferredConditioner, cond);
       FEATUREMGR->registerFeature(MFT_RTLighting, new DeferredRTLightingFeatGLSL());
