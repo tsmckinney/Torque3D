@@ -71,11 +71,14 @@ inline static void _GFXInitReportAdapters(Vector<GFXAdapter*> &adapters)
       case OpenGL:
          Con::printf("   OpenGL device found");
          break;
-      case NullDevice:
-         Con::printf("   Null device found");
+      case Vulkan:
+         Con::printf("   Vulkan device found");
          break;
       case Direct3D11:
          Con::printf("   Direct 3D (version 11.x) device found");
+         break;
+      case NullDevice:
+         Con::printf("   Null device found");
          break;
       default :
          Con::printf("   Unknown device found");
@@ -201,17 +204,24 @@ GFXAdapter* GFXInit::getAdapterOfType(GFXAdapterType type, S32 outputDeviceIndex
 GFXAdapter* GFXInit::chooseAdapter( GFXAdapterType type, const char* outputDevice)
 {
    GFXAdapter* adapter = GFXInit::getAdapterOfType(type, outputDevice);
+
+   if(!adapter && type != Vulkan && type != OpenGL)
+   {
+      Con::errorf("The requested renderer, %s, doesn't seem to be available."
+                  " Trying the default, Vulkan.", getAdapterNameFromType(type));
+      adapter = GFXInit::getAdapterOfType(Vulkan, outputDevice);
+   }
    
    if(!adapter && type != OpenGL)
    {
       Con::errorf("The requested renderer, %s, doesn't seem to be available."
-                  " Trying the default, OpenGL.", getAdapterNameFromType(type));
+                  " Trying the fallback, OpenGL.", getAdapterNameFromType(type));
       adapter = GFXInit::getAdapterOfType(OpenGL, outputDevice);
    }
    
    if(!adapter)
    {
-      Con::errorf("The OpenGL renderer doesn't seem to be available. Trying the GFXNulDevice.");
+      Con::errorf("The OpenGL renderer doesn't seem to be available. Trying the GFXNullDevice.");
       adapter = GFXInit::getAdapterOfType(NullDevice, "");
    }
    
@@ -223,10 +233,17 @@ GFXAdapter* GFXInit::chooseAdapter(GFXAdapterType type, S32 outputDeviceIndex)
 {
    GFXAdapter* adapter = GFXInit::getAdapterOfType(type, outputDeviceIndex);
 
-   if (!adapter && type != OpenGL)
+   if(!adapter && type != Vulkan && type != OpenGL)
    {
       Con::errorf("The requested renderer, %s, doesn't seem to be available."
-         " Trying the default, OpenGL.", getAdapterNameFromType(type));
+                  " Trying the default, Vulkan.", getAdapterNameFromType(type));
+      adapter = GFXInit::getAdapterOfType(Vulkan, outputDeviceIndex);
+   }
+   
+   if(!adapter && type != OpenGL)
+   {
+      Con::errorf("The requested renderer, %s, doesn't seem to be available."
+                  " Trying the fallback, OpenGL.", getAdapterNameFromType(type));
       adapter = GFXInit::getAdapterOfType(OpenGL, outputDeviceIndex);
    }
 
@@ -243,7 +260,7 @@ GFXAdapter* GFXInit::chooseAdapter(GFXAdapterType type, S32 outputDeviceIndex)
 const char* GFXInit::getAdapterNameFromType(GFXAdapterType type)
 {
    // must match GFXAdapterType order
-   static const char* _names[] = { "OpenGL", "D3D11", "NullDevice" };
+   static const char* _names[] = { "OpenGL", "D3D11", "Vulkan", "NullDevice" };
    
    if( type < 0 || type >= GFXAdapterType_Count )
    {
@@ -305,8 +322,8 @@ GFXAdapter *GFXInit::getBestAdapterChoice()
    //
    // If D3D is unavailable, we're not on windows, so GL is de facto the
    // best choice!
-   F32 highestSMDX = 0.f, highestSMGL = 0.f;
-   GFXAdapter *foundAdapterGL = NULL, *foundAdapter11 = NULL;
+   F32 highestSMDX = 0.f, highestSMGL = 0.f, highestSMVK = 0.f;
+   GFXAdapter *foundAdapterGL = NULL, *foundAdapter11 = NULL, *foundAdapterVK = NULL;
 
    for (S32 i = 0; i<smAdapters.size(); i++)
    {
@@ -328,6 +345,14 @@ GFXAdapter *GFXInit::getBestAdapterChoice()
          }
          break;
 
+      case Vulkan:
+         if (currAdapter->mShaderModel > highestSMVK)
+         {
+            highestSMVK = currAdapter->mShaderModel;
+            foundAdapterVK = currAdapter;
+         }
+         break;
+
       default:
          break;
       }
@@ -341,6 +366,9 @@ GFXAdapter *GFXInit::getBestAdapterChoice()
 
       if (foundAdapterGL)
          return foundAdapterGL;
+      
+      if (foundAdapterVK)
+         return foundAdapterVK;
 
       // Uh oh - we didn't find anything. Grab whatever we can that's not Null...
       for (S32 i = 0; i < smAdapters.size(); i++)

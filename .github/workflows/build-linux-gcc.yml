@@ -1,9 +1,5 @@
 name: Linux Build
-on:
-    push:
-        branches: [development]
-    pull_request:
-        branches: [development]
+on: [push, pull_request]
 
 concurrency:
     group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-linux
@@ -14,7 +10,7 @@ permissions:
 
 jobs:
     build-linux:
-        if: github.repository == 'TorqueGameEngines/Torque3D'
+        if: github.repository == 'tsmckinney/Torque3D'
         name: ${{matrix.config.name}}
         runs-on: ubuntu-latest
         strategy:

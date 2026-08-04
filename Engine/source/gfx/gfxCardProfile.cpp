@@ -212,7 +212,7 @@ DefineEngineStaticMethod( GFXCardProfilerAPI, getVendor, String, (),,
 }
 
 DefineEngineStaticMethod( GFXCardProfilerAPI, getRenderer, String, (),,
-   "Returns the renderer name.  For example D3D11 or OpenGL." )
+   "Returns the renderer name.  For example D3D11, OpenGL or Vulkan." )
 {
 	return GFX->getCardProfiler()->getRendererString();
 }

@@ -158,9 +158,9 @@ void BasicLightManager::activate( SceneManager *sceneManager )
 {
    Parent::activate( sceneManager );
 
-   if( GFX->getAdapterType() == OpenGL )
+   if( GFX->getAdapterType() == OpenGL || GFX->getAdapterType() == Vulkan)
    {
-      #if defined( TORQUE_OPENGL ) 
+      #if defined( TORQUE_OPENGL ) || defined( TORQUE_VULKAN )
          FEATUREMGR->registerFeature( MFT_LightMap, new LightmapFeatGLSL );
          FEATUREMGR->registerFeature( MFT_ToneMap, new TonemapFeatGLSL );
          FEATUREMGR->registerFeature( MFT_NormalMap, new BumpFeatGLSL );

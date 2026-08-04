@@ -36,7 +36,7 @@ Var *AdvancedLightBufferConditioner::_conditionOutput( Var *unconditionedOutput,
 {
    Var *conditionedOutput = new Var;
 
-   if(GFX->getAdapterType() == OpenGL)
+   if(GFX->getAdapterType() == OpenGL || GFX->getAdapterType() == Vulkan)
       conditionedOutput->setType("vec4");
    else
       conditionedOutput->setType("float4");
@@ -109,7 +109,7 @@ Var *AdvancedLightBufferConditioner::printMethodHeader( MethodType methodType, c
 
    const bool isCondition = ( methodType == ConditionerFeature::ConditionMethod );
 
-   if(GFX->getAdapterType() == OpenGL)
+   if(GFX->getAdapterType() == OpenGL || GFX->getAdapterType() == Vulkan)
    {
       methodVar->setType(avar("%s", isCondition ? "vec4" : "void"));
       lightColor->setType(avar("%s vec3", isCondition ? "in" : "out"));

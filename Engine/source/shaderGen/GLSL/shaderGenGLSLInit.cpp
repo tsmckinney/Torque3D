@@ -116,7 +116,8 @@ MODULE_BEGIN( ShaderGenGLSL )
    MODULE_INIT
    {
       sInitDelegate.bind( &_initShaderGenGLSL );
-      SHADERGEN->registerInitDelegate(OpenGL, sInitDelegate);   
+      SHADERGEN->registerInitDelegate(OpenGL, sInitDelegate);
+      SHADERGEN->registerInitDelegate(Vulkan, sInitDelegate);   
    }
    
 MODULE_END;
