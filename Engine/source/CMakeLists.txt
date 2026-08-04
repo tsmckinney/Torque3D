@@ -14,6 +14,7 @@ find_package(FLAC CONFIG REQUIRED)
 find_package(Opus CONFIG REQUIRED)
 find_package(unofficial-theora CONFIG REQUIRED)
 find_package(SndFile CONFIG REQUIRED)
+find_package(Vulkan REQUIRED)
 set(TORQUE_LINK_THIRDPARTY ${TORQUE_LINK_THIRDPARTY}
     Ogg::ogg
     Vorbis::vorbis
@@ -22,10 +23,12 @@ set(TORQUE_LINK_THIRDPARTY ${TORQUE_LINK_THIRDPARTY}
     Opus::opus
     unofficial::theora::theora unofficial::theora::theoradec unofficial::theora::theoraenc
     SndFile::sndfile
+    Vulkan::Vulkan
 )
 ################# Helper Function Calls ###################
 forwardDef(TORQUE_OPENGL)
 forwardDef(TORQUE_D3D11)
+forwardDef(TORQUE_VULKAN)
 forwardDef(TORQUE_ADVANCED_LIGHTING)
 forwardDef(TORQUE_BASIC_LIGHTING)
 set(TORQUE_SDL ON) # we need sdl to do our platform interop
@@ -117,6 +120,10 @@ if (WIN32 AND TORQUE_D3D11)
   torqueAddSourceDirectories("gfx/D3D11")
 endif (WIN32 AND TORQUE_D3D11)
 
+if (TORQUE_VULKAN)
+  torqueAddSourceDirectories("gfx/vulkan")
+endif (TORQUE_VULKAN)
+
 # Handle core
 torqueAddSourceDirectories("core" "core/stream" "core/strings" "core/util"
                               "core/util/journal" "core/util/zip" "core/util/zip/compressors")
@@ -157,9 +164,9 @@ torqueAddSourceDirectories("module")
 
 # Handle forest
 torqueAddSourceDirectories("forest" "forest/ts")
-if(TORQUE_OPENGL)
+if(TORQUE_OPENGL OR TORUQE_VULKAN)
   torqueAddSourceDirectories("forest" "forest/glsl")
-endif(TORQUE_OPENGL)
+endif(TORQUE_OPENGL OR TORUQE_VULKAN)
 if(TORQUE_D3D11)
   torqueAddSourceDirectories("forest" "forest/hlsl")
 endif(TORQUE_D3D11)
@@ -171,9 +178,9 @@ if (WIN32 AND TORQUE_D3D11)
   torqueAddSourceDirectories("shaderGen/HLSL")
 endif (WIN32 AND TORQUE_D3D11)
 
-if (TORQUE_OPENGL)
+if (TORQUE_OPENGL OR TORUQE_VULKAN)
   torqueAddSourceDirectories("shaderGen/GLSL")
-endif (TORQUE_OPENGL)
+endif (TORQUE_OPENGL OR TORUQE_VULKAN)
 
 # Handle terrain
 torqueAddSourceDirectories("terrain")
@@ -188,9 +195,9 @@ if (WIN32 AND TORQUE_D3D11)
   torqueAddSourceDirectories("terrain/hlsl")
 endif (WIN32 AND TORQUE_D3D11)
 
-if (TORQUE_OPENGL)
+if (TORQUE_OPENGL OR TORUQE_VULKAN)
   torqueAddSourceDirectories("terrain/glsl")
-endif (TORQUE_OPENGL)
+endif (TORQUE_OPENGL OR TORUQE_VULKAN)
 
 # Handle Materials
 torqueAddSourceDirectories("materials")
@@ -209,9 +216,9 @@ if (TORQUE_ADVANCED_LIGHTING)
     torqueAddSourceDirectories("lighting/advanced/hlsl")
 	endif (WIN32 AND TORQUE_D3D11)
 
-	if (TORQUE_OPENGL)
+	if (TORQUE_OPENGL OR TORUQE_VULKAN)
     torqueAddSourceDirectories("lighting/advanced/glsl")
-	endif (TORQUE_OPENGL)
+	endif (TORQUE_OPENGL OR TORUQE_VULKAN)
 endif (TORQUE_ADVANCED_LIGHTING)
 
 if (TORQUE_BASIC_LIGHTING)
