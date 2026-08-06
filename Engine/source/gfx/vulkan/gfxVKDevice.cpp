@@ -175,6 +175,7 @@ GFXVulkanDevice::~GFXVulkanDevice()
    {
       DestroyDebugUtilsMessengerEXT(mInstance, mDebugMessenger, nullptr);
    }
+   vkDestroySurfaceKHR(mInstance, mVKSurface, nullptr);
    vkDestroyDevice(mVKDevice, nullptr);
    vkDestroyInstance(mInstance, nullptr);
    PlatformVK::shutdown();
