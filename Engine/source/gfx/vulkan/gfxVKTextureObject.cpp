@@ -37,9 +37,11 @@ GFXVulkanTextureObject::~GFXVulkanTextureObject()
    kill(); 
 }
 
+#ifdef TORQUE_DEBUG
 void GFXVulkanTextureObject::pureVirtualCrash()
 {
 }
+#endif
 
 GFXLockedRect* GFXVulkanTextureObject::lock(U32 mipLevel, RectI* inRect, U32 faceIndex)
 {

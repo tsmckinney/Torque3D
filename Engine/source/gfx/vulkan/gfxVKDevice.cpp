@@ -158,15 +158,57 @@ GFXVulkanDevice::GFXVulkanDevice()
    PlatformVK::init();
    GFXVulkanEnumTranslate::init();
    mPixelShaderVersion = 4.0f;
-   mClip.set(0, 0, 800, 800);
-   mTextureManager = new GFXVulkanTextureManager();
-   gScreenShot = new ScreenShot();
-   mCardProfiler = new GFXVulkanCardProfiler();
 
    mCurrentConstBuffer = NULL;
    mCurrentShader = NULL;
    mDebugMessenger = VK_NULL_HANDLE;
 
+   mValidationLayers.push_back("VK_LAYER_KHRONOS_validation");
+   if (mEnableValidationLayers)
+   {
+      AssertFatal(checkValidationLayerSupport(), "Vulkan validation layers were requested, but not available.");
+   }
+
+   // Version number is major * 1000 + minor * 100 + revision * 10...
+   VkApplicationInfo appInfo{};
+   appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+   appInfo.pApplicationName = TORQUE_APP_NAME;
+   appInfo.applicationVersion = VK_MAKE_VERSION(floor(TORQUE_APP_VERSION / 1000), floor(TORQUE_APP_VERSION / 100), floor(TORQUE_APP_VERSION / 10));
+   appInfo.pEngineName = getEngineProductString();
+   appInfo.engineVersion = VK_MAKE_VERSION(floor(TORQUE_GAME_ENGINE / 1000), floor(TORQUE_GAME_ENGINE / 100), floor(TORQUE_GAME_ENGINE / 10));
+   appInfo.apiVersion = VK_API_VERSION_1_4;
+
+   VkInstanceCreateInfo createInfo{};
+   createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+   createInfo.pApplicationInfo = &appInfo;
+
+   mRequiredExtensions = getRequiredExtensions();
+
+   createInfo.enabledExtensionCount = (uint32_t)mRequiredExtensions.size();
+   createInfo.ppEnabledExtensionNames = mRequiredExtensions.address();
+
+   if (mEnableValidationLayers)
+   {
+      VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
+      createInfo.enabledLayerCount = static_cast<uint32_t>(mValidationLayers.size());
+      createInfo.ppEnabledLayerNames = mValidationLayers.address();
+      populateDebugMessengerCreateInfo(debugCreateInfo);
+      createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
+   }
+   else
+   {
+      createInfo.enabledLayerCount = 0;
+      createInfo.pNext = nullptr;
+   }
+
+   AssertFatal(vkCreateInstance(&createInfo, nullptr, &mInstance) == VK_SUCCESS, "Failed to create Vulkan instance! Please make sure your graphics card supports Vulkan before relaunching.");
+
+
+   mClip.set(0, 0, 800, 800);
+   mTextureManager = new GFXVulkanTextureManager();
+   gScreenShot = new ScreenShot();
+   mCardProfiler = new GFXVulkanCardProfiler();
+   mCardProfiler->init();
 }
 
 GFXVulkanDevice::~GFXVulkanDevice()
@@ -339,67 +381,37 @@ void GFXVulkanDevice::enumerateAdapters( Vector<GFXAdapter*> &adapterList )
 
 void GFXVulkanDevice::init( const GFXVideoMode &mode, PlatformWindow *window )
 {
-   mValidationLayers.push_back("VK_LAYER_KHRONOS_validation");
-   if (mEnableValidationLayers)
-   {
-      AssertFatal(checkValidationLayerSupport(), "Vulkan validation layers were requested, but not available.");
-   }
-
-   // Version number is major * 1000 + minor * 100 + revision * 10...
-   VkApplicationInfo appInfo{};
-   appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-   appInfo.pApplicationName = TORQUE_APP_NAME;
-   appInfo.applicationVersion = VK_MAKE_VERSION(floor(TORQUE_APP_VERSION / 1000), floor(TORQUE_APP_VERSION / 100), floor(TORQUE_APP_VERSION / 10));
-   appInfo.pEngineName = getEngineProductString();
-   appInfo.engineVersion = VK_MAKE_VERSION(floor(TORQUE_GAME_ENGINE / 1000), floor(TORQUE_GAME_ENGINE / 100), floor(TORQUE_GAME_ENGINE / 10));
-   appInfo.apiVersion = VK_API_VERSION_1_4;
-
-   VkInstanceCreateInfo createInfo{};
-   createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-   createInfo.pApplicationInfo = &appInfo;
-
-   mRequiredExtensions = getRequiredExtensions();
-
-   createInfo.enabledExtensionCount = (uint32_t)mRequiredExtensions.size();
-   createInfo.ppEnabledExtensionNames = mRequiredExtensions.address();
-
-   if (mEnableValidationLayers)
-   {
-      VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
-      createInfo.enabledLayerCount = static_cast<uint32_t>(mValidationLayers.size());
-      createInfo.ppEnabledLayerNames = mValidationLayers.address();
-      populateDebugMessengerCreateInfo(debugCreateInfo);
-      createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
-   }
-   else
-   {
-      createInfo.enabledLayerCount = 0;
-      createInfo.pNext = nullptr;
-   }
-
-   AssertFatal(vkCreateInstance(&createInfo, nullptr, &mInstance) == VK_SUCCESS, "Failed to create Vulkan instance! Please make sure your graphics card supports Vulkan before relaunching.");
-   mCardProfiler->init();
-
    AssertFatal(PlatformVK::createSurfaceVK(window, mInstance, &mVKSurface), "Failed to create Vulkan surface! Please make sure your graphics card supports Vulkan before relaunching.");
    GFXVulkanCardProfiler* vkCardProfiler = static_cast<GFXVulkanCardProfiler*>(mCardProfiler);
 
    GFXVulkanQueueFamilyIndices queueFamilies = generateQFIndices(vkCardProfiler->mPhysicalDevice, mVKSurface);
 
-   VkDeviceQueueCreateInfo queueCreateInfo{};
-   queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-   queueCreateInfo.queueFamilyIndex = queueFamilies.mGraphicsFamily.mIndex;
-   queueCreateInfo.queueCount = 1;
+   Vector<VkDeviceQueueCreateInfo> queueCreateInfos{};
+   Vector<U32> uniqueQueueFamilies;
+   uniqueQueueFamilies.push_back_unique(queueFamilies.mGraphicsFamily.mIndex);
+   uniqueQueueFamilies.push_back_unique(queueFamilies.mPresentFamily.mIndex);
    F32 queuePriority = 1.0f;
-   queueCreateInfo.pQueuePriorities = &queuePriority;
+   for (U32 queueFamily : uniqueQueueFamilies)
+   {
+      VkDeviceQueueCreateInfo queueCreateInfo{};
+      queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+      queueCreateInfo.queueFamilyIndex = queueFamilies.mGraphicsFamily.mIndex;
+      queueCreateInfo.queueCount = 1;
+      queueCreateInfo.pQueuePriorities = &queuePriority;
+      queueCreateInfos.push_back(queueCreateInfo);
+   }
 
    VkDeviceCreateInfo logicalDeviceCreateInfo{};
    logicalDeviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-   logicalDeviceCreateInfo.pQueueCreateInfos = &queueCreateInfo;
-   logicalDeviceCreateInfo.queueCreateInfoCount = 1;
+   logicalDeviceCreateInfo.pQueueCreateInfos = queueCreateInfos.address();
+   logicalDeviceCreateInfo.queueCreateInfoCount = static_cast<U32>(queueCreateInfos.size());
    logicalDeviceCreateInfo.pEnabledFeatures = &vkCardProfiler->mDeviceFeatures.features;
    logicalDeviceCreateInfo.enabledExtensionCount = 0;
    AssertFatal(vkCreateDevice(vkCardProfiler->mPhysicalDevice, &logicalDeviceCreateInfo, nullptr, &mVKDevice) == VK_SUCCESS,
       "Failed to create Vulkan logical device! Please make sure your graphics card supports Vulkan before relaunching.");
+
+   vkGetDeviceQueue(mVKDevice, queueFamilies.mGraphicsFamily.mIndex, 0, &graphicsQueue);
+   vkGetDeviceQueue(mVKDevice, queueFamilies.mPresentFamily.mIndex, 0, &presentQueue);
 }
 
 GFXStateBlockRef GFXVulkanDevice::createStateBlockInternal(const GFXStateBlockDesc& desc)

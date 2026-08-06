@@ -116,6 +116,7 @@ protected:
    VkInstance mInstance;
    VkDevice mVKDevice;
    VkSurfaceKHR mVKSurface;
+   VkAllocationCallbacks* mAllocationCallbacks;
 
    VkDebugUtilsMessengerEXT mDebugMessenger;
    void setupDebugMessenger();
@@ -199,11 +200,15 @@ public:
    GFXOcclusionQuery* createOcclusionQuery() override { return NULL; }
 
    VkInstance getVKInstance() { return mInstance; }
+   VkAllocationCallbacks* getAllocationCallbacks() { return mAllocationCallbacks; }
    
 private:
    typedef GFXDevice Parent;
    RectI mClip;
    F32 mPixelShaderVersion;
+
+   VkQueue graphicsQueue;
+   VkQueue presentQueue;
 };
 
 #define GFXVK static_cast<GFXVulkanDevice*>(GFX)
