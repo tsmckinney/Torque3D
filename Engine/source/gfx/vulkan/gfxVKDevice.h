@@ -47,7 +47,9 @@
 
 #include "gfx/bitmap/gBitmap.h"
 #include "core/util/safeDelete.h"
+#include "windowManager/platformWindow.h"
 
+class GFXVulkanShaderConstBuffer;
 
 class GFXVulkanDevice : public GFXDevice
 {
@@ -86,9 +88,6 @@ protected:
    void setStateBlockInternal(GFXStateBlock* block, bool force) override { };
    /// @}
 
-   /// Called by base GFXDevice to actually set a const buffer
-   void setShaderConstBufferInternal(GFXShaderConstBuffer* buffer) override { };
-
    void setTextureInternal(U32 textureUnit, const GFXTextureObject*texture) override { };
 
 
@@ -116,6 +115,7 @@ protected:
 
    VkInstance mInstance;
    VkDevice mVKDevice;
+   VkSurfaceKHR mVKSurface;
 
    VkDebugUtilsMessengerEXT mDebugMessenger;
    void setupDebugMessenger();
@@ -148,10 +148,24 @@ public:
 
    F32 getPixelShaderVersion() const override { return mPixelShaderVersion; };
    void setPixelShaderVersion(F32 version) override { mPixelShaderVersion = version; };
+
    U32 getNumSamplers() const override { return 0; };
    U32 getNumRenderTargets() const override { return 0; };
 
+   void setupGenericShaders(GenericShaderType type = GSColor) override;
    GFXShader* createShader() override;
+   void setShader(GFXShader* shader, bool force = false) override;
+
+   /// Track the last const buffer we've used.  Used to notify new constant buffers that
+   /// they should send all of their constants up
+   StrongRefPtr<GFXVulkanShaderConstBuffer> mCurrentConstBuffer;
+   /// Called by base GFXDevice to actually set a const buffer
+   void setShaderConstBufferInternal(GFXShaderConstBuffer* buffer) override;
+
+   GFXShader* mCurrentShader;
+   GFXShaderRef mGenericShader[GS_COUNT];
+   GFXShaderConstBufferRef mGenericShaderBuffer[GS_COUNT];
+   GFXShaderConstHandle* mModelViewProjSC[GS_COUNT];
 
    void copyResource(GFXTextureObject *pDst, GFXCubemap *pSrc, const U32 face) override { };
    void clear( U32 flags, const LinearColorF& color, F32 z, U32 stencil ) override { };

@@ -164,9 +164,9 @@ torqueAddSourceDirectories("module")
 
 # Handle forest
 torqueAddSourceDirectories("forest" "forest/ts")
-if(TORQUE_OPENGL OR TORUQE_VULKAN)
+if(TORQUE_OPENGL OR TORQUE_VULKAN)
   torqueAddSourceDirectories("forest" "forest/glsl")
-endif(TORQUE_OPENGL OR TORUQE_VULKAN)
+endif(TORQUE_OPENGL OR TORQUE_VULKAN)
 if(TORQUE_D3D11)
   torqueAddSourceDirectories("forest" "forest/hlsl")
 endif(TORQUE_D3D11)
@@ -178,9 +178,9 @@ if (WIN32 AND TORQUE_D3D11)
   torqueAddSourceDirectories("shaderGen/HLSL")
 endif (WIN32 AND TORQUE_D3D11)
 
-if (TORQUE_OPENGL OR TORUQE_VULKAN)
+if (TORQUE_OPENGL OR TORQUE_VULKAN)
   torqueAddSourceDirectories("shaderGen/GLSL")
-endif (TORQUE_OPENGL OR TORUQE_VULKAN)
+endif (TORQUE_OPENGL OR TORQUE_VULKAN)
 
 # Handle terrain
 torqueAddSourceDirectories("terrain")
@@ -195,9 +195,9 @@ if (WIN32 AND TORQUE_D3D11)
   torqueAddSourceDirectories("terrain/hlsl")
 endif (WIN32 AND TORQUE_D3D11)
 
-if (TORQUE_OPENGL OR TORUQE_VULKAN)
+if (TORQUE_OPENGL OR TORQUE_VULKAN)
   torqueAddSourceDirectories("terrain/glsl")
-endif (TORQUE_OPENGL OR TORUQE_VULKAN)
+endif (TORQUE_OPENGL OR TORQUE_VULKAN)
 
 # Handle Materials
 torqueAddSourceDirectories("materials")
@@ -216,9 +216,9 @@ if (TORQUE_ADVANCED_LIGHTING)
     torqueAddSourceDirectories("lighting/advanced/hlsl")
 	endif (WIN32 AND TORQUE_D3D11)
 
-	if (TORQUE_OPENGL OR TORUQE_VULKAN)
+	if (TORQUE_OPENGL OR TORQUE_VULKAN)
     torqueAddSourceDirectories("lighting/advanced/glsl")
-	endif (TORQUE_OPENGL OR TORUQE_VULKAN)
+	endif (TORQUE_OPENGL OR TORQUE_VULKAN)
 endif (TORQUE_ADVANCED_LIGHTING)
 
 if (TORQUE_BASIC_LIGHTING)

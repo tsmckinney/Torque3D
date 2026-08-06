@@ -27,6 +27,9 @@
 #include "app/version.h"
 #include "gfx/vulkan/gfxVKDevice.h"
 
+#include "materials/shaderData.h"
+#include "shaderGen/shaderGen.h"
+
 GFXAdapter::CreateDeviceInstanceDelegate GFXVulkanDevice::mCreateDeviceInstance(GFXVulkanDevice::createInstance); 
 
 //
@@ -155,72 +158,15 @@ GFXVulkanDevice::GFXVulkanDevice()
    PlatformVK::init();
    GFXVulkanEnumTranslate::init();
    mPixelShaderVersion = 4.0f;
-   mValidationLayers.push_back("VK_LAYER_KHRONOS_validation");
-   if (mEnableValidationLayers)
-   {
-      AssertFatal(checkValidationLayerSupport(), "Vulkan validation layers were requested, but not available.");
-   }
-   
-   // Version number is major * 1000 + minor * 100 + revision * 10...
-   VkApplicationInfo appInfo{};
-   appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-   appInfo.pApplicationName = TORQUE_APP_NAME;
-   appInfo.applicationVersion = VK_MAKE_VERSION(floor(TORQUE_APP_VERSION/1000),floor(TORQUE_APP_VERSION/100),floor(TORQUE_APP_VERSION/10));
-   appInfo.pEngineName = getEngineProductString();
-   appInfo.engineVersion = VK_MAKE_VERSION(floor(TORQUE_GAME_ENGINE/1000),floor(TORQUE_GAME_ENGINE/100),floor(TORQUE_GAME_ENGINE/10));
-   appInfo.apiVersion = VK_API_VERSION_1_4;
-
-   VkInstanceCreateInfo createInfo{};
-   createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-   createInfo.pApplicationInfo = &appInfo;
-
-   mRequiredExtensions = getRequiredExtensions();
-
-   createInfo.enabledExtensionCount = (uint32_t) mRequiredExtensions.size();
-   createInfo.ppEnabledExtensionNames = mRequiredExtensions.address();
-
-   if (mEnableValidationLayers)
-   {
-      VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
-      createInfo.enabledLayerCount = static_cast<uint32_t>(mValidationLayers.size());
-      createInfo.ppEnabledLayerNames = mValidationLayers.address();
-      populateDebugMessengerCreateInfo(debugCreateInfo);
-      createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*) &debugCreateInfo;
-   } 
-   else 
-   {
-      createInfo.enabledLayerCount = 0;
-      createInfo.pNext = nullptr;
-   }
-
-   AssertFatal(vkCreateInstance(&createInfo, nullptr, &mInstance) == VK_SUCCESS, "Failed to create Vulkan instance! Please make sure your graphics card supports Vulkan before relaunching.");
-
    mClip.set(0, 0, 800, 800);
-
    mTextureManager = new GFXVulkanTextureManager();
    gScreenShot = new ScreenShot();
    mCardProfiler = new GFXVulkanCardProfiler();
-   mCardProfiler->init();
 
-   GFXVulkanCardProfiler* vkCardProfiler = static_cast<GFXVulkanCardProfiler*>(mCardProfiler);
+   mCurrentConstBuffer = NULL;
+   mCurrentShader = NULL;
+   mDebugMessenger = VK_NULL_HANDLE;
 
-   GFXVulkanQueueFamilyIndices queueFamilies = generateQFIndices(vkCardProfiler->mPhysicalDevice);
-
-   VkDeviceQueueCreateInfo queueCreateInfo{};
-   queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-   queueCreateInfo.queueFamilyIndex = queueFamilies.mGraphicsFamily.mIndex;
-   queueCreateInfo.queueCount = 1;
-   F32 queuePriority = 1.0f;
-   queueCreateInfo.pQueuePriorities = &queuePriority;
-
-   VkDeviceCreateInfo logicalDeviceCreateInfo{};
-   logicalDeviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-   logicalDeviceCreateInfo.pQueueCreateInfos = &queueCreateInfo;
-   logicalDeviceCreateInfo.queueCreateInfoCount = 1;
-   logicalDeviceCreateInfo.pEnabledFeatures = &vkCardProfiler->mDeviceFeatures.features;
-   logicalDeviceCreateInfo.enabledExtensionCount = 0;
-   AssertFatal(vkCreateDevice(vkCardProfiler->mPhysicalDevice, &logicalDeviceCreateInfo, nullptr, &mVKDevice) == VK_SUCCESS,
-      "Failed to create Vulkan logical device! Please make sure your graphics card supports Vulkan before relaunching.");
 }
 
 GFXVulkanDevice::~GFXVulkanDevice()
@@ -232,6 +178,11 @@ GFXVulkanDevice::~GFXVulkanDevice()
    vkDestroyDevice(mVKDevice, nullptr);
    vkDestroyInstance(mInstance, nullptr);
    PlatformVK::shutdown();
+   if( mTextureManager )
+   {
+      mTextureManager->zombify();
+      mTextureManager->kill();
+   }
 }
 
 GFXVertexBuffer *GFXVulkanDevice::allocVertexBuffer( U32 numVerts, 
@@ -271,11 +222,99 @@ GFXWindowTarget* GFXVulkanDevice::allocWindowTarget(PlatformWindow* window)
    GFXVulkanWindowTarget* target = new GFXVulkanWindowTarget(window, GFX);
    return target;
 }
-GFXShader* GFXVulkanDevice::createShader() 
+
+void GFXVulkanDevice::setupGenericShaders(GenericShaderType type)
+{
+   AssertFatal(type != GSTargetRestore, "");
+
+   if (mGenericShader[GSColor] == NULL)
+   {
+      ShaderData* shaderData;
+
+      shaderData = new ShaderData();
+      shaderData->setField("OGLVertexShaderFile", ShaderGen::smCommonShaderPath + String("/fixedFunction/gl/colorV.glsl"));
+      shaderData->setField("OGLPixelShaderFile", ShaderGen::smCommonShaderPath + String("/fixedFunction/gl/colorP.glsl"));
+      shaderData->setField("pixVersion", "2.0");
+      shaderData->registerObject();
+      mGenericShader[GSColor] = shaderData->getShader();
+      mGenericShaderBuffer[GSColor] = mGenericShader[GSColor]->allocConstBuffer();
+      mModelViewProjSC[GSColor] = mGenericShader[GSColor]->getShaderConstHandle("$modelView");
+      Sim::getRootGroup()->addObject(shaderData);
+
+      shaderData = new ShaderData();
+      shaderData->setField("OGLVertexShaderFile", ShaderGen::smCommonShaderPath + String("/fixedFunction/gl/modColorTextureV.glsl"));
+      shaderData->setField("OGLPixelShaderFile", ShaderGen::smCommonShaderPath + String("/fixedFunction/gl/modColorTextureP.glsl"));
+      shaderData->setSamplerName("$diffuseMap", 0);
+      shaderData->setField("pixVersion", "2.0");
+      shaderData->registerObject();
+      mGenericShader[GSModColorTexture] = shaderData->getShader();
+      mGenericShaderBuffer[GSModColorTexture] = mGenericShader[GSModColorTexture]->allocConstBuffer();
+      mModelViewProjSC[GSModColorTexture] = mGenericShader[GSModColorTexture]->getShaderConstHandle("$modelView");
+      Sim::getRootGroup()->addObject(shaderData);
+
+      shaderData = new ShaderData();
+      shaderData->setField("OGLVertexShaderFile", ShaderGen::smCommonShaderPath + String("/fixedFunction/gl/addColorTextureV.glsl"));
+      shaderData->setField("OGLPixelShaderFile", ShaderGen::smCommonShaderPath + String("/fixedFunction/gl/addColorTextureP.glsl"));
+      shaderData->setSamplerName("$diffuseMap", 0);
+      shaderData->setField("pixVersion", "2.0");
+      shaderData->registerObject();
+      mGenericShader[GSAddColorTexture] = shaderData->getShader();
+      mGenericShaderBuffer[GSAddColorTexture] = mGenericShader[GSAddColorTexture]->allocConstBuffer();
+      mModelViewProjSC[GSAddColorTexture] = mGenericShader[GSAddColorTexture]->getShaderConstHandle("$modelView");
+      Sim::getRootGroup()->addObject(shaderData);
+
+      shaderData = new ShaderData();
+      shaderData->setField("OGLVertexShaderFile", ShaderGen::smCommonShaderPath + String("/fixedFunction/gl/textureV.glsl"));
+      shaderData->setField("OGLPixelShaderFile", ShaderGen::smCommonShaderPath + String("/fixedFunction/gl/textureP.glsl"));
+      shaderData->setSamplerName("$diffuseMap", 0);
+      shaderData->setField("pixVersion", "2.0");
+      shaderData->registerObject();
+      mGenericShader[GSTexture] = shaderData->getShader();
+      mGenericShaderBuffer[GSTexture] = mGenericShader[GSTexture]->allocConstBuffer();
+      mModelViewProjSC[GSTexture] = mGenericShader[GSTexture]->getShaderConstHandle("$modelView");
+      Sim::getRootGroup()->addObject(shaderData);
+   }
+
+   MatrixF tempMatrix = mProjectionMatrix * mViewMatrix * mWorldMatrix[mWorldStackSize];
+   mGenericShaderBuffer[type]->setSafe(mModelViewProjSC[type], tempMatrix);
+
+   setShader(mGenericShader[type]);
+   setShaderConstBuffer(mGenericShaderBuffer[type]);
+}
+GFXShader* GFXVulkanDevice::createShader()
 {
    GFXVulkanShader* shader = new GFXVulkanShader(this);
    shader->registerResourceWithDevice(this);
    return shader;
+}
+void GFXVulkanDevice::setShader(GFXShader* shader, bool force)
+{
+   if (mCurrentShader == shader && !force)
+      return;
+   if (shader) {
+      GFXVulkanShader* vkShader = static_cast<GFXVulkanShader*>(shader);
+      vkShader->useProgram();
+      mCurrentShader = vkShader;
+   }
+   else {
+      setupGenericShaders();
+   }
+}
+void GFXVulkanDevice::setShaderConstBufferInternal(GFXShaderConstBuffer* buffer)
+{
+   if (buffer)
+   {
+      PROFILE_SCOPE(GFXVulkanDevice_setShaderConstBufferInternal);
+      AssertFatal(static_cast<GFXVulkanShaderConstBuffer*>(buffer), "Incorrect shader const buffer type for this device!");
+      GFXVulkanShaderConstBuffer* vkBuffer = static_cast<GFXVulkanShaderConstBuffer*>(buffer);
+
+      vkBuffer->activate(mCurrentConstBuffer);
+      mCurrentConstBuffer = vkBuffer;
+   }
+   else
+   {
+      mCurrentConstBuffer = NULL;
+   }
 }
 
 void GFXVulkanDevice::enumerateAdapters( Vector<GFXAdapter*> &adapterList )
@@ -299,8 +338,67 @@ void GFXVulkanDevice::enumerateAdapters( Vector<GFXAdapter*> &adapterList )
 
 void GFXVulkanDevice::init( const GFXVideoMode &mode, PlatformWindow *window )
 {
-   mCardProfiler = new GFXVulkanCardProfiler();
+   mValidationLayers.push_back("VK_LAYER_KHRONOS_validation");
+   if (mEnableValidationLayers)
+   {
+      AssertFatal(checkValidationLayerSupport(), "Vulkan validation layers were requested, but not available.");
+   }
+
+   // Version number is major * 1000 + minor * 100 + revision * 10...
+   VkApplicationInfo appInfo{};
+   appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+   appInfo.pApplicationName = TORQUE_APP_NAME;
+   appInfo.applicationVersion = VK_MAKE_VERSION(floor(TORQUE_APP_VERSION / 1000), floor(TORQUE_APP_VERSION / 100), floor(TORQUE_APP_VERSION / 10));
+   appInfo.pEngineName = getEngineProductString();
+   appInfo.engineVersion = VK_MAKE_VERSION(floor(TORQUE_GAME_ENGINE / 1000), floor(TORQUE_GAME_ENGINE / 100), floor(TORQUE_GAME_ENGINE / 10));
+   appInfo.apiVersion = VK_API_VERSION_1_4;
+
+   VkInstanceCreateInfo createInfo{};
+   createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+   createInfo.pApplicationInfo = &appInfo;
+
+   mRequiredExtensions = getRequiredExtensions();
+
+   createInfo.enabledExtensionCount = (uint32_t)mRequiredExtensions.size();
+   createInfo.ppEnabledExtensionNames = mRequiredExtensions.address();
+
+   if (mEnableValidationLayers)
+   {
+      VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
+      createInfo.enabledLayerCount = static_cast<uint32_t>(mValidationLayers.size());
+      createInfo.ppEnabledLayerNames = mValidationLayers.address();
+      populateDebugMessengerCreateInfo(debugCreateInfo);
+      createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
+   }
+   else
+   {
+      createInfo.enabledLayerCount = 0;
+      createInfo.pNext = nullptr;
+   }
+
+   AssertFatal(vkCreateInstance(&createInfo, nullptr, &mInstance) == VK_SUCCESS, "Failed to create Vulkan instance! Please make sure your graphics card supports Vulkan before relaunching.");
    mCardProfiler->init();
+
+   AssertFatal(PlatformVK::createSurfaceVK(window, mInstance, &mVKSurface), "Failed to create Vulkan surface! Please make sure your graphics card supports Vulkan before relaunching.");
+   GFXVulkanCardProfiler* vkCardProfiler = static_cast<GFXVulkanCardProfiler*>(mCardProfiler);
+
+   GFXVulkanQueueFamilyIndices queueFamilies = generateQFIndices(vkCardProfiler->mPhysicalDevice, mVKSurface);
+
+   VkDeviceQueueCreateInfo queueCreateInfo{};
+   queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+   queueCreateInfo.queueFamilyIndex = queueFamilies.mGraphicsFamily.mIndex;
+   queueCreateInfo.queueCount = 1;
+   F32 queuePriority = 1.0f;
+   queueCreateInfo.pQueuePriorities = &queuePriority;
+
+   VkDeviceCreateInfo logicalDeviceCreateInfo{};
+   logicalDeviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+   logicalDeviceCreateInfo.pQueueCreateInfos = &queueCreateInfo;
+   logicalDeviceCreateInfo.queueCreateInfoCount = 1;
+   logicalDeviceCreateInfo.pEnabledFeatures = &vkCardProfiler->mDeviceFeatures.features;
+   logicalDeviceCreateInfo.enabledExtensionCount = 0;
+   AssertFatal(vkCreateDevice(vkCardProfiler->mPhysicalDevice, &logicalDeviceCreateInfo, nullptr, &mVKDevice) == VK_SUCCESS,
+      "Failed to create Vulkan logical device! Please make sure your graphics card supports Vulkan before relaunching.");
 }
 
 GFXStateBlockRef GFXVulkanDevice::createStateBlockInternal(const GFXStateBlockDesc& desc)
