@@ -90,9 +90,6 @@ protected:
    void setStateBlockInternal(GFXStateBlock* block, bool force) override { };
    /// @}
 
-   /// Called by base GFXDevice to actually set a const buffer
-   void setShaderConstBufferInternal(GFXShaderConstBuffer* buffer) override { };
-
    void setTextureInternal(U32 textureUnit, const GFXTextureObject*texture) override { };
 
 
