@@ -26,16 +26,20 @@
 
 void GFXVulkanCardProfiler::init()
 {
-   VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+   mPhysicalDevice = VK_NULL_HANDLE;
    uint32_t deviceCount = 0;
    VkInstance instance = GFXVK->getVKInstance();
    vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
-   AssertFatal(deviceCount > 0, "This machine does not support Vulkan!");
+   AssertFatal(deviceCount > 0, "No graphics cards supporting Vulkan were found on this machine!");
    Vector<VkPhysicalDevice> devices;
    devices.setSize(deviceCount);
    vkEnumeratePhysicalDevices(instance, &deviceCount, devices.address());
-    
-   vkGetPhysicalDeviceProperties(devices[0], &mDeviceProperties);
+   
+   // TODO: Check if this graphics card is actually suitable
+   mPhysicalDevice = devices[0];
+   vkGetPhysicalDeviceProperties(mPhysicalDevice, &mDeviceProperties);
+
+   vkGetPhysicalDeviceFeatures2(mPhysicalDevice, &mDeviceFeatures);
 
    mCardDescription = mDeviceProperties.deviceName;
    mChipSet = vendorIDToString(static_cast<VkVendorId>(mDeviceProperties.vendorID));

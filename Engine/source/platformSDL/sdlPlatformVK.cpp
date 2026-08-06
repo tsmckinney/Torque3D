@@ -12,11 +12,11 @@ namespace PlatformVK
 
    void init()
    {
-       SDL_Vulkan_LoadLibrary(nullptr);
+      SDL_Vulkan_LoadLibrary(nullptr);
    }
    void shutdown()
    {
-       SDL_Vulkan_UnloadLibrary();
+      SDL_Vulkan_UnloadLibrary();
    }
 
    //void* CreateContextGL( PlatformWindow *window )

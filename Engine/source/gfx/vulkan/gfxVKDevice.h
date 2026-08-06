@@ -37,7 +37,7 @@
 #include "gfx/vulkan/gfxVKCubemapArray.h"
 #include "gfx/vulkan/gfxVKDevice.h"
 #include "gfx/vulkan/gfxVKEnumTranslate.h"
-#include <vulkan/vulkan.h>
+#include "gfx/vulkan/gfxVKHelpers.h"
 #include "gfx/vulkan/gfxVKPrimitiveBuffer.h"
 #include "gfx/vulkan/gfxVKShader.h"
 #include "gfx/vulkan/gfxVKTextureArray.h"

@@ -25,12 +25,29 @@
 
 #include "platform/platform.h"
 #include <vulkan/vulkan.h>
-#include "console/console.h"
-
 //-----------------------------------------------------------------------------
 
 // Vendor IDs (for card profiling)
 extern const char* vendorIDToString(VkVendorId id);
-// Validation layer debugging functions
+
+// Queue
+typedef struct GFXVulkanQueueFamilyIndex
+{
+public:
+   U32 mIndex = NULL;
+   bool mHasValue = false;
+   GFXVulkanQueueFamilyIndex();
+   GFXVulkanQueueFamilyIndex(U32 idx);
+   GFXVulkanQueueFamilyIndex(bool hasValue, U32 idx);
+   ~GFXVulkanQueueFamilyIndex();
+   GFXVulkanQueueFamilyIndex operator=(U32 i);
+};
+typedef struct GFXVulkanQueueFamilyIndices
+{
+public:
+   GFXVulkanQueueFamilyIndex mGraphicsFamily;
+};
+extern GFXVulkanQueueFamilyIndices generateQFIndices(VkPhysicalDevice physicalDevice);
+extern bool isQFTreeComplete(GFXVulkanQueueFamilyIndices tree);
 
 #endif

@@ -20,7 +20,11 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
+#include "platform/platform.h"
+
 #include "gfx/vulkan/gfxVKHelpers.h"
+#include <core/util/str.h>
+#include <vector>
 
 const char* vendorIDToString(VkVendorId id)
 {
@@ -64,4 +68,63 @@ const char* vendorIDToString(VkVendorId id)
    default:
       return "Unknown Device";
    }
+}
+
+GFXVulkanQueueFamilyIndex::GFXVulkanQueueFamilyIndex()
+{
+   mHasValue = false;
+}
+
+GFXVulkanQueueFamilyIndex::GFXVulkanQueueFamilyIndex(U32 idx)
+{
+   mHasValue = true;
+   mIndex = idx;
+}
+
+GFXVulkanQueueFamilyIndex::GFXVulkanQueueFamilyIndex(bool hasValue, U32 idx)
+{
+   mHasValue = hasValue;
+   if (hasValue)
+   {
+      mIndex = idx;
+   }
+}
+
+GFXVulkanQueueFamilyIndex::~GFXVulkanQueueFamilyIndex()
+{
+   mHasValue = false;
+   mIndex = NULL;
+}
+
+GFXVulkanQueueFamilyIndex GFXVulkanQueueFamilyIndex::operator=(U32 i)
+{
+   GFXVulkanQueueFamilyIndex qfidx;
+   qfidx.mHasValue = true;
+   qfidx.mIndex = i;
+   return qfidx;
+}
+
+GFXVulkanQueueFamilyIndices generateQFIndices(VkPhysicalDevice physicalDevice)
+{
+   GFXVulkanQueueFamilyIndices tree{};
+   U32 queueFamilyCount = 0;
+   vkGetPhysicalDeviceQueueFamilyProperties2(physicalDevice, &queueFamilyCount, nullptr);
+   // TODO: Try to do this with Vector<T>!!!
+   std::vector<VkQueueFamilyProperties2> queueFamilies(queueFamilyCount);
+   vkGetPhysicalDeviceQueueFamilyProperties2(physicalDevice, &queueFamilyCount, queueFamilies.data());
+
+   int idx = 0;
+   for(const VkQueueFamilyProperties2& queueFamily : queueFamilies)
+   {
+      if (queueFamily.queueFamilyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+      {
+         tree.mGraphicsFamily = idx;
+      }
+      idx++;
+   }
+
+   return tree;
+}
+bool isQFTreeComplete(GFXVulkanQueueFamilyIndices tree) {
+   return tree.mGraphicsFamily.mHasValue;
 }
