@@ -31,7 +31,7 @@
 extern const char* vendorIDToString(VkVendorId id);
 
 // Queue
-typedef struct GFXVulkanQueueFamilyIndex
+struct GFXVulkanQueueFamilyIndex
 {
 public:
    U32 mIndex = NULL;
@@ -42,12 +42,13 @@ public:
    ~GFXVulkanQueueFamilyIndex();
    GFXVulkanQueueFamilyIndex operator=(U32 i);
 };
-typedef struct GFXVulkanQueueFamilyIndices
+struct GFXVulkanQueueFamilyIndices
 {
 public:
    GFXVulkanQueueFamilyIndex mGraphicsFamily;
+   GFXVulkanQueueFamilyIndex mPresentFamily;
 };
-extern GFXVulkanQueueFamilyIndices generateQFIndices(VkPhysicalDevice physicalDevice);
-extern bool isQFTreeComplete(GFXVulkanQueueFamilyIndices tree);
+extern GFXVulkanQueueFamilyIndices generateQFIndices(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
+extern bool areQFIndicesComplete(GFXVulkanQueueFamilyIndices tree);
 
 #endif
