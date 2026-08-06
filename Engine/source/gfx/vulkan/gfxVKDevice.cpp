@@ -39,16 +39,6 @@
 #include "gfx/vulkan/gfxVKWindowTarget.h"
 #include <vk_mem_alloc.h>
 
-#include "materials/shaderData.h"
-#include "shaderGen/shaderGen.h"
-#include "gfx/vulkan/gfxVKHelpers.h"
-#include "gfx/vulkan/gfxVKPrimitiveBuffer.h"
-#include "gfx/vulkan/gfxVKShader.h"
-#include "gfx/vulkan/gfxVKTextureArray.h"
-#include "gfx/vulkan/gfxVKTextureManager.h"
-#include "gfx/vulkan/gfxVKWindowTarget.h"
-#include <vk_mem_alloc.h>
-
 GFXAdapter::CreateDeviceInstanceDelegate GFXVulkanDevice::mCreateDeviceInstance(GFXVulkanDevice::createInstance); 
 
 //
