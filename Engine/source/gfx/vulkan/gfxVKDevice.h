@@ -39,6 +39,7 @@
 #include "gfx/vulkan/gfxVKEnumTranslate.h"
 #include <vulkan/vulkan.h>
 #include "gfx/vulkan/gfxVKPrimitiveBuffer.h"
+#include "gfx/vulkan/gfxVKShader.h"
 #include "gfx/vulkan/gfxVKTextureArray.h"
 #include "gfx/vulkan/gfxVKTextureManager.h"
 #include "gfx/vulkan/gfxVKTextureObject.h"
@@ -114,6 +115,7 @@ protected:
    void setVertexStreamFrequency( U32 stream, U32 frequency ) override { }
 
    VkInstance mInstance;
+   VkDevice mVKDevice;
 
    VkDebugUtilsMessengerEXT mDebugMessenger;
    void setupDebugMessenger();

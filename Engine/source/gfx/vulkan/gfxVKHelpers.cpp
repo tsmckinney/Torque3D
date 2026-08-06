@@ -20,17 +20,48 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-#ifndef _GFXVKHELPERS_H_
-#define _GFXVKHELPERS_H_
+#include "gfx/vulkan/gfxVKHelpers.h"
 
-#include "platform/platform.h"
-#include <vulkan/vulkan.h>
-#include "console/console.h"
-
-//-----------------------------------------------------------------------------
-
-// Vendor IDs (for card profiling)
-extern const char* vendorIDToString(VkVendorId id);
-// Validation layer debugging functions
-
-#endif
+const char* vendorIDToString(VkVendorId id)
+{
+   switch (id)
+   {
+   // Vendor IDs that don't have the "VK_" prefix (numerically represented) were sourced from https://pcisig.com/membership/member-companies.
+   case 4130:
+      return "AMD";
+   case 4203:
+      return "Apple";
+   case 4318:
+      return "NVIDIA";
+   case 4454:
+      return "Broadcom";
+   case 5045:
+      return "ARM";
+   case 5197:
+      return "Samsung";
+   case 6091:
+      return "Qualcomm";
+   case 7893:
+      return "Moore Threads";
+   case 32902:
+      return "Intel";
+   case VK_VENDOR_ID_KHRONOS:
+      return "Khronos";
+   case VK_VENDOR_ID_VIV:
+      return "VIV";
+   case VK_VENDOR_ID_VSI:
+      return "VSI";
+   case VK_VENDOR_ID_KAZAN:
+      return "Kazan";
+   case VK_VENDOR_ID_CODEPLAY:
+      return "Codeplay";
+   case VK_VENDOR_ID_MESA:
+      return "Mesa";
+   case VK_VENDOR_ID_POCL:
+      return "POCL";
+   case VK_VENDOR_ID_MOBILEYE:
+      return "MobilEye";
+   default:
+      return "Unknown Device";
+   }
+}
