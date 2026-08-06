@@ -36,3 +36,41 @@ GFXVulkanTextureObject::~GFXVulkanTextureObject()
 { 
    kill(); 
 }
+
+void GFXVulkanTextureObject::pureVirtualCrash()
+{
+}
+
+GFXLockedRect* GFXVulkanTextureObject::lock(U32 mipLevel, RectI* inRect, U32 faceIndex)
+{
+   return NULL;
+}
+
+void GFXVulkanTextureObject::unlock(U32 mipLevel, U32 faceIndex)
+{
+}
+
+bool GFXVulkanTextureObject::copyToBmp(GBitmap*)
+{
+   return false;
+}
+
+void GFXVulkanTextureObject::updateTextureSlot(const GFXTexHandle& texHandle, const U32 slot, const S32 face)
+{
+}
+
+void GFXVulkanTextureObject::copyTo(GFXTextureObject* dstTex)
+{
+}
+
+void GFXVulkanTextureObject::generateMipMaps()
+{
+}
+
+void GFXVulkanTextureObject::zombify()
+{
+}
+
+void GFXVulkanTextureObject::resurrect()
+{
+}

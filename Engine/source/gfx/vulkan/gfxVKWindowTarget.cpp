@@ -23,14 +23,6 @@
 #include "gfx/vulkan/gfxVKWindowTarget.h"
 #include "gfx/vulkan/gfxVKTextureObject.h"
 
-//GFX_ImplementTextureProfile( BackBufferDepthProfile,
-//                             GFXTextureProfile::DiffuseMap,
-//                             GFXTextureProfile::PreserveSize |
-//                             GFXTextureProfile::NoMipmap |
-//                             GFXTextureProfile::ZTarget |
-//                             GFXTextureProfile::Pooled,
-//                             GFXTextureProfile::NONE );
-
 GFXVulkanWindowTarget::GFXVulkanWindowTarget(PlatformWindow *win, GFXDevice *d) :
     GFXWindowTarget(win), mDevice(d)
 {

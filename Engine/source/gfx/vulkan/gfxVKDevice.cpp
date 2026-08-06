@@ -201,6 +201,26 @@ GFXVulkanDevice::GFXVulkanDevice()
    gScreenShot = new ScreenShot();
    mCardProfiler = new GFXVulkanCardProfiler();
    mCardProfiler->init();
+
+   GFXVulkanCardProfiler* vkCardProfiler = static_cast<GFXVulkanCardProfiler*>(mCardProfiler);
+
+   GFXVulkanQueueFamilyIndices queueFamilies = generateQFIndices(vkCardProfiler->mPhysicalDevice);
+
+   VkDeviceQueueCreateInfo queueCreateInfo{};
+   queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+   queueCreateInfo.queueFamilyIndex = queueFamilies.mGraphicsFamily.mIndex;
+   queueCreateInfo.queueCount = 1;
+   F32 queuePriority = 1.0f;
+   queueCreateInfo.pQueuePriorities = &queuePriority;
+
+   VkDeviceCreateInfo logicalDeviceCreateInfo{};
+   logicalDeviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+   logicalDeviceCreateInfo.pQueueCreateInfos = &queueCreateInfo;
+   logicalDeviceCreateInfo.queueCreateInfoCount = 1;
+   logicalDeviceCreateInfo.pEnabledFeatures = &vkCardProfiler->mDeviceFeatures.features;
+   logicalDeviceCreateInfo.enabledExtensionCount = 0;
+   AssertFatal(vkCreateDevice(vkCardProfiler->mPhysicalDevice, &logicalDeviceCreateInfo, nullptr, &mVKDevice) == VK_SUCCESS,
+      "Failed to create Vulkan logical device! Please make sure your graphics card supports Vulkan before relaunching.");
 }
 
 GFXVulkanDevice::~GFXVulkanDevice()
@@ -209,6 +229,7 @@ GFXVulkanDevice::~GFXVulkanDevice()
    {
       DestroyDebugUtilsMessengerEXT(mInstance, mDebugMessenger, nullptr);
    }
+   vkDestroyDevice(mVKDevice, nullptr);
    vkDestroyInstance(mInstance, nullptr);
    PlatformVK::shutdown();
 }
