@@ -41,3 +41,11 @@ void GFXVulkanVertexBuffer::unlock()
 void GFXVulkanVertexBuffer::prepare() 
 {
 }
+
+void GFXVulkanVertexBuffer::zombify()
+{
+}
+
+void GFXVulkanVertexBuffer::resurrect()
+{
+}

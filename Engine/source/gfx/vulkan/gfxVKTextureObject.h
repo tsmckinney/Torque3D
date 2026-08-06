@@ -37,17 +37,17 @@ public:
    ~GFXVulkanTextureObject();
 
 #ifdef TORQUE_DEBUG
-   void pureVirtualCrash() override {}
+   void pureVirtualCrash() override;
 #endif
 
-   GFXLockedRect * lock( U32 mipLevel = 0, RectI *inRect = NULL, U32 faceIndex = 0)override { return NULL; };
-   void unlock( U32 mipLevel = 0, U32 faceIndex = 0)override {};
-   bool copyToBmp(GBitmap *) override { return false; };
-   void updateTextureSlot(const GFXTexHandle& texHandle, const U32 slot, const S32 face = -1) override {};
-   void copyTo(GFXTextureObject* dstTex) override {};
-   void generateMipMaps() override {};
-   void zombify() override {}
-   void resurrect() override {}
+   GFXLockedRect * lock( U32 mipLevel = 0, RectI *inRect = NULL, U32 faceIndex = 0) override;
+   void unlock( U32 mipLevel = 0, U32 faceIndex = 0) override;
+   bool copyToBmp(GBitmap *) override;
+   void updateTextureSlot(const GFXTexHandle& texHandle, const U32 slot, const S32 face = -1) override;
+   void copyTo(GFXTextureObject* dstTex) override;
+   void generateMipMaps() override;
+   void zombify() override;
+   void resurrect() override;
 };
 
 #endif
