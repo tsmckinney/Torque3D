@@ -1196,55 +1196,55 @@ void GFXVulkanShader::setConstantsFromBuffer(U8* buffer)
 
       switch (handle->mDesc.constType)
       {
-      //case GFXSCT_Float:
+      case GFXSCT_Float:
       //   glUniform1fv(handle->mDesc.bindPoint, handle->mDesc.arraySize, (GLfloat*)(mGlobalConstBuffer + handle->mDesc.offset));
-      //   break;
-      //case GFXSCT_Float2:
+         break;
+      case GFXSCT_Float2:
       //   glUniform2fv(handle->mDesc.bindPoint, handle->mDesc.arraySize, (GLfloat*)(mGlobalConstBuffer + handle->mDesc.offset));
-      //   break;
-      //case GFXSCT_Float3:
+         break;
+      case GFXSCT_Float3:
       //   glUniform3fv(handle->mDesc.bindPoint, handle->mDesc.arraySize, (GLfloat*)(mGlobalConstBuffer + handle->mDesc.offset));
-      //   break;
-      //case GFXSCT_Float4:
+         break;
+      case GFXSCT_Float4:
       //   glUniform4fv(handle->mDesc.bindPoint, handle->mDesc.arraySize, (GLfloat*)(mGlobalConstBuffer + handle->mDesc.offset));
-      //   break;
-      //case GFXSCT_Sampler:
-      //case GFXSCT_SamplerCube:
-      //case GFXSCT_SamplerCubeArray:
-      //case GFXSCT_SamplerTextureArray:
+         break;
+      case GFXSCT_Sampler:
+      case GFXSCT_SamplerCube:
+      case GFXSCT_SamplerCubeArray:
+      case GFXSCT_SamplerTextureArray:
       //   // Set sampler number on our program.
       //   glUniform1i(handle->mDesc.bindPoint, handle->mDesc.samplerReg);
-      //   break;
-      //case GFXSCT_Bool:
-      //case GFXSCT_Int:
+         break;
+      case GFXSCT_Bool:
+      case GFXSCT_Int:
       //   glUniform1iv(handle->mDesc.bindPoint, handle->mDesc.arraySize, (GLint*)(mGlobalConstBuffer + handle->mDesc.offset));
-      //   break;
-      //case GFXSCT_Bool2:
-      //case GFXSCT_Int2:
+         break;
+      case GFXSCT_Bool2:
+      case GFXSCT_Int2:
       //   glUniform2iv(handle->mDesc.bindPoint, handle->mDesc.arraySize, (GLint*)(mGlobalConstBuffer + handle->mDesc.offset));
-      //   break;
-      //case GFXSCT_Bool3:
-      //case GFXSCT_Int3:
+         break;
+      case GFXSCT_Bool3:
+      case GFXSCT_Int3:
       //   glUniform3iv(handle->mDesc.bindPoint, handle->mDesc.arraySize, (GLint*)(mGlobalConstBuffer + handle->mDesc.offset));
-      //   break;
-      //case GFXSCT_Bool4:
-      //case GFXSCT_Int4:
+         break;
+      case GFXSCT_Bool4:
+      case GFXSCT_Int4:
       //   glUniform4iv(handle->mDesc.bindPoint, handle->mDesc.arraySize, (GLint*)(mGlobalConstBuffer + handle->mDesc.offset));
-      //   break;
-      //case GFXSCT_Float2x2:
+         break;
+      case GFXSCT_Float2x2:
       //   glUniformMatrix2fv(handle->mDesc.bindPoint, handle->mDesc.arraySize, true, (GLfloat*)(mGlobalConstBuffer + handle->mDesc.offset));
-      //   break;
-      //case GFXSCT_Float3x3:
+         break;
+      case GFXSCT_Float3x3:
       //   glUniformMatrix3fv(handle->mDesc.bindPoint, handle->mDesc.arraySize, true, (GLfloat*)(mGlobalConstBuffer + handle->mDesc.offset));
-      //   break;
-      //case GFXSCT_Float4x3:
+         break;
+      case GFXSCT_Float4x3:
       //   // NOTE: To save a transpose here we could store the matrix transposed (i.e. column major) in the constant buffer.
       //   // See _mesa_uniform_matrix in the mesa source for the correct transpose algorithm for a 4x3 matrix.
       //   glUniformMatrix4x3fv(handle->mDesc.bindPoint, handle->mDesc.arraySize, true, (GLfloat*)(mGlobalConstBuffer + handle->mDesc.offset));
-      //   break;
-      //case GFXSCT_Float4x4:
+         break;
+      case GFXSCT_Float4x4:
       //   glUniformMatrix4fv(handle->mDesc.bindPoint, handle->mDesc.arraySize, true, (GLfloat*)(mGlobalConstBuffer + handle->mDesc.offset));
-      //   break;
+         break;
       default:
          AssertFatal(0, "");
          break;

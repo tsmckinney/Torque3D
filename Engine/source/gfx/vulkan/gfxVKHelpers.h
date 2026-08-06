@@ -30,7 +30,7 @@
 //-----------------------------------------------------------------------------
 
 // Vendor IDs (for card profiling)
-
+extern const char* vendorIDToString(VkVendorId id);
 // Validation layer debugging functions
 
 #endif

@@ -24,32 +24,6 @@
 #include "gfx/vulkan/gfxVKCardProfiler.h"
 #include "gfx/vulkan/gfxVKEnumTranslate.h"
 
-
-const char* vendorIDToString(VkVendorId id) 
-{
-   switch (id)
-   {
-   case VK_VENDOR_ID_KHRONOS:
-      return "Khronos";
-   case VK_VENDOR_ID_VIV:
-      return "VIV";
-   case VK_VENDOR_ID_VSI:
-      return "VSI";
-   case VK_VENDOR_ID_KAZAN:
-      return "Kazan";
-   case VK_VENDOR_ID_CODEPLAY:
-      return "Codeplay";
-   case VK_VENDOR_ID_MESA:
-      return "Mesa";
-   case VK_VENDOR_ID_POCL:
-      return "POCL";
-   case VK_VENDOR_ID_MOBILEYE:
-      return "MobilEye";
-
-   default:
-      return "Unknown Device";
-   }
-}
 void GFXVulkanCardProfiler::init()
 {
    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
@@ -61,12 +35,11 @@ void GFXVulkanCardProfiler::init()
    devices.setSize(deviceCount);
    vkEnumeratePhysicalDevices(instance, &deviceCount, devices.address());
     
-   VkPhysicalDeviceProperties deviceProperties;
-   vkGetPhysicalDeviceProperties(devices[0], &deviceProperties);
+   vkGetPhysicalDeviceProperties(devices[0], &mDeviceProperties);
 
-   mCardDescription = deviceProperties.deviceName;
-   mChipSet = vendorIDToString(static_cast<VkVendorId>(deviceProperties.vendorID)); // That was more finicky than it needed to be...
-   mVersionString = deviceProperties.apiVersion;
+   mCardDescription = mDeviceProperties.deviceName;
+   mChipSet = vendorIDToString(static_cast<VkVendorId>(mDeviceProperties.vendorID));
+   mVersionString = mDeviceProperties.apiVersion;
    mRenderString = "Vulkan (WIP)";
 
    Parent::init(); // other code notes that not calling this is "BAD".
@@ -79,12 +52,14 @@ const String &GFXVulkanCardProfiler::getRendererString() const
 
 void GFXVulkanCardProfiler::setupCardCapabilities()
 { 
-
+   setCapability("maxTextureWidth", mDeviceProperties.limits.maxImageDimension2D);
+   setCapability("maxTextureHeight", mDeviceProperties.limits.maxImageDimension2D);
+   setCapability("maxTextureSize", mDeviceProperties.limits.maxImageDimension2D);
 };
 
 bool GFXVulkanCardProfiler::_queryCardCap(const String &query, U32 &foundResult)
 { 
-   return false; 
+   return 0; 
 };
 
 bool GFXVulkanCardProfiler::_queryFormat(const GFXFormat fmt, const GFXTextureProfile *profile, bool &inOutAutogenMips)
