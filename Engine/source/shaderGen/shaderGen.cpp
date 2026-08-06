@@ -134,7 +134,7 @@ void ShaderGen::initShaderGen()
       return;
 
    const GFXAdapterType adapterType = GFX->getAdapterType();
-   const bool isGl = adapterType == GFXAdapterType::OpenGL;
+   const bool isKHR = adapterType == GFXAdapterType::OpenGL || adapterType == GFXAdapterType::Vulkan;
    if (!mInitDelegates[adapterType])
       return;
 
@@ -172,7 +172,7 @@ void ShaderGen::initShaderGen()
 
    Vector<String> fileList;
    String pattern = "*.";
-   pattern += isGl ? "glsl" : "hlsl";
+   pattern += isKHR ? "glsl" : "hlsl";
    S32 numShaderFiles = Torque::FS::FindByPattern("shadergen:/", pattern, false, fileList);
    for (U32 i = 0; i < numShaderFiles; i++)
    {

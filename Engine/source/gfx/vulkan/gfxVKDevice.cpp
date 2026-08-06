@@ -20,8 +20,6 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-#include "platform/platform.h"
-
 #include "core/strings/stringFunctions.h"
 #include "gfx/screenshot.h"
 #include "gfx/gfxCardProfile.h"
@@ -170,7 +168,7 @@ GFXVulkanDevice::GFXVulkanDevice()
    appInfo.applicationVersion = VK_MAKE_VERSION(floor(TORQUE_APP_VERSION/1000),floor(TORQUE_APP_VERSION/100),floor(TORQUE_APP_VERSION/10));
    appInfo.pEngineName = getEngineProductString();
    appInfo.engineVersion = VK_MAKE_VERSION(floor(TORQUE_GAME_ENGINE/1000),floor(TORQUE_GAME_ENGINE/100),floor(TORQUE_GAME_ENGINE/10));
-   appInfo.apiVersion = VK_API_VERSION_1_0;
+   appInfo.apiVersion = VK_API_VERSION_1_4;
 
    VkInstanceCreateInfo createInfo{};
    createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -181,9 +179,9 @@ GFXVulkanDevice::GFXVulkanDevice()
    createInfo.enabledExtensionCount = (uint32_t) mRequiredExtensions.size();
    createInfo.ppEnabledExtensionNames = mRequiredExtensions.address();
 
-   VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
    if (mEnableValidationLayers)
    {
+      VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
       createInfo.enabledLayerCount = static_cast<uint32_t>(mValidationLayers.size());
       createInfo.ppEnabledLayerNames = mValidationLayers.address();
       populateDebugMessengerCreateInfo(debugCreateInfo);
@@ -254,7 +252,9 @@ GFXWindowTarget* GFXVulkanDevice::allocWindowTarget(PlatformWindow* window)
 }
 GFXShader* GFXVulkanDevice::createShader() 
 {
-   return NULL;
+   GFXVulkanShader* shader = new GFXVulkanShader(this);
+   shader->registerResourceWithDevice(this);
+   return shader;
 }
 
 void GFXVulkanDevice::enumerateAdapters( Vector<GFXAdapter*> &adapterList )

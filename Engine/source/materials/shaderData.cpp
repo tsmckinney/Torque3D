@@ -345,17 +345,17 @@ GFXShader* ShaderData::_createShader( const Vector<GFXShaderMacro> &macros )
 
 void ShaderData::setShaderStageFile(GFXShaderStage stage, String fileName)
 {
-   const bool isGL = GFX->getAdapterType() == GFXAdapterType::OpenGL || GFX->getAdapterType() == GFXAdapterType::Vulkan;
+   const bool isKHR = GFX->getAdapterType() == GFXAdapterType::OpenGL || GFX->getAdapterType() == GFXAdapterType::Vulkan;
    switch (stage)
    {
    case VERTEX_SHADER:
-      isGL ? mOGLVertexShaderName = StringTable->insert(fileName) : mDXVertexShaderName = StringTable->insert(fileName);
+      isKHR ? mOGLVertexShaderName = StringTable->insert(fileName) : mDXVertexShaderName = StringTable->insert(fileName);
       break;
    case PIXEL_SHADER:
-      isGL ? mOGLPixelShaderName = StringTable->insert(fileName) : mDXPixelShaderName = StringTable->insert(fileName);
+      isKHR ? mOGLPixelShaderName = StringTable->insert(fileName) : mDXPixelShaderName = StringTable->insert(fileName);
       break;
    case GEOMETRY_SHADER:
-      isGL ? mOGLGeometryShaderName = StringTable->insert(fileName) : mDXGeometryShaderName = StringTable->insert(fileName);
+      isKHR ? mOGLGeometryShaderName = StringTable->insert(fileName) : mDXGeometryShaderName = StringTable->insert(fileName);
       break;
    case DOMAIN_SHADER:
       break;
