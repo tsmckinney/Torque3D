@@ -19,6 +19,12 @@ namespace PlatformVK
       SDL_Vulkan_UnloadLibrary();
    }
 
+   bool createSurfaceVK(PlatformWindow* window, VkInstance instance, VkSurfaceKHR* surface)
+   {
+      PlatformWindowSDL* windowSdl = dynamic_cast<PlatformWindowSDL*>(window);
+      return SDL_Vulkan_CreateSurface(windowSdl->getSDLWindow(), instance, surface);
+   }
+
    //void* CreateContextGL( PlatformWindow *window )
    //{
    //    init();

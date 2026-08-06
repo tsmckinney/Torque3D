@@ -55,7 +55,7 @@ CustomShaderFeatureData::CustomShaderFeatureData()
 #ifdef TORQUE_D3D11
    mFeatureHLSL = NULL;
 #endif
-#ifdef TORQUE_OPENGL
+#if defined(TORQUE_OPENGL) || defined(TORQUE_VULKAN)
    mFeatureGLSL = NULL;
 #endif
 }

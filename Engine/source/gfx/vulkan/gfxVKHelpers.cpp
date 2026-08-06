@@ -104,9 +104,9 @@ GFXVulkanQueueFamilyIndex GFXVulkanQueueFamilyIndex::operator=(U32 i)
    return qfidx;
 }
 
-GFXVulkanQueueFamilyIndices generateQFIndices(VkPhysicalDevice physicalDevice)
+GFXVulkanQueueFamilyIndices generateQFIndices(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)
 {
-   GFXVulkanQueueFamilyIndices tree{};
+   GFXVulkanQueueFamilyIndices indices{};
    U32 queueFamilyCount = 0;
    vkGetPhysicalDeviceQueueFamilyProperties2(physicalDevice, &queueFamilyCount, nullptr);
    // TODO: Try to do this with Vector<T>!!!
@@ -117,14 +117,21 @@ GFXVulkanQueueFamilyIndices generateQFIndices(VkPhysicalDevice physicalDevice)
    for(const VkQueueFamilyProperties2& queueFamily : queueFamilies)
    {
       if (queueFamily.queueFamilyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT)
-      {
-         tree.mGraphicsFamily = idx;
-      }
+         indices.mGraphicsFamily = idx;
+
+      VkBool32 presentSupport = false;
+      vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, idx, surface, &presentSupport);
+      if (presentSupport)
+         indices.mPresentFamily = idx;
+
+      if (areQFIndicesComplete(indices))
+         break;
       idx++;
    }
 
-   return tree;
+   return indices;
 }
-bool isQFTreeComplete(GFXVulkanQueueFamilyIndices tree) {
-   return tree.mGraphicsFamily.mHasValue;
+bool areQFIndicesComplete(GFXVulkanQueueFamilyIndices indices) 
+{
+   return indices.mGraphicsFamily.mHasValue;
 }
