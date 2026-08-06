@@ -1467,18 +1467,18 @@ bool GFXVulkanShader::initShader(const Torque::Path& file,
 
    switch (stage)
    {
-   //case VERTEX_SHADER:
+   case VERTEX_SHADER:
    //   activeShader = glCreateShader(GL_VERTEX_SHADER);
    //   mVertexShader = activeShader;
-   //   break;
-   //case PIXEL_SHADER:
+      break;
+   case PIXEL_SHADER:
    //   activeShader = glCreateShader(GL_FRAGMENT_SHADER);
    //   mPixelShader = activeShader;
-   //   break;
-   //case GEOMETRY_SHADER:
+      break;
+   case GEOMETRY_SHADER:
    //   activeShader = glCreateShader(GL_GEOMETRY_SHADER);
    //   mGeometryShader = activeShader;
-   //   break;
+      break;
    case DOMAIN_SHADER:
       break;
    case HULL_SHADER:
