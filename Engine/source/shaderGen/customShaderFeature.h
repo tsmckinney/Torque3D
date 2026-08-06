@@ -29,7 +29,7 @@
 #ifdef TORQUE_D3D11
 class CustomFeatureHLSL;
 #endif
-#ifdef TORQUE_OPENGL
+#if defined(TORQUE_OPENGL) || defined(TORQUE_VULKAN)
 class CustomFeatureGLSL;
 #endif
 
@@ -41,7 +41,7 @@ public:
 #ifdef TORQUE_D3D11
 	CustomFeatureHLSL* mFeatureHLSL;
 #endif
-#ifdef TORQUE_OPENGL
+#if defined(TORQUE_OPENGL) || defined(TORQUE_VULKAN)
    CustomFeatureGLSL* mFeatureGLSL;
 #endif
 
