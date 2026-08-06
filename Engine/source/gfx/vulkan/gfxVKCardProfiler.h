@@ -49,7 +49,9 @@ protected:
     bool _queryCardCap(const String &query, U32 &foundResult) override;
     bool _queryFormat(const GFXFormat fmt, const GFXTextureProfile *profile, bool &inOutAutogenMips) override;
 
+    VkPhysicalDevice mPhysicalDevice;
     VkPhysicalDeviceProperties mDeviceProperties;
+    VkPhysicalDeviceFeatures2 mDeviceFeatures;
     
 public:
     void init() override;

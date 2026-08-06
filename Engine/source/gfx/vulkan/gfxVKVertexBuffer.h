@@ -46,8 +46,8 @@ public:
    void unlock() override;
    void prepare() override;
 
-   void zombify() override {}
-   void resurrect() override {}
+   void zombify() override;
+   void resurrect() override;
 };
 
 #endif
