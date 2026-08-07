@@ -202,8 +202,6 @@ GFXVulkanDevice::GFXVulkanDevice()
    }
 
    AssertFatal(vkCreateInstance(&createInfo, nullptr, &mInstance) == VK_SUCCESS, "Failed to create Vulkan instance! Please make sure your graphics card supports Vulkan before relaunching.");
-
-
    mClip.set(0, 0, 800, 800);
    mTextureManager = new GFXVulkanTextureManager();
    gScreenShot = new ScreenShot();
@@ -226,6 +224,9 @@ GFXVulkanDevice::~GFXVulkanDevice()
       mTextureManager->zombify();
       mTextureManager->kill();
    }
+   if (mCardProfiler)
+      SAFE_DELETE(mCardProfiler);
+   SAFE_DELETE(gScreenShot);
 }
 
 GFXVertexBuffer *GFXVulkanDevice::allocVertexBuffer( U32 numVerts, 
@@ -360,25 +361,6 @@ void GFXVulkanDevice::setShaderConstBufferInternal(GFXShaderConstBuffer* buffer)
    }
 }
 
-void GFXVulkanDevice::enumerateAdapters( Vector<GFXAdapter*> &adapterList )
-{
-   // Add the NULL renderer
-   GFXAdapter *toAdd = new GFXAdapter();
-
-   toAdd->mIndex = 0;
-   toAdd->mType  = Vulkan;
-   toAdd->mCreateDeviceInstanceDelegate = mCreateDeviceInstance;
-
-   GFXVideoMode vm;
-   vm.bitDepth = 32;
-   vm.resolution.set(800,600);
-   toAdd->mAvailableModes.push_back(vm);
-
-   dStrcpy(toAdd->mName, "GFX Vulkan Device", GFXAdapter::MaxAdapterNameLen);
-
-   adapterList.push_back(toAdd);
-}
-
 void GFXVulkanDevice::init( const GFXVideoMode &mode, PlatformWindow *window )
 {
    AssertFatal(PlatformVK::createSurfaceVK(window, mInstance, &mVKSurface), "Failed to create Vulkan surface! Please make sure your graphics card supports Vulkan before relaunching.");
@@ -412,6 +394,9 @@ void GFXVulkanDevice::init( const GFXVideoMode &mode, PlatformWindow *window )
 
    vkGetDeviceQueue(mVKDevice, queueFamilies.mGraphicsFamily.mIndex, 0, &graphicsQueue);
    vkGetDeviceQueue(mVKDevice, queueFamilies.mPresentFamily.mIndex, 0, &presentQueue);
+
+   mInitialized = true;
+   deviceInited();
 }
 
 GFXStateBlockRef GFXVulkanDevice::createStateBlockInternal(const GFXStateBlockDesc& desc)

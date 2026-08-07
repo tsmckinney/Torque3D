@@ -574,13 +574,13 @@ bool ProcessedShaderMaterial::_createPasses( MaterialFeatureData &stageFeatures,
       passData.mNumTexReg += numTexReg;
       passData.mFeatureData.features.addFeature( *info.type );
 
-#if defined(TORQUE_DEBUG) && defined( TORQUE_OPENGL)
+#if defined(TORQUE_DEBUG) && (defined( TORQUE_OPENGL ) || defined ( TORQUE_VULKAN ))
       U32 oldTexNumber = texIndex;
 #endif
 
       info.feature->setTexData( mStages[stageNum], stageFeatures, passData, texIndex );
 
-#if defined(TORQUE_DEBUG) && defined( TORQUE_OPENGL)
+#if defined(TORQUE_DEBUG) && (defined( TORQUE_OPENGL ) || defined ( TORQUE_VULKAN ))
       if(oldTexNumber != texIndex)
       {
          for(int texNum = oldTexNumber; texNum < texIndex; texNum++)
@@ -599,7 +599,7 @@ bool ProcessedShaderMaterial::_createPasses( MaterialFeatureData &stageFeatures,
       }
    }
 
-#if defined(TORQUE_DEBUG) && defined( TORQUE_OPENGL)
+#if defined(TORQUE_DEBUG) && (defined( TORQUE_OPENGL ) || defined ( TORQUE_VULKAN ))
    for(int samplerIDx = 0; samplerIDx < texIndex; samplerIDx++)
    {
       AssertFatal(passData.mSamplerNames[samplerIDx].isNotEmpty(),"");

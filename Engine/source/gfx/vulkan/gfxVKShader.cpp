@@ -1064,7 +1064,7 @@ void GFXVulkanShader::initHandles()
    }
 
    // Set our program so uniforms are assigned properly.
-   //mDevice->setShader(this, false);
+   mDevice->setShader(this, false);
 
    // Iterate through uniforms to set sampler numbers.
    for (HandleMap::Iterator iter = mHandles.begin(); iter != mHandles.end(); ++iter)
