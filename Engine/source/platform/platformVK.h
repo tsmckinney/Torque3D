@@ -12,7 +12,7 @@ namespace PlatformVK
 
    bool createSurfaceVK(PlatformWindow* window, VkInstance instance, VkSurfaceKHR* surface);
 
-   void getExtensionsSDLVK(PlatformWindow *window, U32 extensionCount, const char** extensionNames);
+   void getExtensionsSDLVK(PlatformWindow *window, Vector<const char*> extensions);
 }
 
 #endif //PLATFORM_GL_H
