@@ -52,7 +52,7 @@ GFXShader::~GFXShader()
    SAFE_DELETE(mInstancingFormat);
 }
 
-#ifndef TORQUE_OPENGL
+#if !defined(TORQUE_OPENGL) || !defined(TORQUE_VULKAN)
 bool GFXShader::init(   const Torque::Path &vertFile,
                         const Torque::Path &pixFile,
                         F32 pixVersion,

@@ -121,7 +121,7 @@ if (WIN32 AND TORQUE_D3D11)
 endif (WIN32 AND TORQUE_D3D11)
 
 if (TORQUE_VULKAN)
-  torqueAddSourceDirectories("gfx/vulkan")
+  torqueAddSourceDirectories("gfx/vulkan", "gfx/vulkan/sdl")
 endif (TORQUE_VULKAN)
 
 # Handle core
@@ -431,6 +431,9 @@ if(NOT TORQUE_SDL)
 endif()
 if(NOT TORQUE_OPENGL)
   filterOut("platformSDL/sdlPlatformGL.cpp")
+endif()
+if(NOT TORQUE_VULKAN)
+  filterOut("platformSDL/sdlPlatformVK.cpp")
 endif()
 if (NOT TORQUE_NET_CURL)
   filterOut("app/net/httpObject.h" "app/net/httpObject.cpp")

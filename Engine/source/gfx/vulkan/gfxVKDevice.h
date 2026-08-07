@@ -116,7 +116,6 @@ protected:
    VkInstance mInstance;
    VkDevice mVKDevice;
    VkSurfaceKHR mVKSurface;
-   VkAllocationCallbacks* mAllocationCallbacks;
 
    VkDebugUtilsMessengerEXT mDebugMessenger;
    void setupDebugMessenger();
@@ -200,8 +199,7 @@ public:
    GFXOcclusionQuery* createOcclusionQuery() override { return NULL; }
 
    VkInstance getVKInstance() { return mInstance; }
-   VkAllocationCallbacks* getAllocationCallbacks() { return mAllocationCallbacks; }
-   
+
 private:
    typedef GFXDevice Parent;
    RectI mClip;

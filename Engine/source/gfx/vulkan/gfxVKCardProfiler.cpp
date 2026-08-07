@@ -35,8 +35,16 @@ void GFXVulkanCardProfiler::init()
    devices.setSize(deviceCount);
    vkEnumeratePhysicalDevices(instance, &deviceCount, devices.address());
    
-   // TODO: Check if this graphics card is actually suitable
-   mPhysicalDevice = devices[0];
+   for (VkPhysicalDevice device : devices)
+   {
+      GFXVulkanQueueFamilyIndices indices = generateGraphicsFamilyIndex(device);
+
+      if (indices.mGraphicsFamily.mHasValue = true)
+      {
+         mPhysicalDevice = device;
+         break;
+      }
+   }
    vkGetPhysicalDeviceProperties(mPhysicalDevice, &mDeviceProperties);
 
    vkGetPhysicalDeviceFeatures2(mPhysicalDevice, &mDeviceFeatures);
