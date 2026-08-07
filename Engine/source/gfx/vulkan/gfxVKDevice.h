@@ -120,9 +120,6 @@ protected:
    VkDebugUtilsMessengerEXT mDebugMessenger;
    void setupDebugMessenger();
 
-   Vector<const char*> mRequiredExtensions;
-   Vector<const char*> getRequiredExtensions();
-
    Vector<const char*> mValidationLayers;
    #if defined(TORQUE_DEBUG)
    bool mEnableValidationLayers = false;
@@ -205,8 +202,8 @@ private:
    RectI mClip;
    F32 mPixelShaderVersion;
 
-   VkQueue graphicsQueue;
-   VkQueue presentQueue;
+   VkQueue mGraphicsQueue;
+   VkQueue mPresentQueue;
 };
 
 #define GFXVK static_cast<GFXVulkanDevice*>(GFX)

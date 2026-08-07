@@ -139,20 +139,6 @@ bool GFXVulkanDevice::checkValidationLayerSupport()
    return true;
 }
 
-Vector<const char *> GFXVulkanDevice::getRequiredExtensions()
-{
-   Vector<const char*> extensions;
-
-   extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
-
-   if (mEnableValidationLayers) 
-   {
-      extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-   }
-
-   return extensions;
-}
-
 GFXVulkanDevice::GFXVulkanDevice()
 {
    PlatformVK::init();
@@ -162,51 +148,15 @@ GFXVulkanDevice::GFXVulkanDevice()
    mCurrentConstBuffer = NULL;
    mCurrentShader = NULL;
    mDebugMessenger = VK_NULL_HANDLE;
+   mInstance = VK_NULL_HANDLE;
+   mVKDevice = VK_NULL_HANDLE;
+   mVKSurface = VK_NULL_HANDLE;
 
    mValidationLayers.push_back("VK_LAYER_KHRONOS_validation");
    if (mEnableValidationLayers)
    {
       AssertFatal(checkValidationLayerSupport(), "Vulkan validation layers were requested, but not available.");
    }
-
-   // Version number is major * 1000 + minor * 100 + revision * 10...
-   VkApplicationInfo appInfo{};
-   appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-   appInfo.pApplicationName = TORQUE_APP_NAME;
-   appInfo.applicationVersion = VK_MAKE_VERSION(floor(TORQUE_APP_VERSION / 1000), floor(TORQUE_APP_VERSION / 100), floor(TORQUE_APP_VERSION / 10));
-   appInfo.pEngineName = getEngineProductString();
-   appInfo.engineVersion = VK_MAKE_VERSION(floor(TORQUE_GAME_ENGINE / 1000), floor(TORQUE_GAME_ENGINE / 100), floor(TORQUE_GAME_ENGINE / 10));
-   appInfo.apiVersion = VK_API_VERSION_1_4;
-
-   VkInstanceCreateInfo createInfo{};
-   createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-   createInfo.pApplicationInfo = &appInfo;
-
-   mRequiredExtensions = getRequiredExtensions();
-
-   createInfo.enabledExtensionCount = (uint32_t)mRequiredExtensions.size();
-   createInfo.ppEnabledExtensionNames = mRequiredExtensions.address();
-
-   if (mEnableValidationLayers)
-   {
-      VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
-      createInfo.enabledLayerCount = static_cast<uint32_t>(mValidationLayers.size());
-      createInfo.ppEnabledLayerNames = mValidationLayers.address();
-      populateDebugMessengerCreateInfo(debugCreateInfo);
-      createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
-   }
-   else
-   {
-      createInfo.enabledLayerCount = 0;
-      createInfo.pNext = nullptr;
-   }
-
-   AssertFatal(vkCreateInstance(&createInfo, nullptr, &mInstance) == VK_SUCCESS, "Failed to create Vulkan instance! Please make sure your graphics card supports Vulkan before relaunching.");
-   mClip.set(0, 0, 800, 800);
-   mTextureManager = new GFXVulkanTextureManager();
-   gScreenShot = new ScreenShot();
-   mCardProfiler = new GFXVulkanCardProfiler();
-   mCardProfiler->init();
 }
 
 GFXVulkanDevice::~GFXVulkanDevice()
@@ -264,6 +214,10 @@ GFXTextureArray* GFXVulkanDevice::createTextureArray()
 GFXWindowTarget* GFXVulkanDevice::allocWindowTarget(PlatformWindow* window)
 {
    GFXVulkanWindowTarget* target = new GFXVulkanWindowTarget(window, GFX);
+   target->mWindow = window;
+   if (!mInitialized) {
+      init(window->getVideoMode(), window);
+   }
    return target;
 }
 
@@ -363,6 +317,46 @@ void GFXVulkanDevice::setShaderConstBufferInternal(GFXShaderConstBuffer* buffer)
 
 void GFXVulkanDevice::init( const GFXVideoMode &mode, PlatformWindow *window )
 {
+   // Version number is major * 1000 + minor * 100 + revision * 10...
+   VkApplicationInfo appInfo{};
+   appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+   appInfo.pApplicationName = TORQUE_APP_NAME;
+   appInfo.applicationVersion = VK_MAKE_VERSION(floor(TORQUE_APP_VERSION / 1000), floor(TORQUE_APP_VERSION / 100), floor(TORQUE_APP_VERSION / 10));
+   appInfo.pEngineName = getEngineProductString();
+   appInfo.engineVersion = VK_MAKE_VERSION(floor(TORQUE_GAME_ENGINE / 1000), floor(TORQUE_GAME_ENGINE / 100), floor(TORQUE_GAME_ENGINE / 10));
+   appInfo.apiVersion = VK_API_VERSION_1_4;
+
+   VkInstanceCreateInfo createInfo{};
+   createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+   createInfo.pApplicationInfo = &appInfo;
+
+   Vector<const char*> extensions;
+
+   PlatformVK::getExtensionsSDLVK(window, extensions);
+
+   createInfo.enabledExtensionCount = (uint32_t)extensions.size();
+   createInfo.ppEnabledExtensionNames = extensions.address();
+
+   if (mEnableValidationLayers)
+   {
+      VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
+      createInfo.enabledLayerCount = static_cast<uint32_t>(mValidationLayers.size());
+      createInfo.ppEnabledLayerNames = mValidationLayers.address();
+      populateDebugMessengerCreateInfo(debugCreateInfo);
+      createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
+   }
+   else
+   {
+      createInfo.enabledLayerCount = 0;
+      createInfo.pNext = nullptr;
+   }
+
+   AssertFatal(vkCreateInstance(&createInfo, nullptr, &mInstance) == VK_SUCCESS, "Failed to create Vulkan instance! Please make sure your graphics card supports Vulkan before relaunching.");
+   mClip.set(0, 0, 800, 800);
+   mTextureManager = new GFXVulkanTextureManager();
+   gScreenShot = new ScreenShot();
+   mCardProfiler = new GFXVulkanCardProfiler();
+   mCardProfiler->init();
    AssertFatal(PlatformVK::createSurfaceVK(window, mInstance, &mVKSurface), "Failed to create Vulkan surface! Please make sure your graphics card supports Vulkan before relaunching.");
    GFXVulkanCardProfiler* vkCardProfiler = static_cast<GFXVulkanCardProfiler*>(mCardProfiler);
 
@@ -392,8 +386,8 @@ void GFXVulkanDevice::init( const GFXVideoMode &mode, PlatformWindow *window )
    AssertFatal(vkCreateDevice(vkCardProfiler->mPhysicalDevice, &logicalDeviceCreateInfo, nullptr, &mVKDevice) == VK_SUCCESS,
       "Failed to create Vulkan logical device! Please make sure your graphics card supports Vulkan before relaunching.");
 
-   vkGetDeviceQueue(mVKDevice, queueFamilies.mGraphicsFamily.mIndex, 0, &graphicsQueue);
-   vkGetDeviceQueue(mVKDevice, queueFamilies.mPresentFamily.mIndex, 0, &presentQueue);
+   vkGetDeviceQueue(mVKDevice, queueFamilies.mGraphicsFamily.mIndex, 0, &mGraphicsQueue);
+   vkGetDeviceQueue(mVKDevice, queueFamilies.mPresentFamily.mIndex, 0, &mPresentQueue);
 
    mInitialized = true;
    deviceInited();
