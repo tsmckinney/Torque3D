@@ -28,20 +28,19 @@
 #include "gfx/vulkan/gfxVKEnumTranslate.h"
 #include "gfx/vulkan/gfxVKVertexBuffer.h"
 #include "gfx/vulkan/gfxVKPrimitiveBuffer.h"
-#include "gfx/vulkan/gfxVKTextureTarget.h"
 #include "gfx/vulkan/gfxVKWindowTarget.h"
 #include "gfx/vulkan/gfxVKTextureManager.h"
 #include "gfx/vulkan/gfxVKTextureObject.h"
 #include "gfx/vulkan/gfxVKCardProfiler.h"
 
 #include "windowManager/sdl/sdlWindow.h"
-#include "platform/platformGL.h"
+#include "platform/platformVK.h"
 #include "SDL.h"
 
-extern void loadGLCore();
-extern void loadGLExtensions(void* context);
+//extern void loadGLCore();
+//extern void loadGLExtensions(void* context);
 
-void EnumerateVideoModes(Vector<GFXVideoMode>& outModes)
+void VKEnumerateVideoModes(Vector<GFXVideoMode>& outModes)
 {
    S32 count = SDL_GetNumDisplayModes( 0 );
    if( count < 0)
@@ -102,20 +101,18 @@ void GFXVulkanDevice::enumerateAdapters( Vector<GFXAdapter*> &adapterList )
    }
 
    SDL_ClearError();
-   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-   SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
 
-   SDL_GLContext tempContext = SDL_GL_CreateContext( tempWindow );
-   if( !tempContext )
-   {
-      const char *err = SDL_GetError();
-      Con::printf( err );
-      AssertFatal(0, err );
-      return;
-   }
+   //SDL_GLContext tempContext = SDL_GL_CreateContext( tempWindow );
+   //if( !tempContext )
+   //{
+   //   const char *err = SDL_GetError();
+   //   Con::printf( err );
+   //   AssertFatal(0, err );
+   //   return;
+   //}
 
    SDL_ClearError();
-   SDL_GL_MakeCurrent( tempWindow, tempContext );
+   //SDL_GL_MakeCurrent( tempWindow, tempContext );
 
    const char *err = SDL_GetError();
    if( err && err[0] )
@@ -124,167 +121,56 @@ void GFXVulkanDevice::enumerateAdapters( Vector<GFXAdapter*> &adapterList )
       AssertFatal(0, err );
    }
 
-   // Init GL
-   loadGLCore();
-   loadGLExtensions(tempContext);
-
-   //check minimun Opengl 3.3
-   S32 major, minor;
-   glGetIntegerv(GL_MAJOR_VERSION, &major);
-   glGetIntegerv(GL_MINOR_VERSION, &minor);
-   if( major < 3 || ( major == 3 && minor < 3 ) )
-   {
-      return;
-   }
-
-   // Set our sdl attribute to use this version.
-   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, major);
-   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, minor);
-
    //check for required extensions
-   if (!gglHasExtension(ARB_texture_cube_map_array))
-   {
-      Con::warnf("Adapater supports OpenGL 3.3 but doesnt support GL_ARB_texture_cube_map_array");
-      return;
-   }
+   //if (!gglHasExtension(ARB_texture_cube_map_array))
+   //{
+   //   Con::warnf("Adapater supports OpenGL 3.3 but doesnt support GL_ARB_texture_cube_map_array");
+   //   return;
+   //}
 
-   if (!gglHasExtension(ARB_gpu_shader5))
-   {
-      Con::warnf("Adapater supports OpenGL 3.3 but doesnt support GL_ARB_gpu_shader5");
-      return;
-   }
+   //if (!gglHasExtension(ARB_gpu_shader5))
+   //{
+   //   Con::warnf("Adapater supports OpenGL 3.3 but doesnt support GL_ARB_gpu_shader5");
+   //   return;
+   //}
     
    GFXAdapter *toAdd = new GFXAdapter;
    toAdd->mIndex = 0;
 
-   const char* renderer = (const char*) glGetString( GL_RENDERER );
-   AssertFatal( renderer != NULL, "GL_RENDERER returned NULL!" );
+   dStrcpy(toAdd->mName, "Vulkan", GFXAdapter::MaxAdapterNameLen);
 
-   if (renderer)
-   {
-      dStrcpy(toAdd->mName, renderer, GFXAdapter::MaxAdapterNameLen);
-      dStrcat(toAdd->mName, " OpenGL", GFXAdapter::MaxAdapterNameLen);
-   }
-   else
-      dStrcpy(toAdd->mName, "OpenGL", GFXAdapter::MaxAdapterNameLen);
-
-   toAdd->mType = OpenGL;
-   F32 shaderModel = 3.3f;
-   if (major == 4)
-   {
-      if (minor == 0)
-         shaderModel = 4.00f;  // GLSL 4.00
-      else if (minor == 1)
-         shaderModel = 4.10f;  // GLSL 4.10
-      else if (minor == 2)
-         shaderModel = 4.20f;  // GLSL 4.20
-      else if (minor == 3)
-         shaderModel = 4.30f;  // GLSL 4.30
-      else if (minor == 4)
-         shaderModel = 4.40f;  // GLSL 4.40
-      else if (minor == 5)
-         shaderModel = 4.50f;  // GLSL 4.50
-      else if (minor == 6)
-         shaderModel = 4.60f;  // GLSL 4.60
-   }
+   toAdd->mType = Vulkan;
+   F32 shaderModel = 4.0f;
    toAdd->mCreateDeviceInstanceDelegate = mCreateDeviceInstance;
 
    // Enumerate all available resolutions:
-   EnumerateVideoModes(toAdd->mAvailableModes);
+   VKEnumerateVideoModes(toAdd->mAvailableModes);
 
    // Add to the list of available adapters.
    adapterList.push_back(toAdd);
 
    // Cleanup window & open gl context
    SDL_DestroyWindow( tempWindow );
-   SDL_GL_DeleteContext( tempContext );
 }
 
-void GFXVulkanDevice::enumerateVideoModes() 
-{
-   mVideoModes.clear();
-   EnumerateVideoModes(mVideoModes);
-}
+//void GFXVulkanDevice::enumerateVideoModes()
+//{
+//   mVideoModes.clear();
+//   EnumerateVideoModes(mVideoModes);
+//}
 
-void GFXVulkanDevice::init( const GFXVideoMode &mode, PlatformWindow *window )
-{
-   AssertFatal(window, "GFXVulkanDevice::init - no window specified, can't init device without a window!");
-   PlatformWindowSDL* sdlWindow = dynamic_cast<PlatformWindowSDL*>(window);
-   AssertFatal(sdlWindow, "Window is not a valid PlatformWindowSDL object");
+//bool GFXVulkanDevice::beginSceneInternal() 
+//{
+//   mCanCurrentlyRender = true;
+//   return true;
+//}
 
-   //// Create OpenGL context
-   //mContext = PlatformGL::CreateContextGL( sdlWindow );
-   //PlatformGL::MakeCurrentGL( sdlWindow, mContext );
-   //    
-   //loadGLCore();
-   //loadGLExtensions(mContext);
-   //
-   //// It is very important that extensions be loaded before we call initGLState()
-   //initGLState();
-   //
-   //mProjectionMatrix.identity();
-   //
-   //mInitialized = true;
-   //deviceInited();
-}
-
-bool GFXVulkanDevice::beginSceneInternal() 
-{
-   mCanCurrentlyRender = true;
-   return true;
-}
-
-U32 GFXVulkanDevice::getTotalVideoMemory()
-{
-   return getTotalVideoMemory_GL_EXT();
-}
+//U32 GFXVulkanDevice::getTotalVideoMemory()
+//{
+//   return getTotalVideoMemory_GL_EXT();
+//}
 
 //------------------------------------------------------------------------------
 
-GFXWindowTarget *GFXVulkanDevice::allocWindowTarget( PlatformWindow *window )
-{
-   GFXVulkanWindowTarget* ggwt = new GFXVulkanWindowTarget(window, this);
-
-   //first window
-   if (!mContext)
-   {
-      init(window->getVideoMode(), window);
-      ggwt->mSecondaryWindow = false;
-   }
-   else
-      ggwt->mSecondaryWindow = true;
-
-   ggwt->registerResourceWithDevice(this);
-   ggwt->mContext = mContext;
-
-   return ggwt;
-}
-
-GFXFence* GFXVulkanDevice::_createPlatformSpecificFence()
-{
-    return NULL;
-}
-
-
-//-----------------------------------------------------------------------------
-
-void GFXGLWindowTarget::_WindowPresent()
-{   
-   SDL_GL_SwapWindow( static_cast<PlatformWindowSDL*>( getWindow() )->getSDLWindow() );
-}
-
-void GFXGLWindowTarget::_teardownCurrentMode()
-{
-
-}
-
-void GFXGLWindowTarget::_setupNewMode()
-{
-}
-
-void GFXGLWindowTarget::_makeContextCurrent()
-{
-   PlatformGL::MakeCurrentGL(mWindow, mContext);
-}
 
 #endif

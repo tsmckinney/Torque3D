@@ -48,6 +48,7 @@ public:
    GFXVulkanQueueFamilyIndex mGraphicsFamily;
    GFXVulkanQueueFamilyIndex mPresentFamily;
 };
+extern GFXVulkanQueueFamilyIndices generateGraphicsFamilyIndex(VkPhysicalDevice physicalDevice);
 extern GFXVulkanQueueFamilyIndices generateQFIndices(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
 extern bool areQFIndicesComplete(GFXVulkanQueueFamilyIndices tree);
 
