@@ -35,13 +35,13 @@ namespace PlatformVK
       return surf;
    }
 
-   void getExtensionsSDLVK(PlatformWindow* window, Vector<const char*> extensions)
+   Vector<const char*> getExtensionsSDLVK(PlatformWindow* window)
    {
+      Vector<const char*> extensions;
       PlatformWindowSDL* windowSdl = dynamic_cast<PlatformWindowSDL*>(window);
       AssertFatal(windowSdl, "");
       U32 extensionCount = 0;
-      const char* extensionNames;
-      bool extsNamed = SDL_Vulkan_GetInstanceExtensions(windowSdl->getSDLWindow(), &extensionCount);
+      bool extsNamed = SDL_Vulkan_GetInstanceExtensions(windowSdl->getSDLWindow(), &extensionCount, nullptr);
       if (!extsNamed)
       {
          const char* err = SDL_GetError();
@@ -49,15 +49,17 @@ namespace PlatformVK
          AssertFatal(0, err);
       }
       SDL_ClearError();
-      extsNamed = SDL_Vulkan_GetInstanceExtensions(windowSdl->getSDLWindow(), &extensionCount, &extensionNames);
+      extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+      U32 additionalExtensions = extensions.size();
+      extensions.setSize(extensionCount + additionalExtensions);
+      extsNamed = SDL_Vulkan_GetInstanceExtensions(windowSdl->getSDLWindow(), &extensionCount, extensions.address() + additionalExtensions);
       if (!extsNamed)
       {
          const char* err = SDL_GetError();
          Con::printf(err);
          AssertFatal(0, err);
       }
-      extensions.setSize(extensionCount);
-      extensions.push_back(extensionNames);
+      return extensions;
    }
 
    //void* CreateContextGL( PlatformWindow *window )

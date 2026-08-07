@@ -330,9 +330,7 @@ void GFXVulkanDevice::init( const GFXVideoMode &mode, PlatformWindow *window )
    createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
    createInfo.pApplicationInfo = &appInfo;
 
-   Vector<const char*> extensions;
-
-   PlatformVK::getExtensionsSDLVK(window, extensions);
+   Vector<const char*> extensions = PlatformVK::getExtensionsSDLVK(window);
 
    createInfo.enabledExtensionCount = (uint32_t)extensions.size();
    createInfo.ppEnabledExtensionNames = extensions.address();
