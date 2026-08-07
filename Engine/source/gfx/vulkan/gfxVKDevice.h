@@ -118,7 +118,6 @@ protected:
    VkInstance mInstance;
    VkDevice mVKDevice;
    VkSurfaceKHR mVKSurface;
-   VkAllocationCallbacks* mAllocationCallbacks;
 
    VkDebugUtilsMessengerEXT mDebugMessenger;
    void setupDebugMessenger();
