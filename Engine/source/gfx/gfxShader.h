@@ -324,7 +324,7 @@ public:
 
    ///
    /// Deprecated. Remove on T3D 4.0
-#ifndef TORQUE_OPENGL
+#if !defined(TORQUE_OPENGL) || !defined(TORQUE_VULKAN)
    bool init(  const Torque::Path &vertFile,
                const Torque::Path &pixFile,
                F32 pixVersion,

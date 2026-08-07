@@ -104,6 +104,29 @@ GFXVulkanQueueFamilyIndex GFXVulkanQueueFamilyIndex::operator=(U32 i)
    return qfidx;
 }
 
+GFXVulkanQueueFamilyIndices generateGraphicsFamilyIndex(VkPhysicalDevice physicalDevice)
+{
+   GFXVulkanQueueFamilyIndices indices{};
+   U32 queueFamilyCount = 0;
+   vkGetPhysicalDeviceQueueFamilyProperties2(physicalDevice, &queueFamilyCount, nullptr);
+   // TODO: Try to do this with Vector<T>!!!
+   std::vector<VkQueueFamilyProperties2> queueFamilies(queueFamilyCount);
+   vkGetPhysicalDeviceQueueFamilyProperties2(physicalDevice, &queueFamilyCount, queueFamilies.data());
+
+   int idx = 0;
+   for (const VkQueueFamilyProperties2& queueFamily : queueFamilies)
+   {
+      if (queueFamily.queueFamilyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+         indices.mGraphicsFamily = idx;
+
+      if (areQFIndicesComplete(indices))
+         break;
+      idx++;
+   }
+
+   return indices;
+}
+
 GFXVulkanQueueFamilyIndices generateQFIndices(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)
 {
    GFXVulkanQueueFamilyIndices indices{};
