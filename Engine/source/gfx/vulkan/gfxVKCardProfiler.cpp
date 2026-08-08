@@ -26,35 +26,40 @@
 
 void GFXVulkanCardProfiler::init()
 {
+   mCardDescription = mDeviceProperties.deviceName;
+   mChipSet = vendorIDToString(static_cast<VkVendorId>(mDeviceProperties.vendorID));
+   mVersionString = mDeviceProperties.apiVersion;
+   mRenderString = "Vulkan";
+
+   Parent::init(); // other code notes that not calling this is "BAD".
+}
+
+void GFXVulkanCardProfiler::findPhysicalDevice(VkSurfaceKHR surface)
+{
    mPhysicalDevice = VK_NULL_HANDLE;
-   uint32_t deviceCount = 0;
+   U32 deviceCount = 0;
    VkInstance instance = GFXVK->getVKInstance();
    vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
    AssertFatal(deviceCount > 0, "No graphics cards supporting Vulkan were found on this machine!");
    Vector<VkPhysicalDevice> devices;
    devices.setSize(deviceCount);
    vkEnumeratePhysicalDevices(instance, &deviceCount, devices.address());
-   
+
    for (VkPhysicalDevice device : devices)
    {
-      GFXVulkanQueueFamilyIndices indices = generateGraphicsFamilyIndex(device);
+      
+      GFXVulkanQueueFamilyIndices indices;
+      indices.generateQFIndices(device, surface);
 
-      if (indices.mGraphicsFamily.mHasValue = true)
+      if (indices.areQFIndicesComplete())
       {
          mPhysicalDevice = device;
          break;
       }
    }
    vkGetPhysicalDeviceProperties(mPhysicalDevice, &mDeviceProperties);
-
+   
    vkGetPhysicalDeviceFeatures2(mPhysicalDevice, &mDeviceFeatures);
-
-   mCardDescription = mDeviceProperties.deviceName;
-   mChipSet = vendorIDToString(static_cast<VkVendorId>(mDeviceProperties.vendorID));
-   mVersionString = mDeviceProperties.apiVersion;
-   mRenderString = "Vulkan (WIP)";
-
-   Parent::init(); // other code notes that not calling this is "BAD".
 }
 
 const String &GFXVulkanCardProfiler::getRendererString() const 

@@ -50,15 +50,18 @@ namespace PlatformVK
       }
       SDL_ClearError();
       extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+      extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
       U32 additionalExtensions = extensions.size();
       extensions.setSize(extensionCount + additionalExtensions);
-      extsNamed = SDL_Vulkan_GetInstanceExtensions(windowSdl->getSDLWindow(), &extensionCount, extensions.address() + additionalExtensions);
+      U32 totalExtensionCount = extensionCount + additionalExtensions;
+      extsNamed = SDL_Vulkan_GetInstanceExtensions(windowSdl->getSDLWindow(), &totalExtensionCount, extensions.address()+additionalExtensions);
       if (!extsNamed)
       {
          const char* err = SDL_GetError();
          Con::printf(err);
          AssertFatal(0, err);
       }
+      SDL_ClearError();
       return extensions;
    }
 
