@@ -211,17 +211,16 @@ protected:
 
    static char* _handleIncludes(const Torque::Path& path, FileStream* s);
 
-   static bool _loadShaderFromStream(VkShaderEXT shader,
+   static bool _loadShaderFromStream(VkShaderModule shader,
       const Torque::Path& path,
       FileStream* s,
       const Vector<GFXShaderMacro>& macros);
 
    /// @name Internal Vulkan handles
    /// @{
-   VkShaderEXT mVertexShader;
-   VkShaderEXT mPixelShader;
-   VkShaderEXT mGeometryShader;
-   VkShaderModule mProgram;
+   VkShaderModule mVertexShader;
+   VkShaderModule mPixelShader;
+   VkShaderModule mGeometryShader;
    /// @}
 
    U8* mGlobalConstBuffer;

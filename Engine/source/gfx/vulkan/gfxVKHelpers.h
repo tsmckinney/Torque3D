@@ -24,8 +24,12 @@
 #define _GFXVKHELPERS_H_
 
 #include "platform/platform.h"
+#include "platform/platformVK.h"
 #include <vulkan/vulkan.h>
 //-----------------------------------------------------------------------------
+
+#include "core/util/tVector.h"
+
 
 // Vendor IDs (for card profiling)
 extern const char* vendorIDToString(VkVendorId id);
@@ -40,16 +44,15 @@ public:
    GFXVulkanQueueFamilyIndex(U32 idx);
    GFXVulkanQueueFamilyIndex(bool hasValue, U32 idx);
    ~GFXVulkanQueueFamilyIndex();
-   GFXVulkanQueueFamilyIndex operator=(U32 i);
+   void set(U32 i);
 };
 struct GFXVulkanQueueFamilyIndices
 {
 public:
    GFXVulkanQueueFamilyIndex mGraphicsFamily;
    GFXVulkanQueueFamilyIndex mPresentFamily;
+   void generateQFIndices(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
+   bool areQFIndicesComplete();
 };
-extern GFXVulkanQueueFamilyIndices generateGraphicsFamilyIndex(VkPhysicalDevice physicalDevice);
-extern GFXVulkanQueueFamilyIndices generateQFIndices(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
-extern bool areQFIndicesComplete(GFXVulkanQueueFamilyIndices tree);
 
 #endif

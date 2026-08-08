@@ -23,8 +23,6 @@
 #include "platform/platform.h"
 
 #include "gfx/vulkan/gfxVKHelpers.h"
-#include <core/util/str.h>
-#include <vector>
 
 const char* vendorIDToString(VkVendorId id)
 {
@@ -96,65 +94,37 @@ GFXVulkanQueueFamilyIndex::~GFXVulkanQueueFamilyIndex()
    mIndex = NULL;
 }
 
-GFXVulkanQueueFamilyIndex GFXVulkanQueueFamilyIndex::operator=(U32 i)
+void GFXVulkanQueueFamilyIndex::set(U32 i)
 {
-   GFXVulkanQueueFamilyIndex qfidx;
-   qfidx.mHasValue = true;
-   qfidx.mIndex = i;
-   return qfidx;
+   mHasValue = true;
+   mIndex = i;
 }
-
-GFXVulkanQueueFamilyIndices generateGraphicsFamilyIndex(VkPhysicalDevice physicalDevice)
+void GFXVulkanQueueFamilyIndices::generateQFIndices(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)
 {
-   GFXVulkanQueueFamilyIndices indices{};
    U32 queueFamilyCount = 0;
    vkGetPhysicalDeviceQueueFamilyProperties2(physicalDevice, &queueFamilyCount, nullptr);
    // TODO: Try to do this with Vector<T>!!!
-   std::vector<VkQueueFamilyProperties2> queueFamilies(queueFamilyCount);
-   vkGetPhysicalDeviceQueueFamilyProperties2(physicalDevice, &queueFamilyCount, queueFamilies.data());
+   Vector<VkQueueFamilyProperties> queueFamilies;
+   queueFamilies.setSize(queueFamilyCount);
+   vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilies.address());
 
    int idx = 0;
-   for (const VkQueueFamilyProperties2& queueFamily : queueFamilies)
+   for(VkQueueFamilyProperties& queueFamily : queueFamilies)
    {
-      if (queueFamily.queueFamilyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT)
-         indices.mGraphicsFamily = idx;
-
-      if (areQFIndicesComplete(indices))
-         break;
-      idx++;
-   }
-
-   return indices;
-}
-
-GFXVulkanQueueFamilyIndices generateQFIndices(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)
-{
-   GFXVulkanQueueFamilyIndices indices{};
-   U32 queueFamilyCount = 0;
-   vkGetPhysicalDeviceQueueFamilyProperties2(physicalDevice, &queueFamilyCount, nullptr);
-   // TODO: Try to do this with Vector<T>!!!
-   std::vector<VkQueueFamilyProperties2> queueFamilies(queueFamilyCount);
-   vkGetPhysicalDeviceQueueFamilyProperties2(physicalDevice, &queueFamilyCount, queueFamilies.data());
-
-   int idx = 0;
-   for(const VkQueueFamilyProperties2& queueFamily : queueFamilies)
-   {
-      if (queueFamily.queueFamilyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT)
-         indices.mGraphicsFamily = idx;
+      if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+         this->mGraphicsFamily.set(idx);
 
       VkBool32 presentSupport = false;
       vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, idx, surface, &presentSupport);
       if (presentSupport)
-         indices.mPresentFamily = idx;
+         this->mPresentFamily.set(idx);
 
-      if (areQFIndicesComplete(indices))
+      if (this->areQFIndicesComplete())
          break;
       idx++;
    }
-
-   return indices;
 }
-bool areQFIndicesComplete(GFXVulkanQueueFamilyIndices indices) 
+bool GFXVulkanQueueFamilyIndices::areQFIndicesComplete()
 {
-   return indices.mGraphicsFamily.mHasValue;
+   return this->mGraphicsFamily.mHasValue && this->mPresentFamily.mHasValue;
 }
