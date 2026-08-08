@@ -51,10 +51,11 @@ protected:
 
     VkPhysicalDevice mPhysicalDevice = VK_NULL_HANDLE;
     VkPhysicalDeviceProperties mDeviceProperties;
-    VkPhysicalDeviceFeatures2 mDeviceFeatures;
+    VkPhysicalDeviceFeatures2KHR mDeviceFeatures;
     
 public:
     void init() override;
+    void findPhysicalDevice(VkSurfaceKHR surface);
     String mRenderString;
 };
 #endif

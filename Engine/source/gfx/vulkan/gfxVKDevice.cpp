@@ -350,15 +350,17 @@ void GFXVulkanDevice::init( const GFXVideoMode &mode, PlatformWindow *window )
    }
 
    AssertFatal(vkCreateInstance(&createInfo, nullptr, &mInstance) == VK_SUCCESS, "Failed to create Vulkan instance! Please make sure your graphics card supports Vulkan before relaunching.");
+   AssertFatal(PlatformVK::createSurfaceVK(window, mInstance, &mVKSurface), "Failed to create Vulkan surface! Please make sure your graphics card supports Vulkan before relaunching.");
    mClip.set(0, 0, 800, 800);
    mTextureManager = new GFXVulkanTextureManager();
    gScreenShot = new ScreenShot();
    mCardProfiler = new GFXVulkanCardProfiler();
-   mCardProfiler->init();
-   AssertFatal(PlatformVK::createSurfaceVK(window, mInstance, &mVKSurface), "Failed to create Vulkan surface! Please make sure your graphics card supports Vulkan before relaunching.");
    GFXVulkanCardProfiler* vkCardProfiler = static_cast<GFXVulkanCardProfiler*>(mCardProfiler);
+   vkCardProfiler->findPhysicalDevice(mVKSurface);
+   mCardProfiler->init();
 
-   GFXVulkanQueueFamilyIndices queueFamilies = generateQFIndices(vkCardProfiler->mPhysicalDevice, mVKSurface);
+   GFXVulkanQueueFamilyIndices queueFamilies;
+   queueFamilies.generateQFIndices(vkCardProfiler->mPhysicalDevice, mVKSurface);
 
    Vector<VkDeviceQueueCreateInfo> queueCreateInfos{};
    Vector<U32> uniqueQueueFamilies;
