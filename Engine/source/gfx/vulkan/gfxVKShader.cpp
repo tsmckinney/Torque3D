@@ -484,7 +484,6 @@ GFXVulkanShader::GFXVulkanShader(GFXVulkanDevice* device) :
    mVertexShader(nullptr),
    mPixelShader(nullptr),
    mGeometryShader(nullptr),
-   mProgram(nullptr),
    mDevice(device),
    mGlobalConstBuffer(NULL)
 {
@@ -511,8 +510,6 @@ void GFXVulkanShader::clearShaders()
    //glDeleteShader(mVertexShader);
    //glDeleteShader(mPixelShader);
    //glDeleteShader(mGeometryShader);
-
-   mProgram = nullptr;
    mVertexShader = nullptr;
    mPixelShader = nullptr;
    mGeometryShader = nullptr;
@@ -1389,7 +1386,7 @@ char* GFXVulkanShader::_handleIncludes(const Torque::Path& path, FileStream* s)
    return buffer;
 }
 
-bool GFXVulkanShader::_loadShaderFromStream(VkShaderEXT shader,
+bool GFXVulkanShader::_loadShaderFromStream(VkShaderModule shader,
    const Torque::Path& path,
    FileStream* s,
    const Vector<GFXShaderMacro>& macros)
@@ -1463,7 +1460,7 @@ bool GFXVulkanShader::initShader(const Torque::Path& file,
 {
    PROFILE_SCOPE(GFXVulkanShader_CompileShader);
 
-   VkShaderEXT activeShader = 0;
+   VkShaderModule activeShader = 0;
 
    switch (stage)
    {
@@ -1557,9 +1554,9 @@ U32 GFXVulkanShader::getAlignmentValue(const GFXShaderConstType constType) const
 const String GFXVulkanShader::describeSelf() const
 {
    String ret;
-   ret = String::ToString("   Program: %i", mProgram);
    ret += String::ToString("   Vertex Path: %s", mVertexFile.getFullPath().c_str());
    ret += String::ToString("   Pixel Path: %s", mPixelFile.getFullPath().c_str());
+   ret += String::ToString("   Geometry Path: %s", mGeometryFile.getFullPath().c_str());
 
    return ret;
 }
