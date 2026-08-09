@@ -217,6 +217,7 @@ GFXWindowTarget* GFXVulkanDevice::allocWindowTarget(PlatformWindow* window)
    target->mWindow = window;
    if (!mInitialized) {
       init(window->getVideoMode(), window);
+      target->createSwapChain();
    }
    return target;
 }
@@ -330,7 +331,7 @@ void GFXVulkanDevice::init( const GFXVideoMode &mode, PlatformWindow *window )
    createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
    createInfo.pApplicationInfo = &appInfo;
 
-   Vector<const char*> extensions = PlatformVK::getExtensionsSDLVK(window);
+   Vector<const char*> extensions = PlatformVK::getInstanceExtensionsVK(window);
 
    createInfo.enabledExtensionCount = (uint32_t)extensions.size();
    createInfo.ppEnabledExtensionNames = extensions.address();
@@ -377,12 +378,15 @@ void GFXVulkanDevice::init( const GFXVideoMode &mode, PlatformWindow *window )
       queueCreateInfos.push_back(queueCreateInfo);
    }
 
+   Vector<const char*> logDevExts;
+   logDevExts.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
    VkDeviceCreateInfo logicalDeviceCreateInfo{};
    logicalDeviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
    logicalDeviceCreateInfo.pQueueCreateInfos = queueCreateInfos.address();
    logicalDeviceCreateInfo.queueCreateInfoCount = static_cast<U32>(queueCreateInfos.size());
    logicalDeviceCreateInfo.pEnabledFeatures = &vkCardProfiler->mDeviceFeatures.features;
-   logicalDeviceCreateInfo.enabledExtensionCount = 0;
+   logicalDeviceCreateInfo.enabledExtensionCount = logDevExts.size();
+   logicalDeviceCreateInfo.ppEnabledExtensionNames = logDevExts.address();
    AssertFatal(vkCreateDevice(vkCardProfiler->mPhysicalDevice, &logicalDeviceCreateInfo, nullptr, &mVKDevice) == VK_SUCCESS,
       "Failed to create Vulkan logical device! Please make sure your graphics card supports Vulkan before relaunching.");
 
@@ -396,6 +400,12 @@ void GFXVulkanDevice::init( const GFXVideoMode &mode, PlatformWindow *window )
 GFXStateBlockRef GFXVulkanDevice::createStateBlockInternal(const GFXStateBlockDesc& desc)
 {
    return new GFXVulkanStateBlock();
+}
+
+VkPhysicalDevice GFXVulkanDevice::getVKPhysicalDevice()
+{
+   GFXVulkanCardProfiler* vkCardProfiler = static_cast<GFXVulkanCardProfiler*>(mCardProfiler);
+   return vkCardProfiler->mPhysicalDevice;
 }
 
 //

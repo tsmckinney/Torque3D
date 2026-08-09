@@ -196,6 +196,9 @@ public:
    GFXOcclusionQuery* createOcclusionQuery() override { return NULL; }
 
    VkInstance getVKInstance() { return mInstance; }
+   VkDevice getVKLogicalDevice() { return mVKDevice; }
+   VkPhysicalDevice getVKPhysicalDevice();
+   VkSurfaceKHR getVKSurface() { return mVKSurface; }
 
 private:
    typedef GFXDevice Parent;
