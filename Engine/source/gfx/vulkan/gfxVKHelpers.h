@@ -55,4 +55,6 @@ public:
    bool areQFIndicesComplete();
 };
 
+extern bool checkPhysicalDeviceExtensionSupport(VkPhysicalDevice physicalDevice);
+
 #endif

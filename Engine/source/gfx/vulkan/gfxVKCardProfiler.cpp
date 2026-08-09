@@ -37,6 +37,7 @@ void GFXVulkanCardProfiler::init()
 void GFXVulkanCardProfiler::findPhysicalDevice(VkSurfaceKHR surface)
 {
    mPhysicalDevice = VK_NULL_HANDLE;
+   mDeviceFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
    U32 deviceCount = 0;
    VkInstance instance = GFXVK->getVKInstance();
    vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
@@ -51,7 +52,7 @@ void GFXVulkanCardProfiler::findPhysicalDevice(VkSurfaceKHR surface)
       GFXVulkanQueueFamilyIndices indices;
       indices.generateQFIndices(device, surface);
 
-      if (indices.areQFIndicesComplete())
+      if (indices.areQFIndicesComplete() && checkPhysicalDeviceExtensionSupport(device))
       {
          mPhysicalDevice = device;
          break;

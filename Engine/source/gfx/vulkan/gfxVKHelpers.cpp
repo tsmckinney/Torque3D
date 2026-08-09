@@ -128,3 +128,40 @@ bool GFXVulkanQueueFamilyIndices::areQFIndicesComplete()
 {
    return this->mGraphicsFamily.mHasValue && this->mPresentFamily.mHasValue;
 }
+
+bool checkPhysicalDeviceExtensionSupport(VkPhysicalDevice physicalDevice)
+{
+   U32 extensionCount;
+   vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, nullptr);
+   Vector<VkExtensionProperties> availableExts;
+   availableExts.setSize(extensionCount);
+   vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, availableExts.address());
+
+   Vector<const char*> availExtNames;
+   for (const auto& ext : availableExts)
+   {
+      availExtNames.push_front(ext.extensionName);
+   }
+
+   Vector<const char*> reqdExts;
+   reqdExts.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+   Vector<const char*>::iterator avaiIter = availExtNames.begin();
+   for (; avaiIter != availExtNames.end(); avaiIter++)
+   {
+      S32 idx = -1;
+      for (U32 i = 0; i < reqdExts.size(); i++)
+      {
+         if (String::compare(reqdExts[i], *avaiIter) == 0)
+         {
+            idx = i;
+            break;
+         }
+      }
+      reqdExts.find_next(*avaiIter, 0);
+
+      if (idx != -1) {
+         reqdExts.erase(idx);
+      }
+   }
+   return reqdExts.empty();
+}

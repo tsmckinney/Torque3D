@@ -30,16 +30,19 @@
 #include "gfx/vulkan/gfxVKEnumTranslate.h"
 #include "windowManager/platformWindow.h"
 
+class GFXVulkanSwapChain
+{
+public:
+   VkSwapchainKHR mSwapchain;
+   VkExtent2D mExtent;
+};
+
 class GFXVulkanWindowTarget : public GFXWindowTarget
 {
    friend class GFXVulkanDevice;
 public:
     GFXVulkanWindowTarget(PlatformWindow *win, GFXDevice *d);
     ~GFXVulkanWindowTarget();
-    bool present() override
-    {
-        return true;
-    }
 
     const Point2I getSize() override
     {
@@ -48,6 +51,11 @@ public:
 
     GFXFormat getFormat() override { return GFXFormatR8G8B8A8; }
 
+    bool present() override
+    {
+        return true;
+    }
+
     void resetMode() override
     {
 
@@ -55,7 +63,11 @@ public:
 
     void zombify() override {};
     void resurrect() override {};
+
+    void createSwapChain();
+
     GFXDevice* mDevice;
+    GFXVulkanSwapChain mSwapchain;
 };
 
 #endif

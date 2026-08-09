@@ -35,7 +35,7 @@ namespace PlatformVK
       return surf;
    }
 
-   Vector<const char*> getExtensionsSDLVK(PlatformWindow* window)
+   Vector<const char*> getInstanceExtensionsVK(PlatformWindow* window)
    {
       Vector<const char*> extensions;
       PlatformWindowSDL* windowSdl = dynamic_cast<PlatformWindowSDL*>(window);
@@ -51,6 +51,7 @@ namespace PlatformVK
       SDL_ClearError();
       extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
       extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+      extensions.push_back(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME);
       U32 additionalExtensions = extensions.size();
       extensions.setSize(extensionCount + additionalExtensions);
       U32 totalExtensionCount = extensionCount + additionalExtensions;
