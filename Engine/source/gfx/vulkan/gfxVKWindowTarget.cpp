@@ -33,3 +33,30 @@ GFXVulkanWindowTarget::~GFXVulkanWindowTarget()
 {
 
 }
+
+void GFXVulkanWindowTarget::createSwapChain()
+{
+   VkPhysicalDeviceSurfaceInfo2KHR surfaceInfo{};
+   surfaceInfo.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SURFACE_INFO_2_KHR;
+   surfaceInfo.surface = GFXVK->getVKSurface();
+   VkSurfaceCapabilities2KHR surfaceCaps{};
+   surfaceCaps.sType = VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_2_KHR;
+   AssertFatal(vkGetPhysicalDeviceSurfaceCapabilities2KHR(GFXVK->getVKPhysicalDevice(), &surfaceInfo, &surfaceCaps) == VK_SUCCESS,
+      "Failed to get the surface capabilities of your graphics card! Please make sure it supports Vulkan before relaunching.");
+
+   mSwapchain.mExtent = surfaceCaps.surfaceCapabilities.currentExtent;
+   VkSwapchainCreateInfoKHR swapCreateInfo{};
+   swapCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+   swapCreateInfo.surface = GFXVK->getVKSurface();
+   swapCreateInfo.minImageCount = surfaceCaps.surfaceCapabilities.minImageCount;
+   swapCreateInfo.imageFormat = (VkFormat)GFXVulkanTextureFormat[getFormat()];
+   swapCreateInfo.imageColorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
+   swapCreateInfo.imageExtent = mSwapchain.mExtent;
+   swapCreateInfo.imageArrayLayers = 1; //...For now.
+   swapCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+   swapCreateInfo.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+   swapCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+   swapCreateInfo.presentMode = VK_PRESENT_MODE_FIFO_KHR;
+   AssertFatal(vkCreateSwapchainKHR(GFXVK->getVKLogicalDevice(), &swapCreateInfo, nullptr, &mSwapchain.mSwapchain) == VK_SUCCESS,
+      "Failed to create the swapchain! Please make sure your graphics card supports Vulkan before relaunching.");
+}
