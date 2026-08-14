@@ -40,22 +40,6 @@ public:
    Vector<VkImageView> mSwapImageViews;
 };
 
-class GFXVulkanSwapChain
-{
-public:
-   VkSwapchainKHR mSwapchain;
-   VkExtent2D mExtent;
-   Vector<VkImage> mSwapImages;
-   Vector<VkImageView> mSwapImageViews;
-};
-
-class GFXVulkanSwapChain
-{
-public:
-   VkSwapchainKHR mSwapchain;
-   VkExtent2D mExtent;
-};
-
 class GFXVulkanWindowTarget : public GFXWindowTarget
 {
    friend class GFXVulkanDevice;
@@ -71,11 +55,7 @@ public:
     GFXFormat getFormat() override { return GFXFormatR8G8B8A8; }
     GFXFormat getDepthFormat();
 
-
-    bool present() override
-    {
-        return true;
-    }
+    bool present() override;
 
     void resetMode() override
     {
