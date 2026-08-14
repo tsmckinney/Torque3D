@@ -38,18 +38,20 @@
 #include "gfx/vulkan/gfxVKDevice.h"
 #include "gfx/vulkan/gfxVKEnumTranslate.h"
 #include "gfx/vulkan/gfxVKHelpers.h"
-#include "gfx/vulkan/gfxVKPrimitiveBuffer.h"
-#include "gfx/vulkan/gfxVKShader.h"
-#include "gfx/vulkan/gfxVKTextureArray.h"
-#include "gfx/vulkan/gfxVKTextureManager.h"
-#include "gfx/vulkan/gfxVKTextureObject.h"
-#include "gfx/vulkan/gfxVKWindowTarget.h"
-
 #include "gfx/bitmap/gBitmap.h"
 #include "core/util/safeDelete.h"
 #include "windowManager/platformWindow.h"
+#include <vk_mem_alloc.h>
 
 class GFXVulkanShaderConstBuffer;
+
+enum GFXVulkanQueueType
+{
+   GFX_VULKAN_GRAPHICS_QUEUE,
+   GFX_VULKAN_PRESENT_QUEUE,
+   GFX_VULKAN_COMPUTE_QUEUE,
+   GFX_VULKAN_MAXIMUM_NUMBER_OF_POSSIBLE_QUEUES_TO_EVER_EXIST // :D
+};
 
 class GFXVulkanDevice : public GFXDevice
 {
@@ -122,11 +124,13 @@ protected:
 
    Vector<const char*> mValidationLayers;
    #if defined(TORQUE_DEBUG)
-   bool mEnableValidationLayers = false;
+   bool mEnableValidationLayers = true;
    #else
    bool mEnableValidationLayers = true;
    #endif
    bool checkValidationLayerSupport();
+
+   VmaAllocator mVMAllocator;
 public:
    friend class GFXVulkanWindowTarget;
 
@@ -199,6 +203,10 @@ public:
    VkDevice getVKLogicalDevice() { return mVKDevice; }
    VkPhysicalDevice getVKPhysicalDevice();
    VkSurfaceKHR getVKSurface() { return mVKSurface; }
+   VmaAllocator getVKAllocator() { return mVMAllocator; }
+
+   VkQueue getVKQueue(GFXVulkanQueueType queueType);
+
 
 private:
    typedef GFXDevice Parent;
@@ -207,6 +215,7 @@ private:
 
    VkQueue mGraphicsQueue;
    VkQueue mPresentQueue;
+   VkQueue mComputeQueue;
 };
 
 #define GFXVK static_cast<GFXVulkanDevice*>(GFX)

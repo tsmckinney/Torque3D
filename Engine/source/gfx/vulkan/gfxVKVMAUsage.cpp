@@ -19,6 +19,5 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
-
-#include "gfx/vulkan/gfxVKCubemap.h"
+#define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.h>

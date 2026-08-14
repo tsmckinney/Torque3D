@@ -32,6 +32,7 @@
 #include "gfx/vulkan/gfxVKTextureManager.h"
 #include "gfx/vulkan/gfxVKTextureObject.h"
 #include "gfx/vulkan/gfxVKCardProfiler.h"
+#include <vk_mem_alloc.h>
 
 #include "windowManager/sdl/sdlWindow.h"
 #include "platform/platformVK.h"

@@ -29,12 +29,15 @@
 #include "gfx/vulkan/gfxVKDevice.h"
 #include "gfx/vulkan/gfxVKEnumTranslate.h"
 #include "windowManager/platformWindow.h"
+#include "core/util/tVector.h"
 
 class GFXVulkanSwapChain
 {
 public:
    VkSwapchainKHR mSwapchain;
    VkExtent2D mExtent;
+   Vector<VkImage> mSwapImages;
+   Vector<VkImageView> mSwapImageViews;
 };
 
 class GFXVulkanWindowTarget : public GFXWindowTarget
@@ -50,11 +53,9 @@ public:
     }
 
     GFXFormat getFormat() override { return GFXFormatR8G8B8A8; }
+    GFXFormat getDepthFormat();
 
-    bool present() override
-    {
-        return true;
-    }
+    bool present() override;
 
     void resetMode() override
     {
@@ -65,9 +66,11 @@ public:
     void resurrect() override {};
 
     void createSwapChain();
+    void setupPipelineAndBuffers();
 
     GFXDevice* mDevice;
     GFXVulkanSwapChain mSwapchain;
+    GFXFormat mDepthFormat;
 };
 
 #endif

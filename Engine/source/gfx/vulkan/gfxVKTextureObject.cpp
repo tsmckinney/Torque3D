@@ -21,6 +21,7 @@
 //-----------------------------------------------------------------------------
 
 #include "gfx/vulkan/gfxVKTextureObject.h"
+#include <vk_mem_alloc.h>
 
 #include "gfx/gfxDevice.h"
 #include "gfx/gfxTextureManager.h"

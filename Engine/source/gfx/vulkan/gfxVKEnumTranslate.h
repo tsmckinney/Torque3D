@@ -24,7 +24,6 @@
 #define _GFXVKENUMTRANSLATE_H_
 
 #include "gfx/gfxEnums.h"
-#include "gfx/vulkan/gfxVKDevice.h"
 
 namespace GFXVulkanEnumTranslate
 {
