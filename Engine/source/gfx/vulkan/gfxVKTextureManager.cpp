@@ -23,6 +23,7 @@
 #include "gfx/vulkan/gfxVKTextureManager.h"
 #include "gfx/vulkan/gfxVKTextureObject.h"
 #include "gfx/vulkan/gfxVKWindowTarget.h"
+#include <vk_mem_alloc.h>
 
 //-----------------------------------------------------------------------------
 

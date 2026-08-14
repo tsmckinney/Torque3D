@@ -13,15 +13,14 @@
         "features": [ "external-libs" ] 
     }, 
     "vulkan",
-    "glslang"
+    "glslang",
+    "vulkan-memory-allocator"
   ],
   "overrides":[
     { "name": "libogg", "version": "1.3.6"},
     { "name": "libvorbis", "version": "1.3.7"},
     { "name": "libflac", "version": "1.5.0"},
     { "name": "opus", "version": "1.5.2"},
-    { "name": "libtheora", "version": "1.2.0"},
-    { "name": "vulkan", "version": "2023-12-17"},
-    { "name": "glslang", "version": "16.4.0"}
+    { "name": "libtheora", "version": "1.2.0"}
   ]
 }
