@@ -45,6 +45,8 @@ class GFXVulkanSwapChain
 public:
    VkSwapchainKHR mSwapchain;
    VkExtent2D mExtent;
+   Vector<VkImage> mSwapImages;
+   Vector<VkImageView> mSwapImageViews;
 };
 
 class GFXVulkanWindowTarget : public GFXWindowTarget
@@ -64,10 +66,7 @@ public:
 
     bool present() override;
 
-    bool present() override
-    {
-        return true;
-    }
+    bool present() override;
 
     void resetMode() override
     {

@@ -174,10 +174,10 @@ bool checkPhysicalDeviceExtensionSupport(VkPhysicalDevice physicalDevice)
 bool checkPhysicalDeviceExtensionSupport(VkPhysicalDevice physicalDevice)
 {
    U32 extensionCount;
-   vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, nullptr);
+   vkEnumerateDeviceExtensionProperties(physicalDevice, NULL, &extensionCount, NULL);
    Vector<VkExtensionProperties> availableExts;
    availableExts.setSize(extensionCount);
-   vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, availableExts.address());
+   vkEnumerateDeviceExtensionProperties(physicalDevice, NULL, &extensionCount, availableExts.address());
 
    Vector<const char*> availExtNames;
    for (const auto& ext : availableExts)
@@ -190,19 +190,20 @@ bool checkPhysicalDeviceExtensionSupport(VkPhysicalDevice physicalDevice)
    Vector<const char*>::iterator avaiIter = availExtNames.begin();
    for (; avaiIter != availExtNames.end(); avaiIter++)
    {
-      S32 idx = -1;
-      for (U32 i = 0; i < reqdExts.size(); i++)
+      S32 avExtIdx = -1;
+      for (U32 rqExtIdx = 0; rqExtIdx < reqdExts.size(); rqExtIdx++)
       {
-         if (String::compare(reqdExts[i], *avaiIter) == 0)
+         if (String::compare(reqdExts[rqExtIdx], *avaiIter) == 0)
          {
-            idx = i;
+            avExtIdx = rqExtIdx;
             break;
          }
       }
       reqdExts.find_next(*avaiIter, 0);
 
-      if (idx != -1) {
-         reqdExts.erase(idx);
+      if (avExtIdx != -1)
+      {
+         reqdExts.erase(avExtIdx);
       }
    }
    return reqdExts.empty();
