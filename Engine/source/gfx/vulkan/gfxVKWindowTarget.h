@@ -40,13 +40,6 @@ public:
    Vector<VkImageView> mSwapImageViews;
 };
 
-class GFXVulkanSwapChain
-{
-public:
-   VkSwapchainKHR mSwapchain;
-   VkExtent2D mExtent;
-};
-
 class GFXVulkanWindowTarget : public GFXWindowTarget
 {
    friend class GFXVulkanDevice;
