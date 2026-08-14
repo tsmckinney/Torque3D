@@ -21,6 +21,7 @@
 //-----------------------------------------------------------------------------
 
 #include "gfx/vulkan/gfxVKTextureArray.h"
+#include <vk_mem_alloc.h>
 
 void GFXVulkanTextureArray::zombify() 
 {

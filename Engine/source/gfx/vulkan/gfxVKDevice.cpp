@@ -20,15 +20,24 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
+#include "platform/platform.h"
+#include "gfx/vulkan/gfxVKDevice.h"
+
 #include "core/strings/stringFunctions.h"
 #include "gfx/screenshot.h"
 #include "gfx/gfxCardProfile.h"
 #include "gfx/vulkan/gfxVKVertexBuffer.h"
 #include "app/version.h"
-#include "gfx/vulkan/gfxVKDevice.h"
 
 #include "materials/shaderData.h"
 #include "shaderGen/shaderGen.h"
+#include "gfx/vulkan/gfxVKHelpers.h"
+#include "gfx/vulkan/gfxVKPrimitiveBuffer.h"
+#include "gfx/vulkan/gfxVKShader.h"
+#include "gfx/vulkan/gfxVKTextureArray.h"
+#include "gfx/vulkan/gfxVKTextureManager.h"
+#include "gfx/vulkan/gfxVKWindowTarget.h"
+#include <vk_mem_alloc.h>
 
 GFXAdapter::CreateDeviceInstanceDelegate GFXVulkanDevice::mCreateDeviceInstance(GFXVulkanDevice::createInstance); 
 
@@ -60,7 +69,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL validationDebugCallback(
    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
    void* pUserData)
 {
-   Con::printf("Validation layer:" + (String)pCallbackData->pMessage);
+   Con::printf("GFXVulkanDevice::<Vulkan Validation Layer> - " + (String)pCallbackData->pMessage);
    return VK_FALSE;
 }
 static VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger)
@@ -107,7 +116,8 @@ void GFXVulkanDevice::setupDebugMessenger()
    
    VkDebugUtilsMessengerCreateInfoEXT createInfo;
    populateDebugMessengerCreateInfo(createInfo);
-   AssertWarn(CreateDebugUtilsMessengerEXT(mInstance, &createInfo, nullptr, &mDebugMessenger) == VK_SUCCESS, "Failed to set up debug messenger!");
+   AssertWarn(CreateDebugUtilsMessengerEXT(mInstance, &createInfo, nullptr, &mDebugMessenger) == VK_SUCCESS,
+      "GFXVulkanDevice::setupDebugMessenger() - Failed to set up a debug messenger! Please make sure your graphics card supports the VK_EXT_debug_utils extension.");
 }
 
 bool GFXVulkanDevice::checkValidationLayerSupport()
@@ -151,11 +161,15 @@ GFXVulkanDevice::GFXVulkanDevice()
    mInstance = VK_NULL_HANDLE;
    mVKDevice = VK_NULL_HANDLE;
    mVKSurface = VK_NULL_HANDLE;
+   mGraphicsQueue = VK_NULL_HANDLE;
+   mPresentQueue = VK_NULL_HANDLE;
+   mVMAllocator = VK_NULL_HANDLE;
 
    mValidationLayers.push_back("VK_LAYER_KHRONOS_validation");
    if (mEnableValidationLayers)
    {
-      AssertFatal(checkValidationLayerSupport(), "Vulkan validation layers were requested, but not available.");
+      AssertFatal(checkValidationLayerSupport(),
+         "GFXVulkanDevice::GFXVulkanDevice() - Vulkan validation layers were requested, but not available.");
    }
 }
 
@@ -168,6 +182,7 @@ GFXVulkanDevice::~GFXVulkanDevice()
    vkDestroySurfaceKHR(mInstance, mVKSurface, nullptr);
    vkDestroyDevice(mVKDevice, nullptr);
    vkDestroyInstance(mInstance, nullptr);
+   vmaDestroyAllocator(mVMAllocator);
    PlatformVK::shutdown();
    if( mTextureManager )
    {
@@ -304,7 +319,8 @@ void GFXVulkanDevice::setShaderConstBufferInternal(GFXShaderConstBuffer* buffer)
    if (buffer)
    {
       PROFILE_SCOPE(GFXVulkanDevice_setShaderConstBufferInternal);
-      AssertFatal(static_cast<GFXVulkanShaderConstBuffer*>(buffer), "Incorrect shader const buffer type for this device!");
+      AssertFatal(static_cast<GFXVulkanShaderConstBuffer*>(buffer),
+         "GFXVulkanDevice::setShaderConstBufferInterval() - Incorrect shader const buffer type for this device!");
       GFXVulkanShaderConstBuffer* vkBuffer = static_cast<GFXVulkanShaderConstBuffer*>(buffer);
 
       vkBuffer->activate(mCurrentConstBuffer);
@@ -322,9 +338,9 @@ void GFXVulkanDevice::init( const GFXVideoMode &mode, PlatformWindow *window )
    VkApplicationInfo appInfo{};
    appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
    appInfo.pApplicationName = TORQUE_APP_NAME;
-   appInfo.applicationVersion = VK_MAKE_VERSION(floor(TORQUE_APP_VERSION / 1000), floor(TORQUE_APP_VERSION / 100), floor(TORQUE_APP_VERSION / 10));
+   appInfo.applicationVersion = VK_MAKE_API_VERSION(0, floor(TORQUE_APP_VERSION / 1000), floor(TORQUE_APP_VERSION / 100), floor(TORQUE_APP_VERSION / 10));
    appInfo.pEngineName = getEngineProductString();
-   appInfo.engineVersion = VK_MAKE_VERSION(floor(TORQUE_GAME_ENGINE / 1000), floor(TORQUE_GAME_ENGINE / 100), floor(TORQUE_GAME_ENGINE / 10));
+   appInfo.engineVersion = VK_MAKE_API_VERSION(0, floor(TORQUE_GAME_ENGINE / 1000), floor(TORQUE_GAME_ENGINE / 100), floor(TORQUE_GAME_ENGINE / 10));
    appInfo.apiVersion = VK_API_VERSION_1_4;
 
    VkInstanceCreateInfo createInfo{};
@@ -350,8 +366,10 @@ void GFXVulkanDevice::init( const GFXVideoMode &mode, PlatformWindow *window )
       createInfo.pNext = nullptr;
    }
 
-   AssertFatal(vkCreateInstance(&createInfo, nullptr, &mInstance) == VK_SUCCESS, "Failed to create Vulkan instance! Please make sure your graphics card supports Vulkan before relaunching.");
-   AssertFatal(PlatformVK::createSurfaceVK(window, mInstance, &mVKSurface), "Failed to create Vulkan surface! Please make sure your graphics card supports Vulkan before relaunching.");
+   AssertFatal(vkCreateInstance(&createInfo, NULL, &mInstance) == VK_SUCCESS,
+      "GFXVulkanDevice::init() - Failed to create Vulkan instance! Please make sure your graphics card supports Vulkan.");
+   AssertFatal(PlatformVK::createSurfaceVK(window, mInstance, &mVKSurface),
+      "GFXVulkanDevice::init() - Failed to create Vulkan surface! Please make sure your graphics card supports Vulkan.");
    mClip.set(0, 0, 800, 800);
    mTextureManager = new GFXVulkanTextureManager();
    gScreenShot = new ScreenShot();
@@ -387,11 +405,25 @@ void GFXVulkanDevice::init( const GFXVideoMode &mode, PlatformWindow *window )
    logicalDeviceCreateInfo.pEnabledFeatures = &vkCardProfiler->mDeviceFeatures.features;
    logicalDeviceCreateInfo.enabledExtensionCount = logDevExts.size();
    logicalDeviceCreateInfo.ppEnabledExtensionNames = logDevExts.address();
-   AssertFatal(vkCreateDevice(vkCardProfiler->mPhysicalDevice, &logicalDeviceCreateInfo, nullptr, &mVKDevice) == VK_SUCCESS,
-      "Failed to create Vulkan logical device! Please make sure your graphics card supports Vulkan before relaunching.");
+   AssertFatal(vkCreateDevice(vkCardProfiler->mPhysicalDevice, &logicalDeviceCreateInfo, NULL, &mVKDevice) == VK_SUCCESS,
+      "GFXVulkanDevice::init() - Failed to create Vulkan logical device! Please make sure your graphics card supports Vulkan.");
 
    vkGetDeviceQueue(mVKDevice, queueFamilies.mGraphicsFamily.mIndex, 0, &mGraphicsQueue);
    vkGetDeviceQueue(mVKDevice, queueFamilies.mPresentFamily.mIndex, 0, &mPresentQueue);
+   vkGetDeviceQueue(mVKDevice, queueFamilies.mComputeFamily.mIndex, 0, &mComputeQueue);
+
+   VmaVulkanFunctions vkFunctions = {};
+   vkFunctions.vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
+   vkFunctions.vkGetDeviceProcAddr = &vkGetDeviceProcAddr;
+
+   VmaAllocatorCreateInfo alloCreateInfo = {};
+   alloCreateInfo.vulkanApiVersion = VK_API_VERSION_1_4;
+   alloCreateInfo.physicalDevice = vkCardProfiler->mPhysicalDevice;
+   alloCreateInfo.device = mVKDevice;
+   alloCreateInfo.instance = mInstance;
+   alloCreateInfo.pVulkanFunctions = &vkFunctions;
+
+   vmaCreateAllocator(&alloCreateInfo, &mVMAllocator);
 
    mInitialized = true;
    deviceInited();
@@ -406,6 +438,21 @@ VkPhysicalDevice GFXVulkanDevice::getVKPhysicalDevice()
 {
    GFXVulkanCardProfiler* vkCardProfiler = static_cast<GFXVulkanCardProfiler*>(mCardProfiler);
    return vkCardProfiler->mPhysicalDevice;
+}
+
+VkQueue GFXVulkanDevice::getVKQueue(GFXVulkanQueueType queueType) {
+   switch (queueType)
+   {
+   case GFX_VULKAN_GRAPHICS_QUEUE:
+      return mGraphicsQueue;
+   case GFX_VULKAN_PRESENT_QUEUE:
+      return mPresentQueue;
+   case GFX_VULKAN_COMPUTE_QUEUE:
+      return mComputeQueue;
+   default:
+      AssertWarn(false, "GFXVulkanDevice::getVKQueue() - Queue not specified! Errors with Vulkan may occur.");
+      return NULL;
+   }
 }
 
 //

@@ -22,6 +22,8 @@
 
 #include "platform/platform.h"
 #include "gfx/vulkan/gfxVKEnumTranslate.h"
+#include "gfx/vulkan/gfxVKHelpers.h"
+#include <vk_mem_alloc.h>
  
 U32 GFXVulkanPrimType[GFXPT_COUNT];
 U32 GFXVulkanBlend[GFXBlend_COUNT];

@@ -22,7 +22,8 @@
 
 #include "platform/platform.h"
 #include "gfx/vulkan/gfxVKShader.h"
-#include "gfx/vulkan/gfxVKDevice.h"
+#include "gfx/vulkan/gfxVKHelpers.h"
+#include <vk_mem_alloc.h>
 
 #include "core/frameAllocator.h"
 #include "core/stream/fileStream.h"

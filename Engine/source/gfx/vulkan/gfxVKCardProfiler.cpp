@@ -23,12 +23,13 @@
 #include "platform/platform.h"
 #include "gfx/vulkan/gfxVKCardProfiler.h"
 #include "gfx/vulkan/gfxVKEnumTranslate.h"
+#include <vk_mem_alloc.h>
 
 void GFXVulkanCardProfiler::init()
 {
-   mCardDescription = mDeviceProperties.deviceName;
-   mChipSet = vendorIDToString(static_cast<VkVendorId>(mDeviceProperties.vendorID));
-   mVersionString = mDeviceProperties.apiVersion;
+   mCardDescription = mDeviceProperties.properties.deviceName;
+   mChipSet = vendorIDToString(static_cast<VkVendorId>(mDeviceProperties.properties.vendorID));
+   mVersionString = mDeviceProperties.properties.apiVersion;
    mRenderString = "Vulkan";
 
    Parent::init(); // other code notes that not calling this is "BAD".
@@ -37,18 +38,18 @@ void GFXVulkanCardProfiler::init()
 void GFXVulkanCardProfiler::findPhysicalDevice(VkSurfaceKHR surface)
 {
    mPhysicalDevice = VK_NULL_HANDLE;
+   mDeviceProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
    mDeviceFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
    U32 deviceCount = 0;
    VkInstance instance = GFXVK->getVKInstance();
-   vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
-   AssertFatal(deviceCount > 0, "No graphics cards supporting Vulkan were found on this machine!");
+   vkEnumeratePhysicalDevices(instance, &deviceCount, NULL);
+   AssertFatal(deviceCount > 0, "GFXVulkanCardProfiler: No graphics cards supporting Vulkan were found on this machine!");
    Vector<VkPhysicalDevice> devices;
    devices.setSize(deviceCount);
    vkEnumeratePhysicalDevices(instance, &deviceCount, devices.address());
 
    for (VkPhysicalDevice device : devices)
    {
-      
       GFXVulkanQueueFamilyIndices indices;
       indices.generateQFIndices(device, surface);
 
@@ -58,7 +59,7 @@ void GFXVulkanCardProfiler::findPhysicalDevice(VkSurfaceKHR surface)
          break;
       }
    }
-   vkGetPhysicalDeviceProperties(mPhysicalDevice, &mDeviceProperties);
+   vkGetPhysicalDeviceProperties2(mPhysicalDevice, &mDeviceProperties);
    
    vkGetPhysicalDeviceFeatures2(mPhysicalDevice, &mDeviceFeatures);
 }
@@ -70,9 +71,9 @@ const String &GFXVulkanCardProfiler::getRendererString() const
 
 void GFXVulkanCardProfiler::setupCardCapabilities()
 { 
-   setCapability("maxTextureWidth", mDeviceProperties.limits.maxImageDimension2D);
-   setCapability("maxTextureHeight", mDeviceProperties.limits.maxImageDimension2D);
-   setCapability("maxTextureSize", mDeviceProperties.limits.maxImageDimension2D);
+   setCapability("maxTextureWidth", mDeviceProperties.properties.limits.maxImageDimension2D);
+   setCapability("maxTextureHeight", mDeviceProperties.properties.limits.maxImageDimension2D);
+   setCapability("maxTextureSize", mDeviceProperties.properties.limits.maxImageDimension2D);
 };
 
 bool GFXVulkanCardProfiler::_queryCardCap(const String &query, U32 &foundResult)
