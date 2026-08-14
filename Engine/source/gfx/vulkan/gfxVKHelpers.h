@@ -30,7 +30,6 @@
 
 #include "core/util/tVector.h"
 
-
 // Vendor IDs (for card profiling)
 extern const char* vendorIDToString(VkVendorId id);
 
@@ -51,6 +50,7 @@ struct GFXVulkanQueueFamilyIndices
 public:
    GFXVulkanQueueFamilyIndex mGraphicsFamily;
    GFXVulkanQueueFamilyIndex mPresentFamily;
+   GFXVulkanQueueFamilyIndex mComputeFamily;
    void generateQFIndices(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
    bool areQFIndicesComplete();
 };

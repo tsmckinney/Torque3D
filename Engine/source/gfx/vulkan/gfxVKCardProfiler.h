@@ -25,8 +25,8 @@
 
 #include "platform/platform.h"
 //-----------------------------------------------------------------------------
-#include "gfx/vulkan/gfxVKDevice.h"
 #include "gfx/vulkan/gfxVKEnumTranslate.h"
+#include "gfx/vulkan/gfxVKDevice.h"
 #include "gfx/vulkan/gfxVKHelpers.h"
 #include "core/strings/stringFunctions.h"
 #include "gfx/gfxCardProfile.h"
@@ -50,7 +50,7 @@ protected:
     bool _queryFormat(const GFXFormat fmt, const GFXTextureProfile *profile, bool &inOutAutogenMips) override;
 
     VkPhysicalDevice mPhysicalDevice = VK_NULL_HANDLE;
-    VkPhysicalDeviceProperties mDeviceProperties;
+    VkPhysicalDeviceProperties2 mDeviceProperties;
     VkPhysicalDeviceFeatures2KHR mDeviceFeatures;
     
 public:

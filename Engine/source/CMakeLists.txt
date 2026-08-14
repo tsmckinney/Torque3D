@@ -15,6 +15,7 @@ find_package(Opus CONFIG REQUIRED)
 find_package(unofficial-theora CONFIG REQUIRED)
 find_package(SndFile CONFIG REQUIRED)
 find_package(Vulkan REQUIRED)
+find_package(VulkanMemoryAllocator CONFIG REQUIRED)
 set(TORQUE_LINK_THIRDPARTY ${TORQUE_LINK_THIRDPARTY}
     Ogg::ogg
     Vorbis::vorbis
@@ -24,6 +25,7 @@ set(TORQUE_LINK_THIRDPARTY ${TORQUE_LINK_THIRDPARTY}
     unofficial::theora::theora unofficial::theora::theoradec unofficial::theora::theoraenc
     SndFile::sndfile
     Vulkan::Vulkan
+    GPUOpen::VulkanMemoryAllocator
 )
 ################# Helper Function Calls ###################
 forwardDef(TORQUE_OPENGL)

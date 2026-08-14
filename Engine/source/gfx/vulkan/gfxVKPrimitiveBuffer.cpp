@@ -21,6 +21,7 @@
 //-----------------------------------------------------------------------------
 
 #include "gfx/vulkan/gfxVKPrimitiveBuffer.h"
+#include <vk_mem_alloc.h>
 
 void GFXVulkanPrimitiveBuffer::lock(U32 indexStart, U32 indexEnd, void **indexPtr)
 {

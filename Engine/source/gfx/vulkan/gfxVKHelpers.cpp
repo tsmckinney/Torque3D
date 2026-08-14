@@ -23,6 +23,7 @@
 #include "platform/platform.h"
 
 #include "gfx/vulkan/gfxVKHelpers.h"
+#include <vk_mem_alloc.h>
 
 const char* vendorIDToString(VkVendorId id)
 {
@@ -102,17 +103,18 @@ void GFXVulkanQueueFamilyIndex::set(U32 i)
 void GFXVulkanQueueFamilyIndices::generateQFIndices(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)
 {
    U32 queueFamilyCount = 0;
-   vkGetPhysicalDeviceQueueFamilyProperties2(physicalDevice, &queueFamilyCount, nullptr);
-   // TODO: Try to do this with Vector<T>!!!
+   vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, NULL);
    Vector<VkQueueFamilyProperties> queueFamilies;
    queueFamilies.setSize(queueFamilyCount);
    vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilies.address());
 
-   int idx = 0;
+   S32 idx = 0;
    for(VkQueueFamilyProperties& queueFamily : queueFamilies)
    {
       if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
          this->mGraphicsFamily.set(idx);
+      if (queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT)
+         this->mComputeFamily.set(idx);
 
       VkBool32 presentSupport = false;
       vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, idx, surface, &presentSupport);
@@ -126,16 +128,18 @@ void GFXVulkanQueueFamilyIndices::generateQFIndices(VkPhysicalDevice physicalDev
 }
 bool GFXVulkanQueueFamilyIndices::areQFIndicesComplete()
 {
-   return this->mGraphicsFamily.mHasValue && this->mPresentFamily.mHasValue;
+   return this->mGraphicsFamily.mHasValue
+      && this->mPresentFamily.mHasValue
+      && this->mComputeFamily.mHasValue;
 }
 
 bool checkPhysicalDeviceExtensionSupport(VkPhysicalDevice physicalDevice)
 {
    U32 extensionCount;
-   vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, nullptr);
+   vkEnumerateDeviceExtensionProperties(physicalDevice, NULL, &extensionCount, NULL);
    Vector<VkExtensionProperties> availableExts;
    availableExts.setSize(extensionCount);
-   vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, availableExts.address());
+   vkEnumerateDeviceExtensionProperties(physicalDevice, NULL, &extensionCount, availableExts.address());
 
    Vector<const char*> availExtNames;
    for (const auto& ext : availableExts)
@@ -148,19 +152,20 @@ bool checkPhysicalDeviceExtensionSupport(VkPhysicalDevice physicalDevice)
    Vector<const char*>::iterator avaiIter = availExtNames.begin();
    for (; avaiIter != availExtNames.end(); avaiIter++)
    {
-      S32 idx = -1;
-      for (U32 i = 0; i < reqdExts.size(); i++)
+      S32 avExtIdx = -1;
+      for (U32 rqExtIdx = 0; rqExtIdx < reqdExts.size(); rqExtIdx++)
       {
-         if (String::compare(reqdExts[i], *avaiIter) == 0)
+         if (String::compare(reqdExts[rqExtIdx], *avaiIter) == 0)
          {
-            idx = i;
+            avExtIdx = rqExtIdx;
             break;
          }
       }
       reqdExts.find_next(*avaiIter, 0);
 
-      if (idx != -1) {
-         reqdExts.erase(idx);
+      if (avExtIdx != -1)
+      {
+         reqdExts.erase(avExtIdx);
       }
    }
    return reqdExts.empty();
