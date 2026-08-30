@@ -46,7 +46,7 @@ class SplashData;
 class PhysicsPlayer;
 class Player;
 
-#ifdef TORQUE_OPENVR
+#ifdef TORQUE_XR_OPENVR
 class OpenVRTrackedObject;
 #endif
 
@@ -579,7 +579,7 @@ protected:
    Point3F mLastPos;          ///< Holds the last position for physics updates
    Point3F mLastWaterPos;     ///< Same as mLastPos, but for water
 
-#ifdef TORQUE_OPENVR
+#ifdef TORQUE_XR_OPENVR
    SimObjectPtr<OpenVRTrackedObject> mControllers[2];
 #endif
 
@@ -642,7 +642,7 @@ protected:
 
    PhysicsPlayer* getPhysicsRep() const { return mPhysicsRep; }
 
-#ifdef TORQUE_OPENVR
+#ifdef TORQUE_XR_OPENVR
    void setControllers(Vector<OpenVRTrackedObject*> controllerList);
 #endif
 

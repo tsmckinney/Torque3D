@@ -67,7 +67,7 @@
    #include "T3D/gameBase/extended/extendedMove.h"
 #endif
 
-#ifdef TORQUE_OPENVR
+#ifdef TORQUE_XR_OPENVR
 #include "platform/input/openVR/openVRProvider.h"
 #include "platform/input/openVR/openVRTrackedObject.h"
 #endif
@@ -2715,7 +2715,7 @@ void Player::updateMove(const Move* move)
    }
    mDelta.move = *move;
 
-#ifdef TORQUE_OPENVR
+#ifdef TORQUE_XR_OPENVR
    if (mControllers[0])
    {
       mControllers[0]->processTick(move);
@@ -8009,7 +8009,7 @@ void Player::restoreFootfallFX(bool decals, bool sounds, bool dust)
       footfallDustOverride--; 
    noFootfallFX = (footfallDecalOverride > 0 && footfallSoundOverride > 0 && footfallDustOverride > 0);
 }
-#ifdef TORQUE_OPENVR
+#ifdef TORQUE_XR_OPENVR
 void Player::setControllers(Vector<OpenVRTrackedObject*> controllerList)
 {
    mControllers[0] = controllerList.size() > 0 ? controllerList[0] : NULL;

@@ -84,7 +84,7 @@ if (NOT GIT_IN_USE)
         --triplet=${VCPKG_TARGET_TRIPLET}
         --overlay-ports=${VCPKG_OVERLAY_PORTS}
         --overlay-triplets=${VCPKG_OVERLAY_TRIPLETS}
-        libflac libogg libsndfile[external-libs] libtheora libvorbis opus
+        libflac libogg libsndfile[external-libs] libtheora libvorbis opus openvr
         WORKING_DIRECTORY ${VCPKG_ROOT})
 endif()
 # All library binaries to install. Modules should append to this the path of any library binaries (.so, .dylib, .dll)

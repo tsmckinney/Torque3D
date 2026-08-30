@@ -270,7 +270,6 @@ ImplementEnumType(OpenVROverlayTransformType,
    "@ingroup OpenVR")
 { vr::VROverlayTransform_Absolute, "Absolute" },
 { vr::VROverlayTransform_TrackedDeviceRelative, "TrackedDeviceRelative" },
-{ vr::VROverlayTransform_SystemOverlay, "SystemOverlay" },
 { vr::VROverlayTransform_TrackedComponent, "TrackedComponent" },
 EndImplementEnumType;
 
@@ -307,15 +306,6 @@ ImplementEnumType(OpenVRTrackingUniverseOrigin,
 { vr::TrackingUniverseRawAndUncalibrated, "RawAndUncalibrated" },
 EndImplementEnumType;
 
-ImplementEnumType(OpenVROverlayDirection,
-   "Directions for changing focus between overlays with the gamepad. .\n\n"
-   "@ingroup OpenVR")
-{ vr::OverlayDirection_Up, "Up" },
-{ vr::OverlayDirection_Down, "Down" },
-{ vr::OverlayDirection_Left, "Left" },
-{ vr::OverlayDirection_Right, "Right" },
-EndImplementEnumType;
-
 ImplementEnumType(OpenVRState,
    "Status of the overall system or tracked objects. .\n\n"
    "@ingroup OpenVR")
@@ -334,8 +324,9 @@ ImplementEnumType(OpenVRTrackedDeviceClass,
 { vr::TrackedDeviceClass_Invalid, "Invalid" },
 { vr::TrackedDeviceClass_HMD, "HMD" },
 { vr::TrackedDeviceClass_Controller, "Controller" },
+{ vr::TrackedDeviceClass_GenericTracker, "GenericTracker" },
 { vr::TrackedDeviceClass_TrackingReference, "TrackingReference" },
-{ vr::TrackedDeviceClass_Other, "Other" },
+{ vr::TrackedDeviceClass_DisplayRedirect, "DisplayRedirect" },
 EndImplementEnumType;
 
 //------------------------------------------------------------
@@ -511,15 +502,33 @@ OpenVRProvider::~OpenVRProvider()
 void OpenVRProvider::staticInit()
 {
    // Overlay flags
-   Con::setIntVariable("$OpenVR::OverlayFlags_None", 1 << (U32)vr::VROverlayFlags_None);
-   Con::setIntVariable("$OpenVR::OverlayFlags_Curved", 1 << (U32)vr::VROverlayFlags_Curved);
-   Con::setIntVariable("$OpenVR::OverlayFlags_RGSS4X", 1 << (U32)vr::VROverlayFlags_RGSS4X);
-   Con::setIntVariable("$OpenVR::OverlayFlags_NoDashboardTab", 1 << (U32)vr::VROverlayFlags_NoDashboardTab);
-   Con::setIntVariable("$OpenVR::OverlayFlags_AcceptsGamepadEvents", 1 << (U32)vr::VROverlayFlags_AcceptsGamepadEvents);
-   Con::setIntVariable("$OpenVR::OverlayFlags_ShowGamepadFocus", 1 << (U32)vr::VROverlayFlags_ShowGamepadFocus);
-   Con::setIntVariable("$OpenVR::OverlayFlags_SendVRScrollEvents", 1 << (U32)vr::VROverlayFlags_SendVRScrollEvents);
-   Con::setIntVariable("$OpenVR::OverlayFlags_SendVRTouchpadEvents", 1 << (U32)vr::VROverlayFlags_SendVRTouchpadEvents);
-   Con::setIntVariable("$OpenVR::OverlayFlags_ShowTouchPadScrollWheel", 1 << (U32)vr::VROverlayFlags_ShowTouchPadScrollWheel);
+   //Con::setIntVariable("$OpenVR::OverlayFlags_None", 1 << vr::VROverlayFlags_None);
+   //Con::setIntVariable("$OpenVR::OverlayFlags_Curved", 1 << vr::VROverlayFlags_Curved);
+   //Con::setIntVariable("$OpenVR::OverlayFlags_RGSS4X", 1 << vr::VROverlayFlags_RGSS4X);
+   Con::setIntVariable("$OpenVR::OverlayFlags_NoDashboardTab", 1 << vr::VROverlayFlags_NoDashboardTab);
+   //Con::setIntVariable("$OpenVR::OverlayFlags_AcceptsGamepadEvents", 1 << vr::VROverlayFlags_AcceptsGamepadEvents);
+   //Con::setIntVariable("$OpenVR::OverlayFlags_ShowGamepadFocus", 1 << vr::VROverlayFlags_ShowGamepadFocus);
+   Con::setIntVariable("$OpenVR::OverlayFlags_SendVRDiscreteScrollEvents", 1 << vr::VROverlayFlags_SendVRDiscreteScrollEvents);
+   Con::setIntVariable("$OpenVR::OverlayFlags_SendVRTouchpadEvents", 1 << vr::VROverlayFlags_SendVRTouchpadEvents);
+   Con::setIntVariable("$OpenVR::OverlayFlags_ShowTouchPadScrollWheel", 1 << vr::VROverlayFlags_ShowTouchPadScrollWheel);
+   Con::setIntVariable("$OpenVR::OverlayFlags_TransferOwnershipToInternalProcess", 1 << vr::VROverlayFlags_TransferOwnershipToInternalProcess);
+   Con::setIntVariable("$OpenVR::OverlayFlags_SideBySide_Parallel", 1 << vr::VROverlayFlags_SideBySide_Parallel);
+   Con::setIntVariable("$OpenVR::OverlayFlags_SideBySide_Crossed", 1 << vr::VROverlayFlags_SideBySide_Crossed);
+   Con::setIntVariable("$OpenVR::OverlayFlags_Panorama", 1 << vr::VROverlayFlags_Panorama);
+   Con::setIntVariable("$OpenVR::OverlayFlags_StereoPanorama", 1 << vr::VROverlayFlags_StereoPanorama);
+   Con::setIntVariable("$OpenVR::OverlayFlags_SortWithNonSceneOverlays", 1 << vr::VROverlayFlags_SortWithNonSceneOverlays);
+   Con::setIntVariable("$OpenVR::OverlayFlags_VisibleInDashboard", 1 << vr::VROverlayFlags_VisibleInDashboard);
+   Con::setIntVariable("$OpenVR::OverlayFlags_MakeOverlaysInteractiveIfVisible", 1 << vr::VROverlayFlags_MakeOverlaysInteractiveIfVisible);
+   Con::setIntVariable("$OpenVR::OverlayFlags_SendVRSmoothScrollEvents", 1 << vr::VROverlayFlags_SendVRSmoothScrollEvents);
+   Con::setIntVariable("$OpenVR::OverlayFlags_ProtectedContent", 1 << vr::VROverlayFlags_ProtectedContent);
+   Con::setIntVariable("$OpenVR::OverlayFlags_HideLaserIntersection", 1 << vr::VROverlayFlags_HideLaserIntersection);
+   Con::setIntVariable("$OpenVR::OverlayFlags_WantsModalBehavior", 1 << vr::VROverlayFlags_WantsModalBehavior);
+   Con::setIntVariable("$OpenVR::OverlayFlags_IsPremultiplied", 1 << vr::VROverlayFlags_IsPremultiplied);
+   Con::setIntVariable("$OpenVR::OverlayFlags_IgnoreTextureAlpha", 1 << vr::VROverlayFlags_IgnoreTextureAlpha);
+   Con::setIntVariable("$OpenVR::OverlayFlags_EnableControlBarKeyboard", 1 << vr::VROverlayFlags_EnableControlBarKeyboard);
+   Con::setIntVariable("$OpenVR::OverlayFlags_EnableControlBarClose", 1 << vr::VROverlayFlags_EnableControlBarClose);
+   Con::setIntVariable("$OpenVR::OverlayFlags_EnableClickStabilization", 1 << vr::VROverlayFlags_EnableClickStabilization);
+   Con::setIntVariable("$OpenVR::OverlayFlags_MultiCursor", 1 << vr::VROverlayFlags_MultiCursor);
 
    Con::addVariable("$OpenVR::HMDRotOffsetX", TypeF32, &smHMDRotOffset.x);
    Con::addVariable("$OpenVR::HMDRotOffsetY", TypeF32, &smHMDRotOffset.y);
@@ -615,7 +624,7 @@ bool OpenVRProvider::enable()
    mHMDRenderState.mEyePose[1] = MatrixF(1);
 
    mHMDRenderState.reset(mHMD);
-   mHMD->ResetSeatedZeroPose();
+   //mHMD->ResetSeatedZeroPose();
    dMemset(mPreviousInputTrackedDevicePose, '\0', sizeof(mPreviousInputTrackedDevicePose));
 
    mEnabled = true;
@@ -750,7 +759,7 @@ bool OpenVRProvider::process()
    for (vr::TrackedDeviceIndex_t unDevice = 0; unDevice < vr::k_unMaxTrackedDeviceCount; unDevice++)
    {
       vr::VRControllerState_t state;
-      if (mHMD->GetControllerState(unDevice, &state))
+      if (mHMD->GetControllerState(unDevice, &state, sizeof(&state)))
       {
         mCurrentControllerState[unDevice] = state;
       }
@@ -957,14 +966,14 @@ void OpenVRProvider::onEyeRendered(U32 index)
       if (mHMDRenderState.mRenderMode == GFXDevice::RS_StereoSeparate)
       {
          // whatever eye we are on
-         eyeTexture = { (void*)static_cast<GFXD3D11TextureObject*>(eyeTex.getPointer())->get2DTex(), vr::API_DirectX, vr::ColorSpace_Gamma };
+         eyeTexture = { (void*)static_cast<GFXD3D11TextureObject*>(eyeTex.getPointer())->get2DTex(), vr::TextureType_DirectX, vr::ColorSpace_Gamma };
          bounds = OpenVRUtil::TorqueRectToBounds(mHMDRenderState.mEyeViewport[index], mHMDRenderState.mStereoRenderTexture.getWidthHeight());
          err = vr::VRCompositor()->Submit((vr::EVREye)(vr::Eye_Left + index), &eyeTexture, &bounds);
       }
       else
       {
          // left & right at the same time
-         eyeTexture = { (void*)static_cast<GFXD3D11TextureObject*>(eyeTex.getPointer())->get2DTex(), vr::API_DirectX, vr::ColorSpace_Gamma };
+         eyeTexture = { (void*)static_cast<GFXD3D11TextureObject*>(eyeTex.getPointer())->get2DTex(), vr::TextureType_DirectX, vr::ColorSpace_Gamma };
          bounds = OpenVRUtil::TorqueRectToBounds(mHMDRenderState.mEyeViewport[0], mHMDRenderState.mStereoRenderTexture.getWidthHeight());
          err = vr::VRCompositor()->Submit((vr::EVREye)(vr::Eye_Left), &eyeTexture, &bounds);
          bounds = OpenVRUtil::TorqueRectToBounds(mHMDRenderState.mEyeViewport[1], mHMDRenderState.mStereoRenderTexture.getWidthHeight());
@@ -978,14 +987,14 @@ void OpenVRProvider::onEyeRendered(U32 index)
       if (mHMDRenderState.mRenderMode == GFXDevice::RS_StereoSeparate)
       {
          // whatever eye we are on
-         eyeTexture = { (void*)static_cast<GFXGLTextureObject*>(eyeTex.getPointer())->getHandle(), vr::API_OpenGL, vr::ColorSpace_Gamma };
+         eyeTexture = { (void*)static_cast<GFXGLTextureObject*>(eyeTex.getPointer())->getHandle(), vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
          bounds = OpenVRUtil::TorqueRectToBounds(mHMDRenderState.mEyeViewport[index], mHMDRenderState.mStereoRenderTexture.getWidthHeight());
          err = vr::VRCompositor()->Submit((vr::EVREye)(vr::Eye_Left + index), &eyeTexture, &bounds);
       }
       else
       {
          // left & right at the same time
-         eyeTexture = { (void*)static_cast<GFXGLTextureObject*>(eyeTex.getPointer())->getHandle(), vr::API_OpenGL, vr::ColorSpace_Gamma };
+         eyeTexture = { (void*)static_cast<GFXGLTextureObject*>(eyeTex.getPointer())->getHandle(), vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
          bounds = OpenVRUtil::TorqueRectToBounds(mHMDRenderState.mEyeViewport[0], mHMDRenderState.mStereoRenderTexture.getWidthHeight());
          err = vr::VRCompositor()->Submit((vr::EVREye)(vr::Eye_Left), &eyeTexture, &bounds);
          bounds = OpenVRUtil::TorqueRectToBounds(mHMDRenderState.mEyeViewport[1], mHMDRenderState.mStereoRenderTexture.getWidthHeight());
@@ -1250,7 +1259,7 @@ void OpenVRProvider::resetSensors()
 {
    if (mHMD)
    {
-      mHMD->ResetSeatedZeroPose();
+      //mHMD->ResetSeatedZeroPose();
    }
 }
 
@@ -1415,8 +1424,10 @@ bool OpenVRProvider::getRenderModel(S32 idx, OpenVRRenderModel **ret, bool &fail
 
          Material* mat = new Material();
          mat->mMapTo = namedTexture->getName();
-         mat->mDiffuseMapFilename[0] = buffer;
-         mat->mEmissive[0] = true;
+         //mat->mDiffuseMapFilename[0] = buffer;
+         mat->setDiffuseMap(buffer, 0);
+         //mat->mEmissive[0] = true;
+         mat->setGlowMap(buffer, 0);
 
          dSprintf(buffer, sizeof(buffer), "%s_Material", namedTexture->getName().c_str());
          if (!mat->registerObject(buffer))
@@ -1483,7 +1494,7 @@ bool OpenVRProvider::getRenderModelTexture(S32 idx, GFXTextureObject **outTex, b
 
             FileStream fs;
             fs.open(buffer, Torque::FS::File::Write);
-            bmp->writeBitmap("PNG", fs);
+            bmp->writeBitmapStream("PNG", fs);
             fs.close();
 
             tex.set(bmp, &GFXStaticTextureSRGBProfile, true, "OpenVR Texture");
@@ -1548,11 +1559,6 @@ void OpenVRProvider::resetRenderModels()
 OpenVROverlay *OpenVRProvider::getGamepadFocusOverlay()
 {
    return NULL;
-}
-
-void OpenVRProvider::setOverlayNeighbour(vr::EOverlayDirection dir, OpenVROverlay *overlay)
-{
-
 }
 
 

@@ -219,7 +219,7 @@ void OpenVROverlay::updateOverlay()
    overlay->SetOverlayWidthInMeters(mOverlayHandle, mOverlayWidth);
 
    // NOTE: if flags in openvr change, double check this
-   for (U32 i = vr::VROverlayFlags_None; i <= vr::VROverlayFlags_ShowTouchPadScrollWheel; i++)
+   for (U32 i = (1<<0); i <= vr::VROverlayFlags_MultiCursor; i++)
    {
       overlay->SetOverlayFlag(mOverlayHandle, (vr::VROverlayFlags)i, mOverlayFlags & (1 << i));
    }
@@ -281,8 +281,8 @@ bool OpenVROverlay::isGamepadFocussed()
 {
    if (mOverlayHandle == NULL)
       return false;
-
-   return vr::VROverlay()->GetGamepadFocusOverlay() == mOverlayHandle;
+   vr::IVRCompositor* compositor = vr::VRCompositor();
+   return compositor->GetCurrentSceneFocusProcess() == mOverlayHandle;
 }
 
 bool OpenVROverlay::isActiveDashboardOverlay()
@@ -355,10 +355,10 @@ void OpenVROverlay::handleOpenVREvents()
       // tell OpenVR to make some events for us
       for (vr::TrackedDeviceIndex_t unDeviceId = 1; unDeviceId < vr::k_unControllerStateAxisCount; unDeviceId++)
       {
-         if (vr::VROverlay()->HandleControllerOverlayInteractionAsMouse(mOverlayHandle, unDeviceId))
-         {
-            break;
-         }
+         //if (vr::VROverlay()->HandleControllerOverlayInteractionAsMouse(mOverlayHandle, unDeviceId))
+         //{
+         //   break;
+         //}
       }
    }
 
@@ -481,12 +481,12 @@ void OpenVROverlay::onFrameRendered()
    vr::Texture_t tex;
    if (GFX->getAdapterType() == Direct3D11)
    {
-      tex = { (void*)static_cast<GFXD3D11TextureObject*>(mStagingTexture.getPointer())->getResource(), vr::API_DirectX, vr::ColorSpace_Auto };
+      tex = { (void*)static_cast<GFXD3D11TextureObject*>(mStagingTexture.getPointer())->getResource(), vr::TextureType_DirectX, vr::ColorSpace_Auto };
    }
 #ifdef TORQUE_OPENGL
    else if (GFX->getAdapterType() == OpenGL)
    {
-      tex = { (void*)static_cast<GFXGLTextureObject*>(mStagingTexture.getPointer())->getHandle(), vr::API_OpenGL, vr::ColorSpace_Auto };
+      tex = { (void*)static_cast<GFXGLTextureObject*>(mStagingTexture.getPointer())->getHandle(), vr::TextureType_OpenGL, vr::ColorSpace_Auto };
 
    }
 #endif
@@ -518,7 +518,7 @@ void OpenVROverlay::enableKeyboardTranslation()
       vr::EGamepadTextInputMode inputMode = ctrl->isPasswordText() ? vr::k_EGamepadTextInputModePassword : vr::k_EGamepadTextInputModeNormal;
       char text[GuiTextCtrl::MAX_STRING_LENGTH + 1];
       ctrl->getText(text);
-      overlay->ShowKeyboardForOverlay(mOverlayHandle, inputMode, vr::k_EGamepadTextInputLineModeSingleLine, ctrl->getTooltip().c_str(), GuiTextCtrl::MAX_STRING_LENGTH, text, false, (uint64_t)ctrl);
+      overlay->ShowKeyboardForOverlay(mOverlayHandle, inputMode, vr::k_EGamepadTextInputLineModeSingleLine, vr::KeyboardFlag_Minimal, ctrl->getTooltip().c_str(), GuiTextCtrl::MAX_STRING_LENGTH, text, (uint64_t)ctrl);
    }
 }
 

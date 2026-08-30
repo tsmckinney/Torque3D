@@ -18,7 +18,6 @@ typedef vr::EGamepadTextInputMode OpenVRGamepadTextInputMode;
 typedef vr::EGamepadTextInputLineMode OpenVRGamepadTextInputLineMode;
 typedef vr::ETrackingResult OpenVRTrackingResult;
 typedef vr::ETrackingUniverseOrigin OpenVRTrackingUniverseOrigin;
-typedef vr::EOverlayDirection OpenVROverlayDirection;
 typedef vr::EVRState OpenVRState;
 
 class OpenVROverlay : public GuiOffscreenCanvas

@@ -676,7 +676,7 @@ void OpenVRTrackedObject::prepRenderImage(SceneRenderState *state)
 
       vr::IVRSystem* vrs = vr::VRSystem();
 
-      if (!vrs->GetControllerState(mDeviceIndex, &mCurrentControllerState))
+      if (!vrs->GetControllerState(mDeviceIndex, &mCurrentControllerState, sizeof(&mCurrentControllerState)))
       {
          return;
       }

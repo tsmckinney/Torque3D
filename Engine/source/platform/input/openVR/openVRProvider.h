@@ -32,7 +32,6 @@ typedef vr::EGamepadTextInputMode OpenVRGamepadTextInputMode;
 typedef vr::EGamepadTextInputLineMode OpenVRGamepadTextInputLineMode;
 typedef vr::ETrackingResult OpenVRTrackingResult;
 typedef vr::ETrackingUniverseOrigin OpenVRTrackingUniverseOrigin;
-typedef vr::EOverlayDirection OpenVROverlayDirection;
 typedef vr::EVRState OpenVRState;
 typedef vr::TrackedDeviceClass OpenVRTrackedDeviceClass;
 
@@ -42,7 +41,6 @@ DefineEnumType(OpenVRGamepadTextInputMode);
 DefineEnumType(OpenVRGamepadTextInputLineMode);
 DefineEnumType(OpenVRTrackingResult);
 DefineEnumType(OpenVRTrackingUniverseOrigin);
-DefineEnumType(OpenVROverlayDirection);
 DefineEnumType(OpenVRState);
 DefineEnumType(OpenVRTrackedDeviceClass);
 
@@ -303,7 +301,6 @@ public:
    /// @name Console API
    /// {
    OpenVROverlay *getGamepadFocusOverlay();
-   void setOverlayNeighbour(vr::EOverlayDirection dir, OpenVROverlay *overlay);
 
    bool isDashboardVisible();
    void showDashboard(const char *overlayToShow);
