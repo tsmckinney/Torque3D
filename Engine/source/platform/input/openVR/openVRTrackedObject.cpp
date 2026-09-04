@@ -43,8 +43,8 @@ IMPLEMENT_CO_DATABLOCK_V1(OpenVRTrackedObjectData);
 OpenVRTrackedObjectData::OpenVRTrackedObjectData() :
    mShapeFile(NULL)
 {
-   mCollisionBoxMin = Point3F(-0.02, -0.20, -0.02);
-   mCollisionBoxMax = Point3F(0.02, 0.05, 0.02);
+   mCollisionBoxMin = Point3F(-0.02f, -0.20f, -0.02f);
+   mCollisionBoxMax = Point3F(0.02f, 0.05f, 0.02f);
 }
 
 OpenVRTrackedObjectData::~OpenVRTrackedObjectData()
@@ -71,6 +71,7 @@ bool OpenVRTrackedObjectData::preload(bool server, String &errorStr)
    {
       mShape = mShapeFile ? ResourceManager::get().load(mShapeFile) : NULL;
    }
+   return !error;
 }
 
 void OpenVRTrackedObjectData::initPersistFields()
@@ -499,7 +500,7 @@ void OpenVRTrackedObject::prepRenderImage(SceneRenderState *state)
    Point3F pos = offsetMat.getPosition();
    //Con::printf("Base offs == %f,%f,%f", pos.x, pos.y, pos.z);
 
-   const F32 CONTROLLER_SCALE = 0.1;
+   const F32 CONTROLLER_SCALE = 0.1f;
 
    if (smDebugControllerPosition)
    {
@@ -531,8 +532,8 @@ void OpenVRTrackedObject::prepRenderImage(SceneRenderState *state)
       hmdMat.inverse(); // -> world mat (as opposed to world -> tracked pos)
       hmdMat = offsetMat * hmdMat;
       hmdMat.mulP(hmdCenter);
-      DebugDrawer::get()->drawBox(hmdCenter - Point3F(0.1), hmdCenter + Point3F(0.1), ColorI::RED);
-      DebugDrawer::get()->drawTransformedBoxOutline(Point3F(-0.5, -0.1, -0.5), Point3F(0.5, 0.1, 0.5), ColorI::GREEN, hmdMat); // general box 
+      DebugDrawer::get()->drawBox(hmdCenter - Point3F(0.1f), hmdCenter + Point3F(0.1f), ColorI::RED);
+      DebugDrawer::get()->drawTransformedBoxOutline(Point3F(-0.5f, -0.1f, -0.5f), Point3F(0.5f, 0.1f, 0.5f), ColorI::GREEN, hmdMat); // general box 
 
 
       // Draw Controller
@@ -740,9 +741,11 @@ void OpenVRTrackedObject::prepRenderImage(SceneRenderState *state)
                query.getLights(ri->lights, 8);
             }
 
-            // Draw model
-            slot.nativeModel->draw(state, ri);
-            state->getRenderPass()->addInst(ri);
+            // Draw model if the state is valid
+            if (state) {
+               slot.nativeModel->draw(state, ri);
+               state->getRenderPass()->addInst(ri);
+            }
          }
       }
    }
@@ -782,9 +785,11 @@ void OpenVRTrackedObject::prepRenderImage(SceneRenderState *state)
          query.getLights(ri->lights, 8);
       }
 
-      // Draw model
-      mBasicModel->draw(state, ri);
-      state->getRenderPass()->addInst(ri);
+      // Draw model if the state is valid
+      if (state) {
+         mBasicModel->draw(state, ri);
+         state->getRenderPass()->addInst(ri);
+      }
    }
 }
 
