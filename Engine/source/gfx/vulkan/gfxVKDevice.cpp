@@ -151,6 +151,7 @@ bool GFXVulkanDevice::checkValidationLayerSupport()
 
 GFXVulkanDevice::GFXVulkanDevice()
 {
+   AssertFatal(volkInitialize() == VK_SUCCESS, "GFXVulkanDevice::GFXVulkanDevice() - Volk (Vulkan loader) couldn't initialize!");
    PlatformVK::init();
    GFXVulkanEnumTranslate::init();
    mPixelShaderVersion = 4.0f;
@@ -192,6 +193,7 @@ GFXVulkanDevice::~GFXVulkanDevice()
    if (mCardProfiler)
       SAFE_DELETE(mCardProfiler);
    SAFE_DELETE(gScreenShot);
+   volkFinalize();
 }
 
 GFXVertexBuffer *GFXVulkanDevice::allocVertexBuffer( U32 numVerts, 
@@ -368,6 +370,9 @@ void GFXVulkanDevice::init( const GFXVideoMode &mode, PlatformWindow *window )
 
    AssertFatal(vkCreateInstance(&createInfo, NULL, &mInstance) == VK_SUCCESS,
       "GFXVulkanDevice::init() - Failed to create Vulkan instance! Please make sure your graphics card supports Vulkan.");
+
+   volkLoadInstance(mInstance);
+
    AssertFatal(PlatformVK::createSurfaceVK(window, mInstance, &mVKSurface),
       "GFXVulkanDevice::init() - Failed to create Vulkan surface! Please make sure your graphics card supports Vulkan.");
    mClip.set(0, 0, 800, 800);
@@ -408,13 +413,30 @@ void GFXVulkanDevice::init( const GFXVideoMode &mode, PlatformWindow *window )
    AssertFatal(vkCreateDevice(vkCardProfiler->mPhysicalDevice, &logicalDeviceCreateInfo, NULL, &mVKDevice) == VK_SUCCESS,
       "GFXVulkanDevice::init() - Failed to create Vulkan logical device! Please make sure your graphics card supports Vulkan.");
 
+   volkLoadDevice(mVKDevice);
+
    vkGetDeviceQueue(mVKDevice, queueFamilies.mGraphicsFamily.mIndex, 0, &mGraphicsQueue);
    vkGetDeviceQueue(mVKDevice, queueFamilies.mPresentFamily.mIndex, 0, &mPresentQueue);
    vkGetDeviceQueue(mVKDevice, queueFamilies.mComputeFamily.mIndex, 0, &mComputeQueue);
 
    VmaVulkanFunctions vkFunctions = {};
-   vkFunctions.vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
-   vkFunctions.vkGetDeviceProcAddr = &vkGetDeviceProcAddr;
+   vkFunctions.vkAllocateMemory = vkAllocateMemory;
+   vkFunctions.vkBindBufferMemory = vkBindBufferMemory;
+   vkFunctions.vkBindImageMemory = vkBindImageMemory;
+   vkFunctions.vkCreateBuffer = vkCreateBuffer;
+   vkFunctions.vkCreateImage = vkCreateImage;
+   vkFunctions.vkDestroyBuffer = vkDestroyBuffer;
+   vkFunctions.vkDestroyImage = vkDestroyImage;
+   vkFunctions.vkFlushMappedMemoryRanges = vkFlushMappedMemoryRanges;
+   vkFunctions.vkFreeMemory = vkFreeMemory;
+   vkFunctions.vkGetBufferMemoryRequirements = vkGetBufferMemoryRequirements;
+   vkFunctions.vkGetImageMemoryRequirements = vkGetImageMemoryRequirements;
+   vkFunctions.vkGetPhysicalDeviceMemoryProperties = vkGetPhysicalDeviceMemoryProperties;
+   vkFunctions.vkGetPhysicalDeviceProperties = vkGetPhysicalDeviceProperties;
+   vkFunctions.vkInvalidateMappedMemoryRanges = vkInvalidateMappedMemoryRanges;
+   vkFunctions.vkMapMemory = vkMapMemory;
+   vkFunctions.vkUnmapMemory = vkUnmapMemory;
+   vkFunctions.vkCmdCopyBuffer = vkCmdCopyBuffer;
 
    VmaAllocatorCreateInfo alloCreateInfo = {};
    alloCreateInfo.vulkanApiVersion = VK_API_VERSION_1_4;

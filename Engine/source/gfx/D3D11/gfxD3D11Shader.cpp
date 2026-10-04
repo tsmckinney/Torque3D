@@ -1157,7 +1157,7 @@ GFXShaderConstType GFXD3D11Shader::convertConstType(const D3D11_SHADER_TYPE_DESC
       }
    }
 
-   return GFXSCT_Uknown;
+   return GFXSCT_Unknown;
 
 }
 

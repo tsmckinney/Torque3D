@@ -87,7 +87,7 @@ struct GFXShaderConstDesc
 {
 public:
    String name = String::EmptyString;
-   GFXShaderConstType constType = GFXSCT_Uknown;
+   GFXShaderConstType constType = GFXSCT_Unknown;
    U32 arraySize = 0;            // > 1 means it is an array!
    S32 bindPoint = -1;           // bind point used for ubo/cb
    S32 samplerReg = -1;          // sampler register.

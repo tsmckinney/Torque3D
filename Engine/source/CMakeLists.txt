@@ -14,8 +14,9 @@ find_package(FLAC CONFIG REQUIRED)
 find_package(Opus CONFIG REQUIRED)
 find_package(unofficial-theora CONFIG REQUIRED)
 find_package(SndFile CONFIG REQUIRED)
-find_package(Vulkan REQUIRED)
+find_package(glslang CONFIG REQUIRED)
 find_package(VulkanMemoryAllocator CONFIG REQUIRED)
+find_package(volk CONFIG REQUIRED)
 set(TORQUE_LINK_THIRDPARTY ${TORQUE_LINK_THIRDPARTY}
     Ogg::ogg
     Vorbis::vorbis
@@ -24,8 +25,9 @@ set(TORQUE_LINK_THIRDPARTY ${TORQUE_LINK_THIRDPARTY}
     Opus::opus
     unofficial::theora::theora unofficial::theora::theoradec unofficial::theora::theoraenc
     SndFile::sndfile
-    Vulkan::Vulkan
     GPUOpen::VulkanMemoryAllocator
+    volk::volk
+    glslang::glslang glslang::SPIRV glslang::glslang-default-resource-limits
 )
 ################# Helper Function Calls ###################
 forwardDef(TORQUE_OPENGL)

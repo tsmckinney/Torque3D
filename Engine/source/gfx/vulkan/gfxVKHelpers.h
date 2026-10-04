@@ -25,7 +25,7 @@
 
 #include "platform/platform.h"
 #include "platform/platformVK.h"
-#include <vulkan/vulkan.h>
+#include <volk.h>
 //-----------------------------------------------------------------------------
 
 #include "core/util/tVector.h"
