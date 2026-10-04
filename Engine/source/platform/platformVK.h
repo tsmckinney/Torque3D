@@ -2,7 +2,7 @@
 #define PLATFORM_GL_H
 
 class PlatformWindow;
-#include <vulkan/vulkan.h>
+#include <volk.h>
 
 namespace PlatformVK
 {

@@ -19,42 +19,5 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
-
-#ifndef _GFXVKHELPERS_H_
-#define _GFXVKHELPERS_H_
-
-#include "platform/platform.h"
-#include "platform/platformVK.h"
+#define VOLK_IMPLEMENTATION
 #include <volk.h>
-//-----------------------------------------------------------------------------
-
-#include "core/util/tVector.h"
-
-// Vendor IDs (for card profiling)
-extern const char* vendorIDToString(VkVendorId id);
-
-// Queue
-struct GFXVulkanQueueFamilyIndex
-{
-public:
-   U32 mIndex = NULL;
-   bool mHasValue = false;
-   GFXVulkanQueueFamilyIndex();
-   GFXVulkanQueueFamilyIndex(U32 idx);
-   GFXVulkanQueueFamilyIndex(bool hasValue, U32 idx);
-   ~GFXVulkanQueueFamilyIndex();
-   void set(U32 i);
-};
-struct GFXVulkanQueueFamilyIndices
-{
-public:
-   GFXVulkanQueueFamilyIndex mGraphicsFamily;
-   GFXVulkanQueueFamilyIndex mPresentFamily;
-   GFXVulkanQueueFamilyIndex mComputeFamily;
-   void generateQFIndices(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
-   bool areQFIndicesComplete();
-};
-
-extern bool checkPhysicalDeviceExtensionSupport(VkPhysicalDevice physicalDevice);
-
-#endif

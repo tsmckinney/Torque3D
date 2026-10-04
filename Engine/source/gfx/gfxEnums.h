@@ -313,7 +313,7 @@ enum GFXMatrixType
 
 enum GFXShaderConstType
 {
-   GFXSCT_Uknown,
+   GFXSCT_Unknown,
    /// GFX"S"hader"C"onstant"T"ype
    GFXSCT_ConstBuffer,
    // Scalar

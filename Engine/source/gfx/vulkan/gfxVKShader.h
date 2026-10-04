@@ -29,7 +29,9 @@
 #include "core/util/tSignal.h"
 #include "core/util/tDictionary.h"
 
-#include <glslang/Include/glslang_c_interface.h>
+#include <glslang/Public/ShaderLang.h>
+#include <glslang/Public/ResourceLimits.h>
+#include <glslang/SPIRV/GlslangToSpv.h>
 
 class FileStream;
 class GFXVulkanDevice;
@@ -199,9 +201,11 @@ public:
 protected:
    bool _init() override;
 
-   bool initShader(const Torque::Path& file,
+   bool initShader(glslang::TShader* shader,
+      const Torque::Path& file,
       GFXShaderStage stage,
-      const Vector<GFXShaderMacro>& macros);
+      const Vector<GFXShaderMacro>& macros,
+      glslang::TProgram* program);
 
    void clearShaders();
 
@@ -209,18 +213,27 @@ protected:
    void initHandles();
    void setConstantsFromBuffer(U8* buffer);
 
-   static char* _handleIncludes(const Torque::Path& path, FileStream* s);
+   char* _handleIncludes(const Torque::Path& path, FileStream* s);
 
-   static bool _loadShaderFromStream(VkShaderModule shader,
+   bool _loadShaderFromStream(
       const Torque::Path& path,
       FileStream* s,
-      const Vector<GFXShaderMacro>& macros);
+      const Vector<GFXShaderMacro>& macros,
+      Vector<char*>& buffers);
 
    /// @name Internal Vulkan handles
    /// @{
-   VkShaderModule mVertexShader;
-   VkShaderModule mPixelShader;
-   VkShaderModule mGeometryShader;
+   VkShaderModule mVKVertexShader;
+   VkShaderModule mVKPixelShader;
+   VkShaderModule mVKGeometryShader;
+   /// @}
+
+   /// @name Internal glslang handles
+   /// @{
+   glslang::TShader* mGLSLVertexShader;
+   glslang::TShader* mGLSLPixelShader;
+   glslang::TShader* mGLSLGeometryShader;
+   glslang::TProgram* mProgram;
    /// @}
 
    U8* mGlobalConstBuffer;

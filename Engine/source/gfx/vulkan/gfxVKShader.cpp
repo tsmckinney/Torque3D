@@ -482,12 +482,14 @@ void GFXVulkanShaderConstBuffer::onShaderReload(GFXVulkanShader* shader)
 }
 
 GFXVulkanShader::GFXVulkanShader(GFXVulkanDevice* device) :
-   mVertexShader(nullptr),
-   mPixelShader(nullptr),
-   mGeometryShader(nullptr),
+   mVKVertexShader(nullptr),
+   mVKPixelShader(nullptr),
+   mVKGeometryShader(nullptr),
    mDevice(device),
    mGlobalConstBuffer(NULL)
 {
+   mProgram = new glslang::TProgram();
+   AssertFatal(glslang::InitializeProcess(), "GFXVulkanShader::GFXVulkanShader - Could not initialize glslang!");
 }
 
 GFXVulkanShader::~GFXVulkanShader()
@@ -503,6 +505,7 @@ GFXVulkanShader::~GFXVulkanShader()
 
    if (mGlobalConstBuffer)
       delete[] mGlobalConstBuffer;
+   glslang::FinalizeProcess();
 }
 
 void GFXVulkanShader::clearShaders()
@@ -511,9 +514,9 @@ void GFXVulkanShader::clearShaders()
    //glDeleteShader(mVertexShader);
    //glDeleteShader(mPixelShader);
    //glDeleteShader(mGeometryShader);
-   mVertexShader = nullptr;
-   mPixelShader = nullptr;
-   mGeometryShader = nullptr;
+   mVKVertexShader = nullptr;
+   mVKPixelShader = nullptr;
+   mVKGeometryShader = nullptr;
 }
 
 bool GFXVulkanShader::_init()
@@ -524,8 +527,6 @@ bool GFXVulkanShader::_init()
       return false;
 
    clearShaders();
-
-   //mProgram = glCreateProgram();
 
    // Set the macros and add the global ones.
    Vector<GFXShaderMacro> macros;
@@ -546,17 +547,28 @@ bool GFXVulkanShader::_init()
    macroHash = Torque::getStringHash64(macroHash);
 
    String fileName = cachePath.getFileName();
-
+   glslang::TShader shader(EShLangCount);
+   EShLanguage lang;
    if (!mVertexFile.isEmpty())
+   {
       fileName += "_" + mVertexFile.getFileName();
-
+      lang = EShLangVertex;
+   }
    if (!mPixelFile.isEmpty())
+   {
       fileName += "_" + mPixelFile.getFileName();
-
+      lang = EShLangFragment;
+   }
    if (!mGeometryFile.isEmpty())
+   {
       fileName += "_" + mGeometryFile.getFileName();
-
-   fileName += "_" + macroHash;
+      lang = EShLangGeometry;
+   }
+   shader.setEnvInput(glslang::EShSourceGlsl, lang, glslang::EShClientVulkan, 100);
+   shader.setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_2);
+   shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_4);
+   shader.setAutoMapBindings(true);
+   fileName += "_VK_" + macroHash;
 
    cachePath.setFileName(fileName);
 
@@ -571,16 +583,28 @@ bool GFXVulkanShader::_init()
          {
 
             FileStream fs;
+            Con::printf("Cache path: %s", fileName.c_str());
             if (fs.open(cachePath, Torque::FS::File::Read))
             {
+               bool linked = false;
                U32 size;
                FrameAllocatorMarker bin;
-               //GLenum gl_format;
-               //fs.read(&gl_format);
+               U32 gl_format;
+               fs.read(&gl_format);
                fs.read(&size);
 
                char* bin_data = (char*)bin.alloc(size);
                fs.read(size, bin_data);
+
+               Con::printf("Shader gl_format: %i", gl_format);
+
+               const TBuiltInResource* resources = GetDefaultResources();
+               EShMessages messages = (EShMessages)(EShMsgSpvRules | EShMsgVulkanRules);
+               //linked = shader.parse(resources, 100, false, messages);
+
+               //mProgram->addShader(&shader);
+
+               //linked = mProgram->link(messages);
 
                //glProgramBinary(
                //   mProgram,
@@ -591,20 +615,20 @@ bool GFXVulkanShader::_init()
 
                //GLint linked;
                //glGetProgramiv(mProgram, GL_LINK_STATUS, &linked);
-               //if (linked == GL_TRUE)
-               //{
-               //   initConstantDescs();
-               //   initHandles();
-//
-               //   // Notify Buffers we might have changed in size.
-               //   // If this was our first init then we won't have any activeBuffers
-               //   // to worry about unnecessarily calling.
-               //   Vector<GFXShaderConstBuffer*>::iterator biter = mActiveBuffers.begin();
-               //   for (; biter != mActiveBuffers.end(); biter++)
-               //      ((GFXVulkanShaderConstBuffer*)(*biter))->onShaderReload(this);
-//
-               //   return true;
-               //}
+               if (linked == true)
+               {
+                  initConstantDescs();
+                  initHandles();
+
+                  // Notify Buffers we might have changed in size.
+                  // If this was our first init then we won't have any activeBuffers
+                  // to worry about unnecessarily calling.
+                  Vector<GFXShaderConstBuffer*>::iterator biter = mActiveBuffers.begin();
+                  for (; biter != mActiveBuffers.end(); biter++)
+                     ((GFXVulkanShaderConstBuffer*)(*biter))->onShaderReload(this);
+
+                  return true;
+               }
             }
          }
       }
@@ -618,7 +642,7 @@ bool GFXVulkanShader::_init()
    // Compile the vertex and pixel shaders if specified.
    if (!mVertexFile.isEmpty())
    {
-      compiledVertexShader = initShader(mVertexFile, GFXShaderStage::VERTEX_SHADER, macros);
+      compiledVertexShader = initShader(mGLSLVertexShader, mVertexFile, GFXShaderStage::VERTEX_SHADER, macros, mProgram);
       if (!compiledVertexShader)
          return false;
    }
@@ -626,7 +650,7 @@ bool GFXVulkanShader::_init()
    if (!mPixelFile.isEmpty())
    {
       macros.last().name = "TORQUE_PIXEL_SHADER";
-      compiledPixelShader = initShader(mPixelFile, GFXShaderStage::PIXEL_SHADER, macros);
+      compiledPixelShader = initShader(mGLSLPixelShader, mPixelFile, GFXShaderStage::PIXEL_SHADER, macros, mProgram);
       if (!compiledPixelShader)
          return false;
    }
@@ -634,31 +658,165 @@ bool GFXVulkanShader::_init()
    if (!mGeometryFile.isEmpty())
    {
       macros.last().name = "TORQUE_GEOMETRY_SHADER";
-      compiledGeometryShader = initShader(mGeometryFile, GFXShaderStage::GEOMETRY_SHADER, macros);
+      compiledGeometryShader = initShader(mGLSLGeometryShader, mGeometryFile, GFXShaderStage::GEOMETRY_SHADER, macros, mProgram);
       if (!compiledGeometryShader)
          return false;
    }
 
    // Link it!
    //glLinkProgram(mProgram);
+   bool link = mProgram->link((EShMessages)(EShMsgDefault));
 
-   U32 activeAttribs = 0;
+   U32 logLength = dStrlen(mProgram->getInfoLog());
+   //glGetProgramiv(mProgram, GL_INFO_LOG_LENGTH, (GLint*)&logLength);
+   if (logLength)
+   {
+      FrameAllocatorMarker fam;
+      const char* log = (char*)fam.alloc(logLength);
+      log = mProgram->getInfoLog();
+      //glGetProgramInfoLog(mProgram, logLength, NULL, log);
+
+      if (link == false)
+      {
+         if (smLogErrors)
+         {
+            Con::errorf("GFXVulkanShader::init - Error linking shader program \"%s\"!", cachePath.getFileName().c_str());
+            Con::errorf("%s", log);
+         }
+      }
+      else
+         if (smLogWarnings)
+         {
+            Con::warnf("Shader program \"%s\": %s",
+               cachePath.getFileName().c_str(), log);
+         }
+   }
+
+   // If glslang failed to link our shader, bail.
+   if (link == false)
+      return false;
+
+   mProgram->mapIO();
+   mProgram->buildReflection();
+
+   glslang::SpvOptions spvCompileOptions;
+   spvCompileOptions.optimizeSize = true;
+
+   // Only compile SPIR-V for our beautiful shaders if they exist and successfully compiled!
+   if (compiledVertexShader && !mVertexFile.isEmpty())
+   {
+      std::vector<U32> vertexSPV;
+      glslang::GlslangToSpv(*mProgram->getIntermediate(EShLangVertex), vertexSPV, nullptr, &spvCompileOptions);
+   }
+   if (compiledPixelShader && !mPixelFile.isEmpty())
+   {
+      std::vector<U32> pixelSPV;
+      glslang::GlslangToSpv(*mProgram->getIntermediate(EShLangFragment), pixelSPV, nullptr, &spvCompileOptions);
+   }
+   if (compiledGeometryShader && !mGeometryFile.isEmpty())
+   {
+      std::vector<U32> geoSPV;
+      glslang::GlslangToSpv(*mProgram->getIntermediate(EShLangGeometry), geoSPV, nullptr, &spvCompileOptions);
+   }
+
+   U32 activeAttribs = mProgram->getNumPipeInputs();
    //glGetProgramiv(mProgram, GL_ACTIVE_ATTRIBUTES, &activeAttribs);
 
-   U32 maxLength;
+   U32 maxLength = 50;
    //glGetProgramiv(mProgram, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &maxLength);
 
-   FrameTemp<String> tempData(maxLength + 1);
-   *tempData.address() = '\0';
+   FrameTemp<String> tempData(maxLength);
    // Check atributes
    for (U32 i = 0; i < activeAttribs; i++)
    {
-      U32 size;
-      U32 type;
+      U32 size = mProgram->getPipeInput(i).size;
+      U32 type = mProgram->getPipeInput(i).glDefineType;
 
+      *tempData.address() = String(mProgram->getPipeInput(i).name.c_str());
       //glGetActiveAttrib(mProgram, i, maxLength + 1, NULL, &size, &type, tempData.address());
 
       StringTableEntry argName = StringTable->insert(tempData.address()->c_str());
+
+      static StringTableEntry attr_vPosition = StringTable->insert("vPosition");
+      if (argName == attr_vPosition) {
+         mProgram->getPipeInput(i).dump();
+         continue;
+      }
+      static StringTableEntry attr_vNormal = StringTable->insert("vNormal");
+      if (argName == attr_vNormal) {
+         mProgram->getPipeInput(i).dump();
+         continue;
+      }
+      static StringTableEntry attr_vColor = StringTable->insert("vColor");
+      if (argName == attr_vColor) {
+         mProgram->getPipeInput(i).dump();
+         continue;
+      }
+      static StringTableEntry attr_vTangent = StringTable->insert("vTangent");
+      if (argName == attr_vTangent) {
+         mProgram->getPipeInput(i).dump();
+         continue;
+      }
+      static StringTableEntry attr_vTangentW = StringTable->insert("vTangentW");
+      if (argName == attr_vTangentW) {
+         mProgram->getPipeInput(i).dump();
+         continue;
+      }
+      static StringTableEntry attr_vBinormal = StringTable->insert("vBinormal");
+      if (argName == attr_vBinormal) {
+         mProgram->getPipeInput(i).dump();
+         continue;
+      }
+      static StringTableEntry attr_vTexCoord0 = StringTable->insert("vTexCoord0");
+      if (argName == attr_vTexCoord0) {
+         mProgram->getPipeInput(i).dump();
+         continue;
+      }
+      static StringTableEntry attr_vTexCoord1 = StringTable->insert("vTexCoord1");
+      if (argName == attr_vTexCoord1) {
+         mProgram->getPipeInput(i).dump();
+         continue;
+      }
+      static StringTableEntry attr_vTexCoord2 = StringTable->insert("vTexCoord2");
+      if (argName == attr_vTexCoord2) {
+         mProgram->getPipeInput(i).dump();
+         continue;
+      }
+      static StringTableEntry attr_vTexCoord3 = StringTable->insert("vTexCoord3");
+      if (argName == attr_vTexCoord3) {
+         mProgram->getPipeInput(i).dump();
+         continue;
+      }
+      static StringTableEntry attr_vTexCoord4 = StringTable->insert("vTexCoord4");
+      if (argName == attr_vTexCoord4) {
+         mProgram->getPipeInput(i).dump();
+         continue;
+      }
+      static StringTableEntry attr_vTexCoord5 = StringTable->insert("vTexCoord5");
+      if (argName == attr_vTexCoord5) {
+         mProgram->getPipeInput(i).dump();
+         continue;
+      }
+      static StringTableEntry attr_vTexCoord6 = StringTable->insert("vTexCoord6");
+      if (argName == attr_vTexCoord6) {
+         mProgram->getPipeInput(i).dump();
+         continue;
+      }
+      static StringTableEntry attr_vTexCoord7 = StringTable->insert("vTexCoord7");
+      if (argName == attr_vTexCoord7) {
+         mProgram->getPipeInput(i).dump();
+         continue;
+      }
+      static StringTableEntry attr_vTexCoord8 = StringTable->insert("vTexCoord8");
+      if (argName == attr_vTexCoord8) {
+         mProgram->getPipeInput(i).dump();
+         continue;
+      }
+      static StringTableEntry attr_vTexCoord9 = StringTable->insert("vTexCoord9");
+      if (argName == attr_vTexCoord9) {
+         mProgram->getPipeInput(i).dump();
+         continue;
+      }
 
       //CHECK_AARG(Torque::GL_VertexAttrib_Position, vPosition);
       //CHECK_AARG(Torque::GL_VertexAttrib_Normal, vNormal);
@@ -692,40 +850,38 @@ bool GFXVulkanShader::_init()
    }
 
    // Link it again!
-   //glLinkProgram(mProgram);
-
-   U32 linkStatus;
+   link = mProgram->link((EShMessages)(EShMsgSpvRules | EShMsgVulkanRules));
    //glGetProgramiv(mProgram, GL_LINK_STATUS, &linkStatus);
 
    // Dump the info log to the console
-   U32 logLength = 0;
+   logLength = dStrlen(mProgram->getInfoLog());
    //glGetProgramiv(mProgram, GL_INFO_LOG_LENGTH, (GLint*)&logLength);
    if (logLength)
    {
       FrameAllocatorMarker fam;
-      char* log = (char*)fam.alloc(logLength);
+      const char* log = (char*)fam.alloc(logLength);
+      log = mProgram->getInfoLog();
       //glGetProgramInfoLog(mProgram, logLength, NULL, log);
 
-      //if (linkStatus == GL_FALSE)
-      //{
-      //   if (smLogErrors)
-      //   {
-      //      Con::errorf("GFXVulkanShader::init - Error linking shader!");
-      //      Con::errorf("Program %s / %s: %s",
-      //         mVertexFile.getFullPath().c_str(), mPixelFile.getFullPath().c_str(), log);
-      //   }
-      //}
-      //else
-      if (smLogWarnings)
+      if (link == false)
       {
-         Con::warnf("Program %s / %s: %s",
-            mVertexFile.getFullPath().c_str(), mPixelFile.getFullPath().c_str(), log);
+         if (smLogErrors)
+         {
+            Con::errorf("GFXVulkanShader::init - Error linking shader program \"%s\"!", cachePath.getFileName().c_str());
+            Con::errorf("%s", log);
+         }
       }
+      else
+         if (smLogWarnings)
+         {
+            Con::warnf("Shader program \"%s\": %s",
+               cachePath.getFileName().c_str(), log);
+         }
    }
 
 
    // If we failed to link, bail.
-   if (linkStatus == false)
+   if (link == false)
       return false;
 
    U32 binaryLength;
@@ -767,7 +923,7 @@ void GFXVulkanShader::initConstantDescs()
    // clear our vectors.
    mShaderConsts.clear();
 
-   U32 maxNameLength;
+   U32 maxNameLength = 50;
    //glGetProgramiv(mProgram, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxNameLength);
 
    if (!maxNameLength)
@@ -878,6 +1034,7 @@ void GFXVulkanShader::initConstantDescs()
 
 GFXShaderConstType GFXVulkanShader::convertConstType(U32 constType)
 {
+   Con::printf("Const type: %i", constType);
    switch (constType)
    {
    //case GL_FLOAT:
@@ -962,7 +1119,7 @@ GFXShaderConstType GFXVulkanShader::convertConstType(U32 constType)
       break;
    }
 
-   return GFXSCT_Uknown;
+   return GFXSCT_Unknown;
 }
 
 void GFXVulkanShader::initHandles()
@@ -1280,7 +1437,10 @@ char* GFXVulkanShader::_handleIncludes(const Torque::Path& path, FileStream* s)
    // TODO:  The #line pragma on GLSL takes something called a
    // "source-string-number" which it then never explains.
    //
-   // Until i resolve this mystery i disabled this.
+   // The person who originally wrote these lines is working on
+   // figuring out what it means and has commented the following
+   // lines out on the OpenGL backend; therefore, they've also been
+   // commented out here.
    //
    //String linePragma = String::ToString( "#line 1 \r\n");
    //U32 linePragmaLen = linePragma.length();
@@ -1347,7 +1507,8 @@ char* GFXVulkanShader::_handleIncludes(const Torque::Path& path, FileStream* s)
             return NULL;
          }
 
-         // TODO: Disabled till this is fixed correctly.
+         // TODO: Disabled until the original writer fixes this correctly
+         // and we can prove it works in Vulkan.
          //
          // Count the number of lines in the file
          // before the include.
@@ -1368,7 +1529,8 @@ char* GFXVulkanShader::_handleIncludes(const Torque::Path& path, FileStream* s)
          manip.erase(q - buffer, p - q);
          String sItx(includedText);
 
-         // TODO: Disabled till this is fixed correctly.
+         // TODO: Disabled until the original writer fixes this correctly
+         // and we can prove it works in Vulkan.
          //
          // Add a new line pragma to restore the proper
          // file and line number after the include.
@@ -1387,14 +1549,13 @@ char* GFXVulkanShader::_handleIncludes(const Torque::Path& path, FileStream* s)
    return buffer;
 }
 
-bool GFXVulkanShader::_loadShaderFromStream(VkShaderModule shader,
+bool GFXVulkanShader::_loadShaderFromStream(
    const Torque::Path& path,
    FileStream* s,
-   const Vector<GFXShaderMacro>& macros)
+   const Vector<GFXShaderMacro>& macros,
+   Vector<char*>& buffers)
 {
-   Vector<char*> buffers;
    Vector<U32> lengths;
-
    // The GLSL version declaration must go first!
    const char* versionDecl = "#version 330\n";
    buffers.push_back(dStrdup(versionDecl));
@@ -1416,7 +1577,7 @@ bool GFXVulkanShader::_loadShaderFromStream(VkShaderModule shader,
    // Now add all the macros.
    for (U32 i = 0; i < macros.size(); i++)
    {
-      if (macros[i].name.isEmpty())  // TODO OPENGL
+      if (macros[i].name.isEmpty())  // TODO VULKAN
          continue;
 
       String define = String::ToString("#define %s %s\n", macros[i].name.c_str(), macros[i].value.c_str());
@@ -1425,14 +1586,13 @@ bool GFXVulkanShader::_loadShaderFromStream(VkShaderModule shader,
    }
 
    // Now finally add the shader source.
-   U32 shaderLen = s->getStreamSize();
+   S32 shaderLen = s->getStreamSize();
    char* buffer = _handleIncludes(path, s);
    if (!buffer)
       return false;
 
    buffers.push_back(buffer);
    lengths.push_back(shaderLen);
-
    //glShaderSource(shader, buffers.size(), (const GLchar**)const_cast<const char**>(buffers.address()), NULL);
 
 #if defined(TORQUE_DEBUG) && defined(TORQUE_DEBUG_GFX)
@@ -1446,36 +1606,29 @@ bool GFXVulkanShader::_loadShaderFromStream(VkShaderModule shader,
       stream.writeText(buffers[i]);
 #endif
 
-   // Cleanup the shader source buffer.
-   for (U32 i = 0; i < buffers.size(); i++)
-      dFree(buffers[i]);
-
-   //glCompileShader(shader);
-
    return true;
 }
 
-bool GFXVulkanShader::initShader(const Torque::Path& file,
+bool GFXVulkanShader::initShader(glslang::TShader* shader,
+   const Torque::Path& file,
    GFXShaderStage stage,
-   const Vector<GFXShaderMacro>& macros)
+   const Vector<GFXShaderMacro>& macros,
+   glslang::TProgram* program)
 {
    PROFILE_SCOPE(GFXVulkanShader_CompileShader);
 
-   VkShaderModule activeShader = 0;
+   EShLanguage lang;
 
    switch (stage)
    {
    case VERTEX_SHADER:
-   //   activeShader = glCreateShader(GL_VERTEX_SHADER);
-   //   mVertexShader = activeShader;
+      lang = EShLangVertex;
       break;
    case PIXEL_SHADER:
-   //   activeShader = glCreateShader(GL_FRAGMENT_SHADER);
-   //   mPixelShader = activeShader;
+      lang = EShLangFragment;
       break;
    case GEOMETRY_SHADER:
-   //   activeShader = glCreateShader(GL_GEOMETRY_SHADER);
-   //   mGeometryShader = activeShader;
+      lang = EShLangGeometry;
       break;
    case DOMAIN_SHADER:
       break;
@@ -1486,6 +1639,15 @@ bool GFXVulkanShader::initShader(const Torque::Path& file,
    default:
       break;
    }
+   shader = new glslang::TShader(lang);
+   shader->setEnvInput(glslang::EShSourceGlsl, lang, glslang::EShClientVulkan, 100);
+   shader->setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_2);
+   shader->setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_4);
+   shader->setAutoMapBindings(true);
+   shader->setAutoMapLocations(true);
+   shader->setEnvInputVulkanRulesRelaxed();
+   shader->setGlobalUniformBinding(0);
+   shader->setGlobalUniformSet(0);
 
    //glAttachShader(mProgram, activeShader);
 
@@ -1501,41 +1663,48 @@ bool GFXVulkanShader::initShader(const Torque::Path& file,
 
       return false;
    }
-
-   if (!_loadShaderFromStream(activeShader, file, &stream, macros))
+   Vector<char*> buffers;
+   if (!_loadShaderFromStream(file, &stream, macros, buffers))
    {
       if (smLogErrors)
          Con::errorf("GFXVulkanShader::initShader - unable to load shader from stream: '%s'.", file.getFullPath().c_str());
       return false;
    }
-   //GLint compile;
-   //glGetShaderiv(activeShader, GL_COMPILE_STATUS, &compile);
+   shader->setStrings(buffers.address(), 1);
+   shader->setPreamble("");
+   const TBuiltInResource* resources = GetDefaultResources();
+   EShMessages messages = (EShMessages)(EShMsgDefault);
+   //compiled = shader->parse(resources, 100, true, messages);
+   shader->setSourceEntryPoint("main");
+   shader->setEntryPoint("main");
+   bool compile = shader->parse(resources, 100, ECoreProfile, false, true, messages);
+   program->addShader(shader);
 
    // Dump the info log to the console
    U32 logLength = 0;
-   //glGetShaderiv(activeShader, GL_INFO_LOG_LENGTH, (GLint*)&logLength);
+   logLength = dStrlen(shader->getInfoLog());
 
    if (logLength)
    {
       FrameAllocatorMarker fam;
-      char* log = (char*)fam.alloc(logLength);
-      //glGetShaderInfoLog(activeShader, logLength, NULL, log);
+      const char* log = (char*)fam.alloc(logLength);
+      log = shader->getInfoLog();
 
-      //if (compile == GL_FALSE)
-      //{
-      //   if (smLogErrors)
-      //   {
-      //      Con::errorf("GFXVulkanShader::initShader - Error compiling shader!");
-      //      Con::errorf("Program %s: %s", file.getFullPath().c_str(), log);
-      //   }
-      //}
-      //else 
+      if (!compile)
+      {
+         if (smLogErrors)
+         {
+            Con::errorf("GFXVulkanShader::initShader - Error compiling shader %s! Error(s) shown below.", file.getFullPath().c_str());
+            Con::errorf("%s", log);
+         }
+      }
+      else 
       if (smLogWarnings)
-         Con::warnf("Program %s: %s", file.getFullPath().c_str(), log);
+         Con::warnf("Shader stage %s: %s", file.getFullPath().c_str(), log);
    }
 
    //return compile != GL_FALSE;
-   return true;
+   return compile;
 }
 
 /// Returns our list of shader constants, the material can get this and just set the constants it knows about

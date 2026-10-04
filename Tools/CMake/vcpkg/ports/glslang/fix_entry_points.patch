@@ -1,0 +1,19 @@
+diff --git a/glslang/MachineIndependent/localintermediate.h b/glslang/MachineIndependent/localintermediate.h
+index c5af0bde..bfd21d27 100644
+--- a/glslang/MachineIndependent/localintermediate.h
++++ b/glslang/MachineIndependent/localintermediate.h
+@@ -490,8 +490,13 @@ public:
+         entryPointName = ep;
+         processes.addProcess("entry-point");
+         processes.addArgument(entryPointName);
++        numEntryPoints = 1;
++    }
++    void setEntryPointMangledName(const char* ep) 
++    { 
++        entryPointMangledName = ep;
++        numEntryPoints = 1;
+     }
+-    void setEntryPointMangledName(const char* ep) { entryPointMangledName = ep; }
+     const std::string& getEntryPointName() const { return entryPointName; }
+     const std::string& getEntryPointMangledName() const { return entryPointMangledName; }
+ 

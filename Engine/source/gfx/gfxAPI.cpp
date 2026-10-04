@@ -186,7 +186,7 @@ ImplementEnumType(GFXShaderConstType,
    "The shader const types.\n"
    "@ingroup GFX")
 
-   { GFXSCT_Uknown, "GFXSCT_Uknown" },
+   { GFXSCT_Unknown, "GFXSCT_Unknown" },
    { GFXSCT_ConstBuffer, "GFXSCT_ConstBuffer" },
    { GFXSCT_Float, "GFXSCT_Float" },
    { GFXSCT_Float2, "GFXSCT_Float2" },

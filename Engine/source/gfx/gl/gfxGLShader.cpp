@@ -963,7 +963,7 @@ GFXShaderConstType GFXGLShader::convertConstType(GLenum constType)
       break;
    }
 
-   return GFXSCT_Uknown;
+   return GFXSCT_Unknown;
 }
 
 void GFXGLShader::initHandles()
