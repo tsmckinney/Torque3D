@@ -21,6 +21,7 @@
 //-----------------------------------------------------------------------------
 
 #include "gfx/vulkan/gfxVKStateBlock.h"
+#include "gfx/vulkan/gfxVKDevice.h"
 #include "core/crc.h"
 
 namespace DictHash
