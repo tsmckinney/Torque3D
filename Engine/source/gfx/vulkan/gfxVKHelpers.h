@@ -29,6 +29,7 @@
 //-----------------------------------------------------------------------------
 
 #include "core/util/tVector.h"
+#include "gfx/gfxEnums.h"
 
 // Vendor IDs (for card profiling)
 extern const char* vendorIDToString(VkVendorId id);
@@ -55,6 +56,45 @@ public:
    bool areQFIndicesComplete();
 };
 
-extern bool checkPhysicalDeviceExtensionSupport(VkPhysicalDevice physicalDevice);
+extern bool checkPhysicalDeviceCompatibility(VkPhysicalDevice physicalDevice);
+extern bool doesPhysicalDeviceSupportExtension(VkPhysicalDevice physicalDevice, String extensionName);
+
+inline VkFilter minificationFilter(U32 minFilter)
+{
+   // the compiler should interpret this as array lookups
+   switch (minFilter)
+   {
+   case GFXTextureFilterLinear:
+      return VK_FILTER_LINEAR;
+   default:
+      return VK_FILTER_NEAREST;
+   }
+}
+inline VkSamplerMipmapMode mipmappingFilter(U32 minFilter, U32 mipFilter, U32 /*mipLevels*/)
+{
+   // the compiler should interpret this as array lookups
+   switch (minFilter)
+   {
+   case GFXTextureFilterLinear:
+      switch (mipFilter)
+      {
+      case GFXTextureFilterLinear:
+         return VK_SAMPLER_MIPMAP_MODE_LINEAR;
+      case GFXTextureFilterPoint:
+         return VK_SAMPLER_MIPMAP_MODE_NEAREST;
+      default:
+         return VK_SAMPLER_MIPMAP_MODE_LINEAR;
+      }
+   default:
+      switch (mipFilter) {
+      case GFXTextureFilterLinear:
+         return VK_SAMPLER_MIPMAP_MODE_LINEAR;
+      case GFXTextureFilterPoint:
+         return VK_SAMPLER_MIPMAP_MODE_NEAREST;
+      default:
+         return VK_SAMPLER_MIPMAP_MODE_NEAREST;
+      }
+   }
+}
 
 #endif

@@ -19,5 +19,41 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
-#define VOLK_IMPLEMENTATION
-#include <volk.h>
+
+#ifndef _GFXVKSTATEBLOCK_H_
+#define _GFXVKSTATEBLOCK_H_
+
+#include "platform/platform.h"
+#include "core/strings/stringFunctions.h"
+#include "gfx/screenshot.h"
+#include "gfx/gfxCardProfile.h"
+#include "gfx/vulkan/gfxVKDevice.h"
+
+// It's worth noting that Vulkan does not automatically handle state in the background like OpenGL does.
+// Because of this, we will handle the pipeline state here ourselves.
+class GFXVulkanStateBlock : public GFXStateBlock
+{
+public:
+   GFXVulkanStateBlock(const GFXStateBlockDesc& desc);
+   virtual ~GFXVulkanStateBlock();
+   void activate(GFXVulkanStateBlock* oldState);
+   /// Returns the hash value of the desc that created this block
+   U32 getHashValue() const override;
+
+   /// Returns a GFXStateBlockDesc that this block represents
+   const GFXStateBlockDesc& getDesc() const override;
+
+   //
+   // GFXResource
+   //
+   void zombify() override;
+   /// When called the resource should restore all device sensitive information destroyed by zombify()
+   void resurrect() override;
+private:
+   GFXStateBlockDesc mDesc;
+   U32 mCachedHash;
+
+   VkSampler mSamplerObjects[GFX_TEXTURE_STAGE_COUNT];
+};
+
+#endif

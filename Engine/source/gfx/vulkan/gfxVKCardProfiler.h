@@ -41,6 +41,7 @@ public:
 
     ///
     const String &getRendererString() const override;
+    GFXVulkanQueueFamilyIndices mQFIndices;
 
 protected:
 
@@ -52,10 +53,12 @@ protected:
     VkPhysicalDevice mPhysicalDevice = VK_NULL_HANDLE;
     VkPhysicalDeviceProperties2 mDeviceProperties;
     VkPhysicalDeviceFeatures2KHR mDeviceFeatures;
-    
+
 public:
     void init() override;
     void findPhysicalDevice(VkSurfaceKHR surface);
+    VkPhysicalDeviceProperties2 getDeviceProperties() { return mDeviceProperties; }
+    VkPhysicalDeviceFeatures2KHR getDeviceFeatures() { return mDeviceFeatures; }
     String mRenderString;
 };
 #endif

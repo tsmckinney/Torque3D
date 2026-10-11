@@ -41,28 +41,6 @@
 
 GFXAdapter::CreateDeviceInstanceDelegate GFXVulkanDevice::mCreateDeviceInstance(GFXVulkanDevice::createInstance); 
 
-//
-// GFXVulkanStateBlock
-//
-class GFXVulkanStateBlock : public GFXStateBlock
-{
-public:
-   /// Returns the hash value of the desc that created this block
-   U32 getHashValue() const override { return 0; };
-
-   /// Returns a GFXStateBlockDesc that this block represents
-   const GFXStateBlockDesc& getDesc() const override { return mDefaultDesc; }
-
-   //
-   // GFXResource
-   //
-   void zombify() override { }
-   /// When called the resource should restore all device sensitive information destroyed by zombify()
-   void resurrect() override { }
-private:
-   GFXStateBlockDesc mDefaultDesc;
-};
-
 static VKAPI_ATTR VkBool32 VKAPI_CALL validationDebugCallback(
    VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
    VkDebugUtilsMessageTypeFlagsEXT messageType,
@@ -107,7 +85,7 @@ static void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMesse
 
 GFXDevice *GFXVulkanDevice::createInstance( U32 adapterIndex )
 {
-   return new GFXVulkanDevice();
+   return new GFXVulkanDevice(adapterIndex);
 }
 
 void GFXVulkanDevice::setupDebugMessenger()
@@ -149,9 +127,9 @@ bool GFXVulkanDevice::checkValidationLayerSupport()
    return true;
 }
 
-GFXVulkanDevice::GFXVulkanDevice()
+GFXVulkanDevice::GFXVulkanDevice(U32 adapterIndex) : mAdapterIndex(adapterIndex)
 {
-   AssertFatal(volkInitialize() == VK_SUCCESS, "GFXVulkanDevice::GFXVulkanDevice() - Volk (Vulkan loader) couldn't initialize!");
+   AssertFatal(volkInitialize() == VK_SUCCESS, "GFXVulkanDevice::GFXVulkanDevice() - Couldn't load Vulkan! Please make sure your graphics card supports it.");
    PlatformVK::init();
    GFXVulkanEnumTranslate::init();
    mPixelShaderVersion = 4.0f;
@@ -180,6 +158,8 @@ GFXVulkanDevice::~GFXVulkanDevice()
    {
       DestroyDebugUtilsMessengerEXT(mInstance, mDebugMessenger, nullptr);
    }
+   
+   vkDestroyCommandPool(mVKDevice, mCMDPool, nullptr);
    vkDestroySurfaceKHR(mInstance, mVKSurface, nullptr);
    vkDestroyDevice(mVKDevice, nullptr);
    vkDestroyInstance(mInstance, nullptr);
@@ -196,13 +176,22 @@ GFXVulkanDevice::~GFXVulkanDevice()
    volkFinalize();
 }
 
+void GFXVulkanDevice::enterDebugEvent(ColorI color, const char* name)
+{
+}
+void GFXVulkanDevice::leaveDebugEvent()
+{
+}
+
 GFXVertexBuffer *GFXVulkanDevice::allocVertexBuffer( U32 numVerts, 
                                                    const GFXVertexFormat *vertexFormat,
                                                    U32 vertSize, 
                                                    GFXBufferType bufferType,
                                                    void* data ) 
 {
-   return new GFXVulkanVertexBuffer(GFX, numVerts, vertexFormat, vertSize, bufferType);
+   GFXVulkanVertexBuffer* vertexBuffer = new GFXVulkanVertexBuffer(this, numVerts, vertexFormat, vertSize, bufferType);
+   vertexBuffer->registerResourceWithDevice(this);
+   return vertexBuffer;
 }
 
 GFXPrimitiveBuffer *GFXVulkanDevice::allocPrimitiveBuffer( U32 numIndices, 
@@ -210,22 +199,30 @@ GFXPrimitiveBuffer *GFXVulkanDevice::allocPrimitiveBuffer( U32 numIndices,
                                                          GFXBufferType bufferType,
                                                          void* data ) 
 {
-   return new GFXVulkanPrimitiveBuffer(GFX, numIndices, numPrimitives, bufferType);
+   GFXVulkanPrimitiveBuffer* primitiveBuffer = new GFXVulkanPrimitiveBuffer(this, numIndices, numPrimitives, bufferType);
+   primitiveBuffer->registerResourceWithDevice(this);
+   return primitiveBuffer;
 }
 
 GFXCubemap* GFXVulkanDevice::createCubemap()
-{ 
-   return new GFXVulkanCubemap(); 
+{
+   GFXVulkanCubemap* cubemap = new GFXVulkanCubemap();
+   cubemap->registerResourceWithDevice(this);
+   return cubemap;
 };
 
 GFXCubemapArray* GFXVulkanDevice::createCubemapArray()
 {
-   return new GFXVulkanCubemapArray();
+   GFXVulkanCubemapArray* cubemapArray = new GFXVulkanCubemapArray();
+   cubemapArray->registerResourceWithDevice(this);
+   return cubemapArray;
 };
 
 GFXTextureArray* GFXVulkanDevice::createTextureArray()
 {
-   return new GFXVulkanTextureArray();
+   GFXVulkanTextureArray* textureArray = new GFXVulkanTextureArray();
+   textureArray->registerResourceWithDevice(this);
+   return textureArray;
 };
 
 GFXWindowTarget* GFXVulkanDevice::allocWindowTarget(PlatformWindow* window)
@@ -235,6 +232,7 @@ GFXWindowTarget* GFXVulkanDevice::allocWindowTarget(PlatformWindow* window)
    if (!mInitialized) {
       init(window->getVideoMode(), window);
       target->createSwapChain();
+      target->setupRenderPassAndFramebuffer();
    }
    return target;
 }
@@ -369,12 +367,12 @@ void GFXVulkanDevice::init( const GFXVideoMode &mode, PlatformWindow *window )
    }
 
    AssertFatal(vkCreateInstance(&createInfo, NULL, &mInstance) == VK_SUCCESS,
-      "GFXVulkanDevice::init() - Failed to create Vulkan instance! Please make sure your graphics card supports Vulkan.");
+      "GFXVulkanDevice::init() - Failed to create Vulkan instance!");
 
    volkLoadInstance(mInstance);
 
    AssertFatal(PlatformVK::createSurfaceVK(window, mInstance, &mVKSurface),
-      "GFXVulkanDevice::init() - Failed to create Vulkan surface! Please make sure your graphics card supports Vulkan.");
+      "GFXVulkanDevice::init() - Failed to create Vulkan surface!");
    mClip.set(0, 0, 800, 800);
    mTextureManager = new GFXVulkanTextureManager();
    gScreenShot = new ScreenShot();
@@ -403,6 +401,9 @@ void GFXVulkanDevice::init( const GFXVideoMode &mode, PlatformWindow *window )
 
    Vector<const char*> logDevExts;
    logDevExts.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+   logDevExts.push_back(VK_EXT_MEMORY_PRIORITY_EXTENSION_NAME);
+   logDevExts.push_back(VK_EXT_PAGEABLE_DEVICE_LOCAL_MEMORY_EXTENSION_NAME);
+   logDevExts.push_back(VK_EXT_CUSTOM_BORDER_COLOR_EXTENSION_NAME);
    VkDeviceCreateInfo logicalDeviceCreateInfo{};
    logicalDeviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
    logicalDeviceCreateInfo.pQueueCreateInfos = queueCreateInfos.address();
@@ -410,8 +411,9 @@ void GFXVulkanDevice::init( const GFXVideoMode &mode, PlatformWindow *window )
    logicalDeviceCreateInfo.pEnabledFeatures = &vkCardProfiler->mDeviceFeatures.features;
    logicalDeviceCreateInfo.enabledExtensionCount = logDevExts.size();
    logicalDeviceCreateInfo.ppEnabledExtensionNames = logDevExts.address();
+
    AssertFatal(vkCreateDevice(vkCardProfiler->mPhysicalDevice, &logicalDeviceCreateInfo, NULL, &mVKDevice) == VK_SUCCESS,
-      "GFXVulkanDevice::init() - Failed to create Vulkan logical device! Please make sure your graphics card supports Vulkan.");
+      "GFXVulkanDevice::init() - Failed to create Vulkan logical device!");
 
    volkLoadDevice(mVKDevice);
 
@@ -420,32 +422,33 @@ void GFXVulkanDevice::init( const GFXVideoMode &mode, PlatformWindow *window )
    vkGetDeviceQueue(mVKDevice, queueFamilies.mComputeFamily.mIndex, 0, &mComputeQueue);
 
    VmaVulkanFunctions vkFunctions = {};
-   vkFunctions.vkAllocateMemory = vkAllocateMemory;
-   vkFunctions.vkBindBufferMemory = vkBindBufferMemory;
-   vkFunctions.vkBindImageMemory = vkBindImageMemory;
-   vkFunctions.vkCreateBuffer = vkCreateBuffer;
-   vkFunctions.vkCreateImage = vkCreateImage;
-   vkFunctions.vkDestroyBuffer = vkDestroyBuffer;
-   vkFunctions.vkDestroyImage = vkDestroyImage;
-   vkFunctions.vkFlushMappedMemoryRanges = vkFlushMappedMemoryRanges;
-   vkFunctions.vkFreeMemory = vkFreeMemory;
-   vkFunctions.vkGetBufferMemoryRequirements = vkGetBufferMemoryRequirements;
-   vkFunctions.vkGetImageMemoryRequirements = vkGetImageMemoryRequirements;
-   vkFunctions.vkGetPhysicalDeviceMemoryProperties = vkGetPhysicalDeviceMemoryProperties;
-   vkFunctions.vkGetPhysicalDeviceProperties = vkGetPhysicalDeviceProperties;
-   vkFunctions.vkInvalidateMappedMemoryRanges = vkInvalidateMappedMemoryRanges;
-   vkFunctions.vkMapMemory = vkMapMemory;
-   vkFunctions.vkUnmapMemory = vkUnmapMemory;
-   vkFunctions.vkCmdCopyBuffer = vkCmdCopyBuffer;
 
    VmaAllocatorCreateInfo alloCreateInfo = {};
    alloCreateInfo.vulkanApiVersion = VK_API_VERSION_1_4;
    alloCreateInfo.physicalDevice = vkCardProfiler->mPhysicalDevice;
    alloCreateInfo.device = mVKDevice;
    alloCreateInfo.instance = mInstance;
+   vmaImportVulkanFunctionsFromVolk(&alloCreateInfo, &vkFunctions);
    alloCreateInfo.pVulkanFunctions = &vkFunctions;
+   alloCreateInfo.flags = VMA_ALLOCATOR_CREATE_EXT_MEMORY_PRIORITY_BIT;
 
    vmaCreateAllocator(&alloCreateInfo, &mVMAllocator);
+
+   VkCommandPoolCreateInfo commandPoolCI{};
+   commandPoolCI.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+   commandPoolCI.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+   commandPoolCI.queueFamilyIndex = queueFamilies.mGraphicsFamily.mIndex;
+   AssertFatal(vkCreateCommandPool(mVKDevice, &commandPoolCI, nullptr, &mCMDPool) == VK_SUCCESS,
+      "GFXVulkanDevice::init() - Failed to create Vulkan command pool!");
+
+   mCMDBuffers.setSize(2);
+
+   VkCommandBufferAllocateInfo commandBufferAI{};
+   commandBufferAI.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+   commandBufferAI.commandPool = mCMDPool;
+   commandBufferAI.commandBufferCount = 2;
+   AssertFatal(vkAllocateCommandBuffers(mVKDevice, &commandBufferAI, mCMDBuffers.address()) == VK_SUCCESS,
+      "GFXVulkanDevice::init() - Failed to allocate Vulkan command buffers!");
 
    mInitialized = true;
    deviceInited();
@@ -453,7 +456,7 @@ void GFXVulkanDevice::init( const GFXVideoMode &mode, PlatformWindow *window )
 
 GFXStateBlockRef GFXVulkanDevice::createStateBlockInternal(const GFXStateBlockDesc& desc)
 {
-   return new GFXVulkanStateBlock();
+   return new GFXVulkanStateBlock(desc);
 }
 
 VkPhysicalDevice GFXVulkanDevice::getVKPhysicalDevice()

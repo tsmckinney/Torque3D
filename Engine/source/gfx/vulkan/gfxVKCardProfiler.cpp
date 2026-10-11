@@ -50,10 +50,9 @@ void GFXVulkanCardProfiler::findPhysicalDevice(VkSurfaceKHR surface)
 
    for (VkPhysicalDevice device : devices)
    {
-      GFXVulkanQueueFamilyIndices indices;
-      indices.generateQFIndices(device, surface);
+      mQFIndices.generateQFIndices(device, surface);
 
-      if (indices.areQFIndicesComplete() && checkPhysicalDeviceExtensionSupport(device))
+      if (mQFIndices.areQFIndicesComplete() && checkPhysicalDeviceCompatibility(device))
       {
          mPhysicalDevice = device;
          break;

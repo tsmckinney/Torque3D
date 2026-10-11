@@ -133,8 +133,9 @@ bool GFXVulkanQueueFamilyIndices::areQFIndicesComplete()
       && this->mComputeFamily.mHasValue;
 }
 
-bool checkPhysicalDeviceExtensionSupport(VkPhysicalDevice physicalDevice)
+bool checkPhysicalDeviceCompatibility(VkPhysicalDevice physicalDevice)
 {
+   // 1. Extension support
    U32 extensionCount;
    vkEnumerateDeviceExtensionProperties(physicalDevice, NULL, &extensionCount, NULL);
    Vector<VkExtensionProperties> availableExts;
@@ -149,6 +150,9 @@ bool checkPhysicalDeviceExtensionSupport(VkPhysicalDevice physicalDevice)
 
    Vector<const char*> reqdExts;
    reqdExts.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+   reqdExts.push_back(VK_EXT_MEMORY_PRIORITY_EXTENSION_NAME);
+   reqdExts.push_back(VK_EXT_PAGEABLE_DEVICE_LOCAL_MEMORY_EXTENSION_NAME);
+   reqdExts.push_back(VK_EXT_CUSTOM_BORDER_COLOR_EXTENSION_NAME);
    Vector<const char*>::iterator avaiIter = availExtNames.begin();
    for (; avaiIter != availExtNames.end(); avaiIter++)
    {

@@ -24,6 +24,7 @@
 #include "gfx/vulkan/gfxVKShader.h"
 #include "gfx/vulkan/gfxVKHelpers.h"
 #include <vk_mem_alloc.h>
+#include <volk.h>
 
 #include "core/frameAllocator.h"
 #include "core/stream/fileStream.h"
@@ -514,9 +515,10 @@ void GFXVulkanShader::clearShaders()
    //glDeleteShader(mVertexShader);
    //glDeleteShader(mPixelShader);
    //glDeleteShader(mGeometryShader);
-   mVKVertexShader = nullptr;
-   mVKPixelShader = nullptr;
-   mVKGeometryShader = nullptr;
+   vkDestroyShaderModule(GFXVK->getVKLogicalDevice(), mVKVertexShader, nullptr);
+   vkDestroyShaderModule(GFXVK->getVKLogicalDevice(), mVKPixelShader, nullptr);
+   vkDestroyShaderModule(GFXVK->getVKLogicalDevice(), mVKGeometryShader, nullptr);
+   mVKShaderStages.clear();
 }
 
 bool GFXVulkanShader::_init()
@@ -702,23 +704,74 @@ bool GFXVulkanShader::_init()
    glslang::SpvOptions spvCompileOptions;
    spvCompileOptions.optimizeSize = true;
 
-   // Only compile SPIR-V for our beautiful shaders if they exist and successfully compiled!
+   // Only compile SPIR-V for our shaders if they exist and they compiled successfully in glslang.
+   // Also, grrr, why does C++ glslang rely on std vectors!?
    if (compiledVertexShader && !mVertexFile.isEmpty())
    {
       std::vector<U32> vertexSPV;
       glslang::GlslangToSpv(*mProgram->getIntermediate(EShLangVertex), vertexSPV, nullptr, &spvCompileOptions);
+
+      VkShaderModuleCreateInfo vShaderCreateInfo{};
+      vShaderCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+      vShaderCreateInfo.codeSize = vertexSPV.size() * sizeof(U32);
+      vShaderCreateInfo.pCode = reinterpret_cast<const U32*>(vertexSPV.data());
+      vShaderCreateInfo.pNext = nullptr;
+      vShaderCreateInfo.flags = 0;
+      AssertISV(vkCreateShaderModule(GFXVK->getVKLogicalDevice(), &vShaderCreateInfo, nullptr, &mVKVertexShader) == VK_SUCCESS, 
+         String::ToString("GFXVulkanShader::init - Error creating Vulkan-side vertex shader module for \"%s\"!", mVertexFile.getFullFileName().c_str()));
+
+      VkPipelineShaderStageCreateInfo vShaderStageInfo{};
+      vShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+      vShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+      vShaderStageInfo.module = mVKVertexShader;
+      vShaderStageInfo.pName = "main";
+      mVKShaderStages.push_back(vShaderStageInfo);
    }
    if (compiledPixelShader && !mPixelFile.isEmpty())
    {
       std::vector<U32> pixelSPV;
       glslang::GlslangToSpv(*mProgram->getIntermediate(EShLangFragment), pixelSPV, nullptr, &spvCompileOptions);
+
+      VkShaderModuleCreateInfo pShaderCreateInfo{};
+      pShaderCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+      pShaderCreateInfo.codeSize = pixelSPV.size() * sizeof(U32);
+      pShaderCreateInfo.pCode = reinterpret_cast<const U32*>(pixelSPV.data());
+      pShaderCreateInfo.pNext = nullptr;
+      pShaderCreateInfo.flags = 0;
+      AssertISV(vkCreateShaderModule(GFXVK->getVKLogicalDevice(), &pShaderCreateInfo, nullptr, &mVKPixelShader) == VK_SUCCESS, 
+         String::ToString("GFXVulkanShader::init - Error creating Vulkan-side pixel shader module for \"%s\"!", mPixelFile.getFullFileName().c_str()));
+
+      VkPipelineShaderStageCreateInfo pShaderStageInfo{};
+      pShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+      pShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+      pShaderStageInfo.module = mVKPixelShader;
+      pShaderStageInfo.pName = "main";
+      mVKShaderStages.push_back(pShaderStageInfo);
    }
    if (compiledGeometryShader && !mGeometryFile.isEmpty())
    {
       std::vector<U32> geoSPV;
       glslang::GlslangToSpv(*mProgram->getIntermediate(EShLangGeometry), geoSPV, nullptr, &spvCompileOptions);
+
+      VkShaderModuleCreateInfo gShaderCreateInfo{};
+      gShaderCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+      gShaderCreateInfo.codeSize = geoSPV.size() * sizeof(U32);
+      gShaderCreateInfo.pCode = reinterpret_cast<const U32*>(geoSPV.data());
+      gShaderCreateInfo.pNext = nullptr;
+      gShaderCreateInfo.flags = 0;
+      AssertISV(vkCreateShaderModule(GFXVK->getVKLogicalDevice(), &gShaderCreateInfo, nullptr, &mVKGeometryShader) == VK_SUCCESS, 
+         String::ToString("GFXVulkanShader::init - Error creating Vulkan-side geometry shader module for \"%s\"!", mGeometryFile.getFullFileName().c_str()));
+
+      VkPipelineShaderStageCreateInfo gShaderStageInfo{};
+      gShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+      gShaderStageInfo.stage = VK_SHADER_STAGE_GEOMETRY_BIT;
+      gShaderStageInfo.module = mVKGeometryShader;
+      gShaderStageInfo.pName = "main";
+      mVKShaderStages.push_back(gShaderStageInfo);
    }
 
+   // TODO: Reimplement this (and the CHECK_AARG macro in general) in Vulkan later!
+   /*
    U32 activeAttribs = mProgram->getNumPipeInputs();
    //glGetProgramiv(mProgram, GL_ACTIVE_ATTRIBUTES, &activeAttribs);
 
@@ -904,6 +957,7 @@ bool GFXVulkanShader::_init()
          out.write(length, bin_data);
       }
    }
+   */
 
    initConstantDescs();
    initHandles();
@@ -1114,7 +1168,7 @@ GFXShaderConstType GFXVulkanShader::convertConstType(U32 constType)
    //   return GFXSCT_SamplerTextureArray;
    //   break;
    default:
-      AssertFatal(false, "Unknown shader constant class enum, maybe you could add it?");
+      AssertFatal(false, String::ToString("GFXVulkanShader::convertConstType - Unknown shader constant class enum %i! Please report this to a developer for them to implement it here.", constType));
       // If we don't recognize the constant don't add its description.
       break;
    }
@@ -1641,8 +1695,8 @@ bool GFXVulkanShader::initShader(glslang::TShader* shader,
    }
    shader = new glslang::TShader(lang);
    shader->setEnvInput(glslang::EShSourceGlsl, lang, glslang::EShClientVulkan, 100);
-   shader->setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_2);
-   shader->setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_4);
+   shader->setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_4);
+   shader->setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_6);
    shader->setAutoMapBindings(true);
    shader->setAutoMapLocations(true);
    shader->setEnvInputVulkanRulesRelaxed();

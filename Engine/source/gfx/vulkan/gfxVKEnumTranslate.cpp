@@ -25,19 +25,19 @@
 #include "gfx/vulkan/gfxVKHelpers.h"
 #include <vk_mem_alloc.h>
  
-U32 GFXVulkanPrimType[GFXPT_COUNT];
-U32 GFXVulkanBlend[GFXBlend_COUNT];
-U32 GFXVulkanBlendOp[GFXBlendOp_COUNT];
-U32 GFXVulkanTextureFilter[GFXTextureFilter_COUNT];
-U32 GFXVulkanTextureAddress[GFXAddress_COUNT];
-U32 GFXVulkanCmpFunc[GFXCmp_COUNT];
-U32 GFXVulkanStencilOp[GFXStencilOp_COUNT];
-U32 GFXVulkanTextureFormat[GFXFormat_COUNT];
+VkPrimitiveTopology GFXVulkanPrimType[GFXPT_COUNT];
+VkBlendFactor GFXVulkanBlend[GFXBlend_COUNT];
+VkBlendOp GFXVulkanBlendOp[GFXBlendOp_COUNT];
+VkFilter GFXVulkanTextureFilter[GFXTextureFilter_COUNT];
+VkSamplerAddressMode GFXVulkanTextureAddress[GFXAddress_COUNT];
+VkCompareOp GFXVulkanCmpFunc[GFXCmp_COUNT];
+VkStencilOp GFXVulkanStencilOp[GFXStencilOp_COUNT];
+VkFormat GFXVulkanTextureFormat[GFXFormat_COUNT];
 U32 GFXVulkanTextureType[GFXFormat_COUNT];
-U32* GFXVulkanTextureSwizzle[GFXFormat_COUNT];
+VkComponentSwizzle* GFXVulkanTextureSwizzle[GFXFormat_COUNT];
 //U32 GFXVulkanBufferType[GFXBufferType_COUNT];
-U32 GFXVulkanCullMode[GFXCull_COUNT];
-U32 GFXVulkanFillMode[GFXFill_COUNT];
+VkCullModeFlagBits GFXVulkanCullMode[GFXCull_COUNT];
+VkPolygonMode GFXVulkanFillMode[GFXFill_COUNT];
 
 void GFXVulkanEnumTranslate::init()
 {
@@ -138,8 +138,8 @@ void GFXVulkanEnumTranslate::init()
    GFXVulkanTextureFormat[GFXFormatBC2_SRGB] = VK_FORMAT_BC2_SRGB_BLOCK;
    GFXVulkanTextureFormat[GFXFormatBC3_SRGB] = VK_FORMAT_BC3_SRGB_BLOCK;
 
-   static U32 Swizzle_GFXFormatA8[] = { VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_R };
-   static U32 Swizzle_GFXFormatL[] = { VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_A };
+   static VkComponentSwizzle Swizzle_GFXFormatA8[] = { VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_R };
+   static VkComponentSwizzle Swizzle_GFXFormatL[] = { VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_A };
    GFXVulkanTextureSwizzle[GFXFormatA8] = Swizzle_GFXFormatA8; // old GL_ALPHA8   
    GFXVulkanTextureSwizzle[GFXFormatL8] = Swizzle_GFXFormatL; // old GL_LUMINANCE8
    GFXVulkanTextureSwizzle[GFXFormatL16] = Swizzle_GFXFormatL; // old GL_LUMINANCE16

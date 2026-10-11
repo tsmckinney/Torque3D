@@ -24,27 +24,28 @@
 #define _GFXVKENUMTRANSLATE_H_
 
 #include "gfx/gfxEnums.h"
+#include <volk.h>
 
 namespace GFXVulkanEnumTranslate
 {
    void init();
 };
 
-extern U32 GFXVulkanPrimType[GFXPT_COUNT];
-extern U32 GFXVulkanBlend[GFXBlend_COUNT];
-extern U32 GFXVulkanBlendOp[GFXBlendOp_COUNT];
-extern U32 GFXVulkanTextureFilter[GFXTextureFilter_COUNT];
-extern U32 GFXVulkanTextureAddress[GFXAddress_COUNT];
-extern U32 GFXVulkanCmpFunc[GFXCmp_COUNT];
-extern U32 GFXVulkanStencilOp[GFXStencilOp_COUNT];
+extern VkPrimitiveTopology GFXVulkanPrimType[GFXPT_COUNT];
+extern VkBlendFactor GFXVulkanBlend[GFXBlend_COUNT];
+extern VkBlendOp GFXVulkanBlendOp[GFXBlendOp_COUNT];
+extern VkFilter GFXVulkanTextureFilter[GFXTextureFilter_COUNT];
+extern VkSamplerAddressMode GFXVulkanTextureAddress[GFXAddress_COUNT];
+extern VkCompareOp GFXVulkanCmpFunc[GFXCmp_COUNT];
+extern VkStencilOp GFXVulkanStencilOp[GFXStencilOp_COUNT];
 
-extern U32 GFXVulkanTextureFormat[GFXFormat_COUNT];
+extern VkFormat GFXVulkanTextureFormat[GFXFormat_COUNT];
 extern U32 GFXVulkanTextureType[GFXFormat_COUNT];
-extern U32* GFXVulkanTextureSwizzle[GFXFormat_COUNT];
+extern VkComponentSwizzle* GFXVulkanTextureSwizzle[GFXFormat_COUNT];
 
 //extern U32 GFXVulkanBufferType[GFXBufferType_COUNT];
-extern U32 GFXVulkanCullMode[GFXCull_COUNT];
+extern VkCullModeFlagBits GFXVulkanCullMode[GFXCull_COUNT];
 
-extern U32 GFXVulkanFillMode[GFXFill_COUNT];
+extern VkPolygonMode GFXVulkanFillMode[GFXFill_COUNT];
 
 #endif

@@ -154,17 +154,22 @@ void GFXVulkanDevice::enumerateAdapters( Vector<GFXAdapter*> &adapterList )
    SDL_DestroyWindow( tempWindow );
 }
 
-//void GFXVulkanDevice::enumerateVideoModes()
-//{
-//   mVideoModes.clear();
-//   EnumerateVideoModes(mVideoModes);
-//}
+void GFXVulkanDevice::enumerateVideoModes()
+{
+   mVideoModes.clear();
+   VKEnumerateVideoModes(mVideoModes);
+}
 
-//bool GFXVulkanDevice::beginSceneInternal() 
-//{
-//   mCanCurrentlyRender = true;
-//   return true;
-//}
+bool GFXVulkanDevice::beginSceneInternal() 
+{
+   mCanCurrentlyRender = true;
+   return true;
+}
+
+void GFXVulkanDevice::endSceneInternal()
+{
+   mCanCurrentlyRender = false;
+}
 
 //U32 GFXVulkanDevice::getTotalVideoMemory()
 //{
