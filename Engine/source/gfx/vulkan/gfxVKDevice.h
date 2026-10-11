@@ -38,6 +38,7 @@
 #include "gfx/vulkan/gfxVKDevice.h"
 #include "gfx/vulkan/gfxVKEnumTranslate.h"
 #include "gfx/vulkan/gfxVKHelpers.h"
+#include "gfx/vulkan/gfxVKStateBlock.h"
 #include "gfx/bitmap/gBitmap.h"
 #include "core/util/safeDelete.h"
 #include "windowManager/platformWindow.h"
@@ -56,7 +57,7 @@ enum GFXVulkanQueueType
 class GFXVulkanDevice : public GFXDevice
 {
 public:
-   GFXVulkanDevice();
+   GFXVulkanDevice(U32 adapterIndex);
    virtual ~GFXVulkanDevice();
 
    static GFXDevice *createInstance( U32 adapterIndex );
@@ -71,13 +72,13 @@ public:
 
    /// @name Debug Methods
    /// @{
-   void enterDebugEvent(ColorI color, const char *name) override { };
-   void leaveDebugEvent() override { };
+   void enterDebugEvent(ColorI color, const char *name) override;
+   void leaveDebugEvent() override;
    void setDebugMarker(ColorI color, const char *name) override { };
    /// @}
 
    /// Enumerates the supported video modes of the device
-   void enumerateVideoModes() override { };
+   void enumerateVideoModes() override;
 
    /// Sets the video mode for the device
    virtual void setVideoMode( const GFXVideoMode &mode ) { };
@@ -126,7 +127,7 @@ protected:
    #if defined(TORQUE_DEBUG)
    bool mEnableValidationLayers = true;
    #else
-   bool mEnableValidationLayers = true;
+   bool mEnableValidationLayers = false;
    #endif
    bool checkValidationLayerSupport();
 
@@ -150,7 +151,7 @@ public:
    F32 getPixelShaderVersion() const override { return mPixelShaderVersion; };
    void setPixelShaderVersion(F32 version) override { mPixelShaderVersion = version; };
 
-   U32 getNumSamplers() const override { return 0; };
+   U32 getNumSamplers() const override { return GFX_TEXTURE_STAGE_COUNT; };
    U32 getNumRenderTargets() const override { return 0; };
 
    void setupGenericShaders(GenericShaderType type = GSColor) override;
@@ -171,8 +172,8 @@ public:
    void copyResource(GFXTextureObject *pDst, GFXCubemap *pSrc, const U32 face) override { };
    void clear( U32 flags, const LinearColorF& color, F32 z, U32 stencil ) override { };
    void clearColorAttachment(const U32 attachment, const LinearColorF& color) override { };
-   bool beginSceneInternal() override { return true; };
-   void endSceneInternal() override { };
+   bool beginSceneInternal() override;
+   void endSceneInternal() override;
 
    void drawPrimitive( GFXPrimitiveType primType, U32 vertexStart, U32 primitiveCount ) override { };
    void drawIndexedPrimitive(  GFXPrimitiveType primType, 
@@ -216,6 +217,11 @@ private:
    VkQueue mGraphicsQueue;
    VkQueue mPresentQueue;
    VkQueue mComputeQueue;
+
+   Vector<VkCommandBuffer> mCMDBuffers;
+   VkCommandPool mCMDPool;
+
+   U32 mAdapterIndex;
 };
 
 #define GFXVK static_cast<GFXVulkanDevice*>(GFX)

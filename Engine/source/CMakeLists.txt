@@ -25,8 +25,8 @@ set(TORQUE_LINK_THIRDPARTY ${TORQUE_LINK_THIRDPARTY}
     Opus::opus
     unofficial::theora::theora unofficial::theora::theoradec unofficial::theora::theoraenc
     SndFile::sndfile
-    GPUOpen::VulkanMemoryAllocator
     volk::volk
+    GPUOpen::VulkanMemoryAllocator
     glslang::glslang glslang::SPIRV glslang::glslang-default-resource-limits
 )
 ################# Helper Function Calls ###################

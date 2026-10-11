@@ -226,6 +226,7 @@ protected:
    VkShaderModule mVKVertexShader;
    VkShaderModule mVKPixelShader;
    VkShaderModule mVKGeometryShader;
+   Vector<VkPipelineShaderStageCreateInfo> mVKShaderStages;
    /// @}
 
    /// @name Internal glslang handles

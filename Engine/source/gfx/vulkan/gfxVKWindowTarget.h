@@ -38,6 +38,10 @@ public:
    VkExtent2D mExtent;
    Vector<VkImage> mSwapImages;
    Vector<VkImageView> mSwapImageViews;
+   Vector<VkFramebuffer> mSwapFramebuffers;
+   VkImage mDepthImage;
+   VmaAllocation mDepthAlloc;
+   VkImageView mDepthView;
 };
 
 class GFXVulkanWindowTarget : public GFXWindowTarget
@@ -52,7 +56,20 @@ public:
         return mWindow->getClientExtent();
     }
 
-    GFXFormat getFormat() override { return GFXFormatR8G8B8A8; }
+    GFXFormat getFormat() override {
+       Vector<VkSurfaceFormatKHR> formats;
+       U32 size = formats.size();
+       vkGetPhysicalDeviceSurfaceFormatsKHR(GFXVK->getVKPhysicalDevice(), GFXVK->getVKSurface(), &size, VK_NULL_HANDLE);
+       formats.setSize(size);
+       vkGetPhysicalDeviceSurfaceFormatsKHR(GFXVK->getVKPhysicalDevice(), GFXVK->getVKSurface(), &size, formats.address());
+       for (size_t i = 0; i < sizeof(GFXVulkanTextureFormat); i++)
+       {
+          if (GFXVulkanTextureFormat[i] == (U32)formats[0].format) {
+             return (GFXFormat)i;
+          }
+       }
+       return GFXFormatR8G8B8A8;
+    }
     GFXFormat getDepthFormat();
 
     bool present() override;
@@ -66,11 +83,12 @@ public:
     void resurrect() override {};
 
     void createSwapChain();
-    void setupPipelineAndBuffers();
+    void setupRenderPassAndFramebuffer();
 
     GFXDevice* mDevice;
     GFXVulkanSwapChain mSwapchain;
     GFXFormat mDepthFormat;
+    VkRenderPass mRenderPass;
 };
 
 #endif

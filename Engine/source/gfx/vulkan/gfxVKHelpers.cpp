@@ -133,8 +133,9 @@ bool GFXVulkanQueueFamilyIndices::areQFIndicesComplete()
       && this->mComputeFamily.mHasValue;
 }
 
-bool checkPhysicalDeviceExtensionSupport(VkPhysicalDevice physicalDevice)
+bool checkPhysicalDeviceCompatibility(VkPhysicalDevice physicalDevice)
 {
+   // 1. Extension support
    U32 extensionCount;
    vkEnumerateDeviceExtensionProperties(physicalDevice, NULL, &extensionCount, NULL);
    Vector<VkExtensionProperties> availableExts;
@@ -149,6 +150,9 @@ bool checkPhysicalDeviceExtensionSupport(VkPhysicalDevice physicalDevice)
 
    Vector<const char*> reqdExts;
    reqdExts.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+   reqdExts.push_back(VK_EXT_MEMORY_PRIORITY_EXTENSION_NAME);
+   reqdExts.push_back(VK_EXT_PAGEABLE_DEVICE_LOCAL_MEMORY_EXTENSION_NAME);
+   reqdExts.push_back(VK_EXT_CUSTOM_BORDER_COLOR_EXTENSION_NAME);
    Vector<const char*>::iterator avaiIter = availExtNames.begin();
    for (; avaiIter != availExtNames.end(); avaiIter++)
    {
@@ -168,5 +172,36 @@ bool checkPhysicalDeviceExtensionSupport(VkPhysicalDevice physicalDevice)
          reqdExts.erase(avExtIdx);
       }
    }
-   return reqdExts.empty();
+
+   // 2. Is the graphics card discrete?
+   VkPhysicalDeviceProperties2 deviceProps{};
+   deviceProps.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+   vkGetPhysicalDeviceProperties2(physicalDevice, &deviceProps);
+   bool isDiscrete = deviceProps.properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
+
+   return reqdExts.empty() && isDiscrete;
+}
+
+bool doesPhysicalDeviceSupportExtension(VkPhysicalDevice physicalDevice, String extensionName)
+{
+   U32 extensionCount;
+   vkEnumerateDeviceExtensionProperties(physicalDevice, NULL, &extensionCount, NULL);
+   Vector<VkExtensionProperties> availableExts;
+   availableExts.setSize(extensionCount);
+   vkEnumerateDeviceExtensionProperties(physicalDevice, NULL, &extensionCount, availableExts.address());
+
+   Vector<const char*> availExtNames;
+   for (const auto& ext : availableExts)
+   {
+      availExtNames.push_front(ext.extensionName);
+   }
+
+   Vector<const char*>::iterator avaiIter = availExtNames.begin();
+   for (; avaiIter != availExtNames.end(); avaiIter++)
+   {
+      if (String::compare(extensionName, *avaiIter) == 0)
+      {
+         return true;
+      }
+   }
 }
