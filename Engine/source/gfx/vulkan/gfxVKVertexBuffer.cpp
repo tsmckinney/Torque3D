@@ -25,7 +25,14 @@
 
 //-----------------------------------------------------------------------------
 
-void GFXVulkanVertexBuffer::lock(U32 vertexStart, U32 vertexEnd, void **vertexPtr) 
+GFXVulkanVertexBuffer::GFXVulkanVertexBuffer(GFXDevice* device, U32 numVerts, const GFXVertexFormat* vertexFormat, U32 vertexSize, GFXBufferType bufferType)
+   : GFXVertexBuffer(device, numVerts, vertexFormat, vertexSize, bufferType)
+{
+   tempBuf = NULL;
+}
+
+
+void GFXVulkanVertexBuffer::lock(U32 vertexStart, U32 vertexEnd, void **vertexPtr)
 {
    tempBuf = new unsigned char[(vertexEnd - vertexStart) * mVertexSize];
    *vertexPtr = (void*) tempBuf;

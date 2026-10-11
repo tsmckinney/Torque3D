@@ -40,8 +40,7 @@ public:
                         U32 numVerts, 
                         const GFXVertexFormat *vertexFormat, 
                         U32 vertexSize, 
-                        GFXBufferType bufferType ) :
-      GFXVertexBuffer(device, numVerts, vertexFormat, vertexSize, bufferType) {tempBuf =NULL;};
+                        GFXBufferType bufferType );
    void lock(U32 vertexStart, U32 vertexEnd, void **vertexPtr) override;
    void unlock() override;
    void prepare() override;

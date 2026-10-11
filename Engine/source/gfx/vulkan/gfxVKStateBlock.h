@@ -25,7 +25,6 @@
 
 #include "platform/platform.h"
 #include "core/strings/stringFunctions.h"
-#include "gfx/screenshot.h"
 #include "gfx/gfxCardProfile.h"
 #include "gfx/vulkan/gfxVKDevice.h"
 
