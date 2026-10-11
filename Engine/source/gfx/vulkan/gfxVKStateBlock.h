@@ -24,9 +24,8 @@
 #define _GFXVKSTATEBLOCK_H_
 
 #include "platform/platform.h"
-#include "core/strings/stringFunctions.h"
-#include "gfx/gfxCardProfile.h"
-#include "gfx/vulkan/gfxVKDevice.h"
+#include "gfx/gfxStateBlock.h"
+#include <volk.h>
 
 // It's worth noting that Vulkan does not automatically handle state in the background like OpenGL does.
 // Because of this, we will handle the pipeline state here ourselves.
