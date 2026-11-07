@@ -22,11 +22,11 @@
 
 #include "hlslCompat.glsl"
 
-in vec2  vTexCoord0;
+layout (location = 6) in vec2 vTexCoord0;
 #define uvCoord vTexCoord0
 
-out vec4 offscreenPos;
-out vec4 backbufferPos;
+layout (location = 0) out vec4 offscreenPos;
+layout (location = 1) out vec4 backbufferPos;
 
 #define OUT_hpos gl_Position
 #define OUT_offscreenPos offscreenPos

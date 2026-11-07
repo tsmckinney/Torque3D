@@ -20,9 +20,9 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-out vec4 OUT_col;
-out vec4 OUT_col1;
-out vec4 OUT_col2;
+layout (location = 0) out vec4 OUT_col;
+layout (location = 1) out vec4 OUT_col1;
+layout (location = 2) out vec4 OUT_col2;
 
 //-----------------------------------------------------------------------------
 // Main                                                                        

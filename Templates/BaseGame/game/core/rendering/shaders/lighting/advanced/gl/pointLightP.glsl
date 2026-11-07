@@ -98,26 +98,26 @@ in vec4 color;
 
 #endif
 
-uniform sampler2D deferredBuffer;
+layout(binding = 0) uniform sampler2D deferredBuffer;
 #ifdef SHADOW_CUBE
-	uniform samplerCube shadowMap;
+	layout(binding = 1) uniform samplerCube shadowMap;
 #else
-	uniform sampler2D shadowMap;
+	layout(binding = 1) uniform sampler2D shadowMap;
 #endif
 //contains gTapRotationTex sampler 
 #include "softShadow.glsl"
-uniform sampler2D colorBuffer;
-uniform sampler2D matInfoBuffer;
+layout(binding = 2) uniform sampler2D colorBuffer;
+layout(binding = 3) uniform sampler2D matInfoBuffer;
 
 #ifdef SHADOW_CUBE
 /// The texture for cookie rendering.
-uniform samplerCube cookieMap;
+layout(binding = 4) uniform samplerCube cookieMap;
 #else
-uniform sampler2D cookieMap;
+layout(binding = 4) uniform sampler2D cookieMap;
 #endif
 
 #ifdef UES_PHOTOMETRIC_MASK
-uniform sampler1D iesProfile;
+layout(binding = 5) uniform sampler1D iesProfile;
 #endif
 
 uniform vec4 rtParams0;
@@ -137,7 +137,7 @@ uniform mat3 worldToLightProj;
 
 uniform mat4 cameraToWorld;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 void main()               
 {   
    // Compute scene UV

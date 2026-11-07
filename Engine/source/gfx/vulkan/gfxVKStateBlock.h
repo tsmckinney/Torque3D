@@ -52,6 +52,17 @@ private:
    U32 mCachedHash;
 
    VkSampler mSamplerObjects[GFX_TEXTURE_STAGE_COUNT];
+
+   Vector<VkDynamicState> mDynamicStates;
+   VkPipelineDynamicStateCreateInfo mDynamicState{};
+   VkPipelineVertexInputStateCreateInfo mVertexInputState{};
+   VkPipelineInputAssemblyStateCreateInfo mInputAssemblyState{};    // TODO: Try moving the input assembly thing somewhere else? It needs to use GFXPrimitiveType to determine the primitive to use, which the state block doesn't expose.
+   VkPipelineViewportStateCreateInfo mViewportState{};
+   VkPipelineRasterizationStateCreateInfo mRasterizer{};
+   VkPipelineMultisampleStateCreateInfo mMultisampleState{};
+   VkPipelineDepthStencilStateCreateInfo mDepthStencilState{};
+   VkPipelineColorBlendAttachmentState mColorBlendAttachment{};
+   VkPipelineColorBlendStateCreateInfo mColorBlendState{};
 };
 
 #endif

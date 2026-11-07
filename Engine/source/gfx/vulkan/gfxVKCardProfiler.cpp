@@ -32,14 +32,22 @@ void GFXVulkanCardProfiler::init()
    mVersionString = mDeviceProperties.properties.apiVersion;
    mRenderString = "Vulkan";
 
-   Parent::init(); // other code notes that not calling this is "BAD".
+   Parent::init();
 }
 
 void GFXVulkanCardProfiler::findPhysicalDevice(VkSurfaceKHR surface)
 {
    mPhysicalDevice = VK_NULL_HANDLE;
+
    mDeviceProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+   VkPhysicalDeviceVulkan13Features vk13features{};
+   vk13features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+   VkPhysicalDeviceShaderDemoteToHelperInvocationFeaturesEXT demoteToHelperFeatures{};
+   demoteToHelperFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DEMOTE_TO_HELPER_INVOCATION_FEATURES;
    mDeviceFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+   vk13features.pNext = &demoteToHelperFeatures;
+   mDeviceFeatures.pNext = &vk13features;
+
    U32 deviceCount = 0;
    VkInstance instance = GFXVK->getVKInstance();
    vkEnumeratePhysicalDevices(instance, &deviceCount, NULL);

@@ -23,14 +23,14 @@
 //-----------------------------------------------------------------------------
 // Data
 //-----------------------------------------------------------------------------
-in vec4 vPosition;
-in vec2 vTexCoord0;
+layout (location = 0) in vec4 vPosition;
+layout (location = 6) in vec2 vTexCoord0;
 
 uniform mat4 modelview;
 uniform vec3 cameraPos, ambient;
 uniform vec2 fadeStartEnd;
 
-out vec4 color;
+layout (location = 2) out vec4 color;
 out vec2 texCoord;
 
 //-----------------------------------------------------------------------------

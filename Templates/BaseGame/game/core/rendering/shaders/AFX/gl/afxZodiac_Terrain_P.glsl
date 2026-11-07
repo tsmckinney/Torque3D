@@ -8,7 +8,7 @@
 // Copyright (C) Faust Logic, Inc.
 //~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~~//
 
-uniform sampler2D zodiacMap;
+layout(binding = 0) uniform sampler2D zodiacMap;
 uniform vec4 zodiacColor;
 
 in vec4 hpos;

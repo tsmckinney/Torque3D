@@ -22,17 +22,17 @@
 
 #include "hlslCompat.glsl"
 
-in vec4 vPosition;
-in vec4 vColor;
-in vec2 vTexCoord0;
+layout (location = 0) in vec4 vPosition;
+layout (location = 2) in vec4 vColor;
+layout (location = 6) in vec2 vTexCoord0;
 
 #define In_pos    vPosition
 #define In_color  vColor
 #define In_uv0    vTexCoord0
 
-out vec4 color;
-out vec2 uv0;
-out vec4 pos;
+layout (location = 2) out vec4 color;
+layout (location = 6) out vec2 uv0;
+layout (location = 0) out vec4 pos;
 
 #define OUT_hpos gl_Position
 #define OUT_color color

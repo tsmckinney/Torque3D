@@ -22,13 +22,13 @@
 
 #define blurSamples 4.0
 
-uniform sampler2D diffuseMap0;
+layout(binding = 0) uniform sampler2D diffuseMap0;
 uniform float texSize;
 uniform vec2 blurDimension;
 
 in vec2 tex0;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {

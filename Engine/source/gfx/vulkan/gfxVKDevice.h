@@ -35,10 +35,14 @@
 #include "gfx/vulkan/gfxVKCardProfiler.h"
 #include "gfx/vulkan/gfxVKCubemap.h"
 #include "gfx/vulkan/gfxVKCubemapArray.h"
-#include "gfx/vulkan/gfxVKDevice.h"
 #include "gfx/vulkan/gfxVKEnumTranslate.h"
 #include "gfx/vulkan/gfxVKHelpers.h"
+#include "gfx/vulkan/gfxVKPipelineInterface.h"
+#include "gfx/vulkan/gfxVKPrimitiveBuffer.h"
 #include "gfx/vulkan/gfxVKStateBlock.h"
+#include "gfx/vulkan/gfxVKShader.h"
+#include "gfx/vulkan/gfxVKTextureArray.h"
+#include "gfx/vulkan/gfxVKTextureManager.h"
 #include "gfx/bitmap/gBitmap.h"
 #include "core/util/safeDelete.h"
 #include "windowManager/platformWindow.h"
@@ -51,7 +55,7 @@ enum GFXVulkanQueueType
    GFX_VULKAN_GRAPHICS_QUEUE,
    GFX_VULKAN_PRESENT_QUEUE,
    GFX_VULKAN_COMPUTE_QUEUE,
-   GFX_VULKAN_MAXIMUM_NUMBER_OF_POSSIBLE_QUEUES_TO_EVER_EXIST // :D
+   GFX_VULKAN_MAX_QUEUE
 };
 
 class GFXVulkanDevice : public GFXDevice
@@ -119,6 +123,8 @@ protected:
    VkInstance mInstance;
    VkDevice mVKDevice;
    VkSurfaceKHR mVKSurface;
+   GFXVulkanPipelineInterface mPipelineInterface;
+   VkPipelineCache mPipelineCache;
 
    VkDebugUtilsMessengerEXT mDebugMessenger;
    void setupDebugMessenger();
@@ -152,7 +158,7 @@ public:
    void setPixelShaderVersion(F32 version) override { mPixelShaderVersion = version; };
 
    U32 getNumSamplers() const override { return GFX_TEXTURE_STAGE_COUNT; };
-   U32 getNumRenderTargets() const override { return 0; };
+   U32 getNumRenderTargets() const override { return 8; };
 
    void setupGenericShaders(GenericShaderType type = GSColor) override;
    GFXShader* createShader() override;
@@ -205,6 +211,8 @@ public:
    VkPhysicalDevice getVKPhysicalDevice();
    VkSurfaceKHR getVKSurface() { return mVKSurface; }
    VmaAllocator getVKAllocator() { return mVMAllocator; }
+   GFXVulkanPipelineInterface* getVKPipelineInterface() { return &mPipelineInterface; }
+   VkPipelineCache getVKPipelineCache() { return mPipelineCache; }
 
    VkQueue getVKQueue(GFXVulkanQueueType queueType);
 
@@ -220,6 +228,11 @@ private:
 
    Vector<VkCommandBuffer> mCMDBuffers;
    VkCommandPool mCMDPool;
+
+   Vector<VkSemaphore> mImagesAvailableS;
+   Vector<VkSemaphore> mRendersFinishedS;
+   Vector<VkFence> mFramesInFlightF;
+   U32 mWriteToWhichFrame;
 
    U32 mAdapterIndex;
 };

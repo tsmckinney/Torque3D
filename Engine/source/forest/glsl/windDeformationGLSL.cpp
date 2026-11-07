@@ -40,7 +40,7 @@
 
 static void _onRegisterFeatures( GFXAdapterType type )
 {
-   if ( type != OpenGL || type != Vulkan )
+   if ( type == Direct3D11 || type == NullDevice )
       return;
 
    FEATUREMGR->registerFeature( MFT_WindEffect, new WindDeformationGLSL );

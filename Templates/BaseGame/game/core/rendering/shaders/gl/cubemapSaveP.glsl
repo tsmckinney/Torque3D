@@ -25,19 +25,19 @@
 
 uniform samplerCube cubemapTex;
 
-in float3 face_pos_x;
-in float3 face_neg_x;
-in float3 face_pos_y;
-in float3 face_neg_y;
-in float3 face_pos_z;
-in float3 face_neg_z;
+layout(location = 0) in float3 face_pos_x;
+layout(location = 1) in float3 face_neg_x;
+layout(location = 2) in float3 face_pos_y;
+layout(location = 3) in float3 face_neg_y;
+layout(location = 4) in float3 face_pos_z;
+layout(location = 5) in float3 face_neg_z;
 
-out float4 target0;
-out float4 target1;
-out float4 target2;
-out float4 target3;
-out float4 target4;
-out float4 target5;
+layout(location = 0) out float4 target0;
+layout(location = 1) out float4 target1;
+layout(location = 2) out float4 target2;
+layout(location = 3) out float4 target3;
+layout(location = 4) out float4 target4;
+layout(location = 5) out float4 target5;
 //-----------------------------------------------------------------------------
 // Main
 //-----------------------------------------------------------------------------

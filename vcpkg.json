@@ -8,7 +8,7 @@
     "opus",
     "libtheora",
     { 
-        "name": "libsndfile", 
+        "name": "libsndfile",
         "default-features": false, 
         "features": [ "external-libs" ] 
     },
@@ -22,6 +22,7 @@
     { "name": "libflac", "version": "1.5.0"},
     { "name": "opus", "version": "1.5.2"},
     { "name": "libtheora", "version": "1.2.0"},
-    { "name": "glslang", "version": "16.4.0"}
+    { "name": "glslang", "version": "16.6.0"},
+    { "name": "volk", "version": "1.4.357.0"}
   ]
 }

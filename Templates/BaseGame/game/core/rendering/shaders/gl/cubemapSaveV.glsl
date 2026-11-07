@@ -30,12 +30,12 @@ uniform float4x4 matrix3;
 uniform float4x4 matrix4;
 uniform float4x4 matrix5;
 
-out float3 face_pos_x;
-out float3 face_neg_x;
-out float3 face_pos_y;
-out float3 face_neg_y;
-out float3 face_pos_z;
-out float3 face_neg_z;
+layout(location = 0) out float3 face_pos_x;
+layout(location = 1) out float3 face_neg_x;
+layout(location = 2) out float3 face_pos_y;
+layout(location = 3) out float3 face_neg_y;
+layout(location = 4) out float3 face_pos_z;
+layout(location = 5) out float3 face_neg_z;
 
 void main()
 {

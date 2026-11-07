@@ -24,9 +24,9 @@ in vec2 texCoord;
 in vec4 color;
 in float fade;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
-uniform sampler2D inputTex;
+layout(binding = 0) uniform sampler2D inputTex;
 uniform vec4 ambient;
             
             

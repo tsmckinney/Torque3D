@@ -31,11 +31,14 @@
 
 #include "materials/shaderData.h"
 #include "shaderGen/shaderGen.h"
+#include "gfx/vulkan/gfxVKCardProfiler.h"
+#include "gfx/vulkan/gfxVKCubemap.h"
+#include "gfx/vulkan/gfxVKCubemapArray.h"
+#include "gfx/vulkan/gfxVKEnumTranslate.h"
 #include "gfx/vulkan/gfxVKHelpers.h"
-#include "gfx/vulkan/gfxVKPrimitiveBuffer.h"
+#include "gfx/vulkan/gfxVKPipelineInterface.h"
+#include "gfx/vulkan/gfxVKStateBlock.h"
 #include "gfx/vulkan/gfxVKShader.h"
-#include "gfx/vulkan/gfxVKTextureArray.h"
-#include "gfx/vulkan/gfxVKTextureManager.h"
 #include "gfx/vulkan/gfxVKWindowTarget.h"
 #include <vk_mem_alloc.h>
 
@@ -92,7 +95,7 @@ void GFXVulkanDevice::setupDebugMessenger()
 {
    if (!mEnableValidationLayers) return;
    
-   VkDebugUtilsMessengerCreateInfoEXT createInfo;
+   VkDebugUtilsMessengerCreateInfoEXT createInfo{};
    populateDebugMessengerCreateInfo(createInfo);
    AssertWarn(CreateDebugUtilsMessengerEXT(mInstance, &createInfo, nullptr, &mDebugMessenger) == VK_SUCCESS,
       "GFXVulkanDevice::setupDebugMessenger() - Failed to set up a debug messenger! Please make sure your graphics card supports the VK_EXT_debug_utils extension.");
@@ -103,7 +106,7 @@ bool GFXVulkanDevice::checkValidationLayerSupport()
    uint32_t layerCount;
    vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
-   Vector<VkLayerProperties> availableLayers;
+   Vector<VkLayerProperties> availableLayers{};
    availableLayers.setSize(layerCount);
    vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.address());
    
@@ -130,6 +133,12 @@ bool GFXVulkanDevice::checkValidationLayerSupport()
 GFXVulkanDevice::GFXVulkanDevice(U32 adapterIndex) : mAdapterIndex(adapterIndex)
 {
    AssertFatal(volkInitialize() == VK_SUCCESS, "GFXVulkanDevice::GFXVulkanDevice() - Couldn't load Vulkan! Please make sure your graphics card supports it.");
+   U32 version = volkGetInstanceVersion();
+   Con::printf("Vulkan version %d.%d.%d initialized.\n",
+      VK_VERSION_MAJOR(version),
+      VK_VERSION_MINOR(version),
+      VK_VERSION_PATCH(version));
+
    PlatformVK::init();
    GFXVulkanEnumTranslate::init();
    mPixelShaderVersion = 4.0f;
@@ -154,11 +163,27 @@ GFXVulkanDevice::GFXVulkanDevice(U32 adapterIndex) : mAdapterIndex(adapterIndex)
 
 GFXVulkanDevice::~GFXVulkanDevice()
 {
+   vkDeviceWaitIdle(mVKDevice);
    if (mEnableValidationLayers)
    {
       DestroyDebugUtilsMessengerEXT(mInstance, mDebugMessenger, nullptr);
    }
-   
+
+   VkPhysicalDeviceSurfaceInfo2KHR surfaceInfo{};
+   surfaceInfo.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SURFACE_INFO_2_KHR;
+   surfaceInfo.surface = GFXVK->getVKSurface();
+   VkSurfaceCapabilities2KHR surfaceCaps{};
+   surfaceCaps.sType = VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_2_KHR;
+   AssertFatal(vkGetPhysicalDeviceSurfaceCapabilities2KHR(GFXVK->getVKPhysicalDevice(), &surfaceInfo, &surfaceCaps) == VK_SUCCESS,
+      "GFXVulkanWindowTarget::createSwapChain() - Failed to get the surface capabilities of your graphics card! Please make sure it supports the VK_KHR_surface extension for your operating system.");
+
+   for (U32 i = 0; i < surfaceCaps.surfaceCapabilities.minImageCount; i++)
+   {
+      vkDestroySemaphore(mVKDevice, mImagesAvailableS[i], nullptr);
+      vkDestroySemaphore(mVKDevice, mRendersFinishedS[i], nullptr);
+      vkDestroyFence(mVKDevice, mFramesInFlightF[i], nullptr);
+   }
+
    vkDestroyCommandPool(mVKDevice, mCMDPool, nullptr);
    vkDestroySurfaceKHR(mInstance, mVKSurface, nullptr);
    vkDestroyDevice(mVKDevice, nullptr);
@@ -338,9 +363,9 @@ void GFXVulkanDevice::init( const GFXVideoMode &mode, PlatformWindow *window )
    VkApplicationInfo appInfo{};
    appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
    appInfo.pApplicationName = TORQUE_APP_NAME;
-   appInfo.applicationVersion = VK_MAKE_API_VERSION(0, floor(TORQUE_APP_VERSION / 1000), floor(TORQUE_APP_VERSION / 100), floor(TORQUE_APP_VERSION / 10));
+   appInfo.applicationVersion = VK_MAKE_VERSION(floor(TORQUE_APP_VERSION / 1000), floor(TORQUE_APP_VERSION / 100), floor(TORQUE_APP_VERSION / 10));
    appInfo.pEngineName = getEngineProductString();
-   appInfo.engineVersion = VK_MAKE_API_VERSION(0, floor(TORQUE_GAME_ENGINE / 1000), floor(TORQUE_GAME_ENGINE / 100), floor(TORQUE_GAME_ENGINE / 10));
+   appInfo.engineVersion = VK_MAKE_VERSION(floor(TORQUE_GAME_ENGINE / 1000), floor(TORQUE_GAME_ENGINE / 100), floor(TORQUE_GAME_ENGINE / 10));
    appInfo.apiVersion = VK_API_VERSION_1_4;
 
    VkInstanceCreateInfo createInfo{};
@@ -363,12 +388,13 @@ void GFXVulkanDevice::init( const GFXVideoMode &mode, PlatformWindow *window )
    else
    {
       createInfo.enabledLayerCount = 0;
+      createInfo.ppEnabledLayerNames = nullptr;
       createInfo.pNext = nullptr;
    }
 
    AssertFatal(vkCreateInstance(&createInfo, NULL, &mInstance) == VK_SUCCESS,
       "GFXVulkanDevice::init() - Failed to create Vulkan instance!");
-
+      
    volkLoadInstance(mInstance);
 
    AssertFatal(PlatformVK::createSurfaceVK(window, mInstance, &mVKSurface),
@@ -400,10 +426,16 @@ void GFXVulkanDevice::init( const GFXVideoMode &mode, PlatformWindow *window )
    }
 
    Vector<const char*> logDevExts;
+   logDevExts.push_back(VK_KHR_MAINTENANCE_5_EXTENSION_NAME);
+   logDevExts.push_back(VK_KHR_PIPELINE_BINARY_EXTENSION_NAME);
+   logDevExts.push_back(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
+   logDevExts.push_back(VK_KHR_SPIRV_1_4_EXTENSION_NAME);
    logDevExts.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+   logDevExts.push_back(VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME);
+   logDevExts.push_back(VK_EXT_CUSTOM_BORDER_COLOR_EXTENSION_NAME);
    logDevExts.push_back(VK_EXT_MEMORY_PRIORITY_EXTENSION_NAME);
    logDevExts.push_back(VK_EXT_PAGEABLE_DEVICE_LOCAL_MEMORY_EXTENSION_NAME);
-   logDevExts.push_back(VK_EXT_CUSTOM_BORDER_COLOR_EXTENSION_NAME);
+   logDevExts.push_back(VK_EXT_SHADER_DEMOTE_TO_HELPER_INVOCATION_EXTENSION_NAME);
    VkDeviceCreateInfo logicalDeviceCreateInfo{};
    logicalDeviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
    logicalDeviceCreateInfo.pQueueCreateInfos = queueCreateInfos.address();
@@ -441,14 +473,41 @@ void GFXVulkanDevice::init( const GFXVideoMode &mode, PlatformWindow *window )
    AssertFatal(vkCreateCommandPool(mVKDevice, &commandPoolCI, nullptr, &mCMDPool) == VK_SUCCESS,
       "GFXVulkanDevice::init() - Failed to create Vulkan command pool!");
 
-   mCMDBuffers.setSize(2);
+   VkPhysicalDeviceSurfaceInfo2KHR surfaceInfo{};
+   surfaceInfo.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SURFACE_INFO_2_KHR;
+   surfaceInfo.surface = GFXVK->getVKSurface();
+   VkSurfaceCapabilities2KHR surfaceCaps{};
+   surfaceCaps.sType = VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_2_KHR;
+   AssertFatal(vkGetPhysicalDeviceSurfaceCapabilities2KHR(GFXVK->getVKPhysicalDevice(), &surfaceInfo, &surfaceCaps) == VK_SUCCESS,
+      "GFXVulkanWindowTarget::createSwapChain() - Failed to get the surface capabilities of your graphics card! Please make sure it supports the VK_KHR_surface extension for your operating system.");
+   mCMDBuffers.setSize(surfaceCaps.surfaceCapabilities.minImageCount);
 
    VkCommandBufferAllocateInfo commandBufferAI{};
    commandBufferAI.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
    commandBufferAI.commandPool = mCMDPool;
-   commandBufferAI.commandBufferCount = 2;
+   commandBufferAI.commandBufferCount = surfaceCaps.surfaceCapabilities.minImageCount;
    AssertFatal(vkAllocateCommandBuffers(mVKDevice, &commandBufferAI, mCMDBuffers.address()) == VK_SUCCESS,
       "GFXVulkanDevice::init() - Failed to allocate Vulkan command buffers!");
+
+   mImagesAvailableS.setSize(surfaceCaps.surfaceCapabilities.minImageCount);
+   mRendersFinishedS.setSize(surfaceCaps.surfaceCapabilities.minImageCount);
+   mFramesInFlightF.setSize(surfaceCaps.surfaceCapabilities.minImageCount);
+
+   VkSemaphoreCreateInfo semaphoreCI{};
+   semaphoreCI.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+   VkFenceCreateInfo fenceCI{};
+   fenceCI.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+   fenceCI.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+   for (U32 i = 0; i < surfaceCaps.surfaceCapabilities.minImageCount; i++)
+   {
+      AssertFatal(vkCreateSemaphore(mVKDevice, &semaphoreCI, nullptr, &mImagesAvailableS[i]) == VK_SUCCESS,
+         "GFXVulkanDevice::init() - Failed to create one of the semaphores requested for determining image availability!");
+      AssertFatal(vkCreateSemaphore(mVKDevice, &semaphoreCI, nullptr, &mRendersFinishedS[i]) == VK_SUCCESS,
+         "GFXVulkanDevice::init() - Failed to create one of the semaphores requested for determining when renders are finished!");
+      AssertFatal(vkCreateFence(mVKDevice, &fenceCI, nullptr, &mFramesInFlightF[i]) == VK_SUCCESS,
+         "GFXVulkanDevice::init() - Failed to create one of the fences requested for determining when to render to a frame!");
+   }
 
    mInitialized = true;
    deviceInited();

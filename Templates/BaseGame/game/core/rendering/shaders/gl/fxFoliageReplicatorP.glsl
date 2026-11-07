@@ -23,13 +23,16 @@
 //-----------------------------------------------------------------------------
 // Data
 //-----------------------------------------------------------------------------
-uniform sampler2D diffuseMap, alphaMap;
+layout(binding = 0) uniform sampler2D diffuseMap
+layout(binding = 1) uniform sampler2D alphaMap;
 uniform vec4 groundAlpha;
 
-in vec4 color, groundAlphaCoeff;
-in vec2 outTexCoord, alphaLookup;
+layout (location = 2) in vec4 color;
+layout (location = 0) in vec4 groundAlphaCoeff;
+layout (location = 6) in vec2 outTexCoord;
+layout (location = 1) in vec2 alphaLookup;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 //-----------------------------------------------------------------------------
 // Main                                                                        

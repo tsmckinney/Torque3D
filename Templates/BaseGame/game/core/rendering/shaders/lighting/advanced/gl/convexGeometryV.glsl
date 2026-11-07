@@ -22,7 +22,7 @@
 
 #include "../../../gl/hlslCompat.glsl"
 
-in vec4 vPosition;
+layout (location = 0) in vec4 vPosition;
 
 #define IN_pos vPosition
 

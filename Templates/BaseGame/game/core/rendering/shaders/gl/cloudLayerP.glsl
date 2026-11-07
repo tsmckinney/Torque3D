@@ -26,28 +26,28 @@
 // Structures                                                                  
 //-----------------------------------------------------------------------------
 //ConnectData
-in vec4 texCoord12;
+layout (location = 0) in vec4 texCoord12;
 #define IN_texCoord12 texCoord12
-in vec4 texCoord34;
+layout (location = 1) in vec4 texCoord34;
 #define IN_texCoord34 texCoord34
-in vec3 vLightTS; // light vector in tangent space, denormalized
+layout (location = 2) in vec3 vLightTS; // light vector in tangent space, denormalized
 #define IN_vLightTS vLightTS
-in vec3 vViewTS;  // view vector in tangent space, denormalized
+layout (location = 3) in vec3 vViewTS;  // view vector in tangent space, denormalized
 #define IN_vViewTS vViewTS
-in float worldDist;
+layout (location = 4) in float worldDist;
 #define IN_worldDist worldDist
 
 //-----------------------------------------------------------------------------
 // Uniforms                                                                        
 //-----------------------------------------------------------------------------
-uniform sampler2D normalHeightMap;
+layout(binding = 0) uniform sampler2D normalHeightMap;
 uniform vec3      ambientColor;
 uniform vec3      sunColor;
 uniform float     cloudCoverage;
 uniform vec3      cloudBaseColor;
 uniform float	  cloudExposure;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 //-----------------------------------------------------------------------------
 // Globals                                                                        
