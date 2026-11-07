@@ -23,12 +23,12 @@
 layout (lines) in; 
 layout (triangle_strip, max_vertices = 4) out;
 
-in VS_OUT {
+layout (location = 0) in VS_OUT {
     vec4 color;
 } gs_in[];
 
 
-out vec4 fragColor;
+layout (location = 0) out vec4 fragColor;
 
 uniform float thickness;
 uniform vec2 oneOverViewport;

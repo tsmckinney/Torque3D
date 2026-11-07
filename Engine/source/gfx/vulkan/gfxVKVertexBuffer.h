@@ -47,6 +47,7 @@ public:
 
    void zombify() override;
    void resurrect() override;
+   StrongRefPtr<GFXVulkanVertexBuffer> mVolatileBuffer;
 };
 
 #endif

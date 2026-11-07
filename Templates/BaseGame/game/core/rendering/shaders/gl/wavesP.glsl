@@ -20,8 +20,8 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-uniform sampler2D diffMap;
-uniform sampler2D bumpMap;
+layout(binding = 0) uniform sampler2D diffMap;
+layout(binding = 1) uniform sampler2D bumpMap;
 uniform samplerCube cubeMap;
 uniform vec4 specularColor;
 uniform float specularPower;
@@ -33,7 +33,7 @@ in vec4 outLightVec;
 in vec3 outPos;
 in vec3 outEyePos;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {

@@ -1402,6 +1402,18 @@ bool GFXGLShader::_loadShaderFromStream(GLuint shader,
    lengths.push_back(dStrlen(versionDecl));
 
    //Required extensions. These are already checked when creating the GFX adapter, if we make it this far it's supported
+   const char* ssoExt = "#extension GL_ARB_separate_shader_objects : enable\n";
+   buffers.push_back(dStrdup(ssoExt));
+   lengths.push_back(dStrlen(ssoExt));
+
+   const char* explicitAttrExt = "#extension GL_ARB_explicit_attrib_location : enable\n";
+   buffers.push_back(dStrdup(explicitAttrExt));
+   lengths.push_back(dStrlen(explicitAttrExt));
+
+   const char* enhancedLayoutsExt = "#extension GL_ARB_enhanced_layouts : enable\n";
+   buffers.push_back(dStrdup(enhancedLayoutsExt));
+   lengths.push_back(dStrlen(enhancedLayoutsExt));
+
    const char* cubeArrayExt = "#extension GL_ARB_texture_cube_map_array : enable\n";
    buffers.push_back(dStrdup(cubeArrayExt));
    lengths.push_back(dStrlen(cubeArrayExt));

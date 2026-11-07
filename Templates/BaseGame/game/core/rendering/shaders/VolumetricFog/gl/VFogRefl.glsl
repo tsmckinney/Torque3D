@@ -25,7 +25,7 @@
 uniform vec4 fogColor;
 uniform float fogDensity;
 uniform float reflStrength;
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {

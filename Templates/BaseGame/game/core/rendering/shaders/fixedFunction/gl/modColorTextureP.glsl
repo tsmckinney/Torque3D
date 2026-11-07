@@ -20,11 +20,11 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-uniform sampler2D diffuseMap;
-in vec4 color;
-in vec2 texCoord;
+layout(binding = 0) uniform sampler2D diffuseMap;
+layout (location = 2) in vec4 color;
+layout (location = 6) in vec2 texCoord;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {

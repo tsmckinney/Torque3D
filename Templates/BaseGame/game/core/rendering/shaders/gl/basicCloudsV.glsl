@@ -23,8 +23,8 @@
 #include "hlslCompat.glsl"
 
 //CloudVert
-in vec4 vPosition;
-in vec2 vTexCoord0;
+layout (location = 0) in vec4 vPosition;
+layout (location = 6) in vec2 vTexCoord0;
 
 #define IN_pos       vPosition
 #define IN_uv0       vTexCoord0
@@ -35,7 +35,7 @@ uniform float     texScale;
 uniform vec2    texDirection;
 uniform vec2    texOffset;
 
-out vec2 texCoord;
+layout (location = 6) out vec2 texCoord;
 #define OUT_texCoord texCoord
 
 void main()

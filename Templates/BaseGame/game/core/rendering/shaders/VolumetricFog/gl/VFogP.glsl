@@ -24,10 +24,10 @@
 #include "shadergen:/autogenConditioners.h"
 #include "../../gl/torque.glsl"
 
-uniform sampler2D deferredTex;
-uniform sampler2D depthBuffer;
-uniform sampler2D frontBuffer;
-uniform sampler2D density;
+layout(binding = 0) uniform sampler2D deferredTex;
+layout(binding = 1) uniform sampler2D depthBuffer;
+layout(binding = 2) uniform sampler2D frontBuffer;
+layout(binding = 3) uniform sampler2D density;
   
 uniform float accumTime;
 uniform vec4 fogColor;
@@ -45,7 +45,7 @@ uniform vec2 PixelSize;
 
 in vec4 _hpos;
 #define IN_hpos _hpos
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {

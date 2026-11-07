@@ -38,7 +38,7 @@ GFXVulkanWindowTarget::~GFXVulkanWindowTarget()
    {
       vkDestroyFramebuffer(GFXVK->getVKLogicalDevice(), mSwapchain.mSwapFramebuffers[swapFB], nullptr);
    }
-   vkDestroyRenderPass(GFXVK->getVKLogicalDevice(), mRenderPass, nullptr);
+   vkDestroyRenderPass(GFXVK->getVKLogicalDevice(), mMainRenderPass, nullptr);
    vkDestroyImageView(GFXVK->getVKLogicalDevice(), mSwapchain.mDepthView, nullptr);
    vmaDestroyImage(GFXVK->getVKAllocator(), mSwapchain.mDepthImage, mSwapchain.mDepthAlloc);
    for (U32 swapIV = 0; swapIV < mSwapchain.mSwapImageViews.size(); swapIV++)
@@ -214,20 +214,22 @@ void GFXVulkanWindowTarget::setupRenderPassAndFramebuffer()
    renderPassCI.subpassCount = 1;
    renderPassCI.pSubpasses = &subpass;
 
-   AssertFatal(vkCreateRenderPass(GFXVK->getVKLogicalDevice(), &renderPassCI, NULL, &mRenderPass) == VK_SUCCESS,
+   AssertFatal(vkCreateRenderPass(GFXVK->getVKLogicalDevice(), &renderPassCI, NULL, &mMainRenderPass) == VK_SUCCESS,
       "GFXVulkanWindowTarget::setupRenderPassAndFramebuffer() - Failed to create a render pass!");
+   GFXVK->getVKPipelineInterface()->mRenderPasses.push_front(mMainRenderPass);
 
    mSwapchain.mSwapFramebuffers.setSize(mSwapchain.mSwapImageViews.size());
    for (VkImageView imageView : mSwapchain.mSwapImageViews)
    {
       S32 i = mSwapchain.mSwapImageViews.find_next(imageView); // FIXME: This might not properly handle "duplicate" image views.
       VkImageView attachments[] = {
-         imageView
+         imageView,
+         mSwapchain.mDepthView
       };
 
       VkFramebufferCreateInfo framebufferCI{};
       framebufferCI.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-      framebufferCI.renderPass = mRenderPass;
+      framebufferCI.renderPass = mMainRenderPass;
       framebufferCI.attachmentCount = 1;
       framebufferCI.pAttachments = attachments;
       framebufferCI.width = mSwapchain.mExtent.width;
@@ -236,6 +238,21 @@ void GFXVulkanWindowTarget::setupRenderPassAndFramebuffer()
       AssertFatal(vkCreateFramebuffer(GFXVK->getVKLogicalDevice(), &framebufferCI, NULL, &mSwapchain.mSwapFramebuffers[i]) == VK_SUCCESS,
          "GFXVulkanWindowTarget::setupRenderPassAndFramebuffer() - Failed to create one of the needed framebuffers!");
    }
+}
+
+void GFXVulkanWindowTarget::resetSwapchain()
+{
+   for (U32 swapFB = 0; swapFB < mSwapchain.mSwapFramebuffers.size(); swapFB++)
+   {
+      vkDestroyFramebuffer(GFXVK->getVKLogicalDevice(), mSwapchain.mSwapFramebuffers[swapFB], nullptr);
+   }
+   for (U32 swapIV = 0; swapIV < mSwapchain.mSwapImageViews.size(); swapIV++)
+   {
+      vkDestroyImageView(GFXVK->getVKLogicalDevice(), mSwapchain.mSwapImageViews[swapIV], nullptr);
+   }
+   vkDestroySwapchainKHR(GFXVK->getVKLogicalDevice(), mSwapchain.mSwapchain, nullptr);
+
+   createSwapChain();
 }
 
 bool GFXVulkanWindowTarget::present() {

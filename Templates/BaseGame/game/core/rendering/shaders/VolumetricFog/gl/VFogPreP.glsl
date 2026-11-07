@@ -25,7 +25,7 @@
 in vec4 _hpos;
 #define IN_hpos _hpos
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {

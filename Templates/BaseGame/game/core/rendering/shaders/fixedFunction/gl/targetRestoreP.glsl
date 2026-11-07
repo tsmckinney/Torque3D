@@ -20,7 +20,7 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-uniform sampler2D colorTarget0Texture ;
+layout(binding = 0) uniform sampler2D colorTarget0Texture;
 
 vec4 main( vec2 ScreenPos : VPOS ) : COLOR0
 {

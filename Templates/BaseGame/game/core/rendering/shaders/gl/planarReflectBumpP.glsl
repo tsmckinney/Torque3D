@@ -23,13 +23,15 @@
 //-----------------------------------------------------------------------------
 // Data
 //-----------------------------------------------------------------------------
-uniform sampler2D diffuseMap, refractMap, bumpMap;
+layout(binding = 0) uniform sampler2D diffuseMap;
+layout(binding = 1) uniform sampler2D refractMap;
+layout(binding = 2) uniform sampler2D bumpMap;
 uniform vec4 shadeColor;
 
 in vec2 TEX0;
 in vec4 TEX1;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 //-----------------------------------------------------------------------------
 // Fade edges of axis for texcoord passed in

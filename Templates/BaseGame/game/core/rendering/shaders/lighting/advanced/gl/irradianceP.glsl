@@ -27,7 +27,7 @@ uniform int face;
 
 uniform samplerCube environmentMap;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {

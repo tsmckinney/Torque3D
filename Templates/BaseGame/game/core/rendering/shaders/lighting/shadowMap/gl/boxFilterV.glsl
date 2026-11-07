@@ -20,8 +20,8 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-in vec4 vPosition;
-in vec2 vTexCoord0;
+layout (location = 0) in vec4 vPosition;
+layout (location = 6) in vec2 vTexCoord0;
 
 uniform mat4 modelview;
 

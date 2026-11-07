@@ -31,39 +31,43 @@ const char* vendorIDToString(VkVendorId id)
    {
    // Vendor IDs that don't have the "VK_" prefix (numerically represented) were sourced from https://pcisig.com/membership/member-companies.
    case 4130:
-      return "AMD";
+      return "Advanced Micro Devices, Inc.";
    case 4203:
-      return "Apple";
+      return "Apple Computer";
    case 4318:
-      return "NVIDIA";
+      return "NVIDIA Corporation";
    case 4454:
-      return "Broadcom";
+      return "Broadcom Limited";
    case 5045:
       return "ARM";
    case 5197:
-      return "Samsung";
+      return "Samsung Electronics";
    case 6091:
-      return "Qualcomm";
+      return "Qualcomm Incorporated";
+   case 6629:
+      return "Huawei Technologies";
    case 7893:
-      return "Moore Threads";
+      return "Moore Threads Technology";
+   case 8493:
+      return "Apex Technologies";
    case 32902:
-      return "Intel";
+      return "Intel Corporation";
    case VK_VENDOR_ID_KHRONOS:
-      return "Khronos";
+      return "Khronos Group";
    case VK_VENDOR_ID_VIV:
-      return "VIV";
+      return "Viv";
    case VK_VENDOR_ID_VSI:
-      return "VSI";
+      return "Vsi";
    case VK_VENDOR_ID_KAZAN:
-      return "Kazan";
+      return "Kazan software renderer";
    case VK_VENDOR_ID_CODEPLAY:
-      return "Codeplay";
+      return "Codeplay Software";
    case VK_VENDOR_ID_MESA:
       return "Mesa";
    case VK_VENDOR_ID_POCL:
-      return "POCL";
+      return "PoCL";
    case VK_VENDOR_ID_MOBILEYE:
-      return "MobilEye";
+      return "Mobileye";
    default:
       return "Unknown Device";
    }
@@ -149,10 +153,54 @@ bool checkPhysicalDeviceCompatibility(VkPhysicalDevice physicalDevice)
    }
 
    Vector<const char*> reqdExts;
+   reqdExts.push_back(VK_KHR_MAINTENANCE_5_EXTENSION_NAME);
+   reqdExts.push_back(VK_KHR_PIPELINE_BINARY_EXTENSION_NAME);
+   reqdExts.push_back(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
+   reqdExts.push_back(VK_KHR_SPIRV_1_4_EXTENSION_NAME);
    reqdExts.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+   reqdExts.push_back(VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME);
+   reqdExts.push_back(VK_EXT_CUSTOM_BORDER_COLOR_EXTENSION_NAME);
    reqdExts.push_back(VK_EXT_MEMORY_PRIORITY_EXTENSION_NAME);
    reqdExts.push_back(VK_EXT_PAGEABLE_DEVICE_LOCAL_MEMORY_EXTENSION_NAME);
-   reqdExts.push_back(VK_EXT_CUSTOM_BORDER_COLOR_EXTENSION_NAME);
+   reqdExts.push_back(VK_EXT_SHADER_DEMOTE_TO_HELPER_INVOCATION_EXTENSION_NAME);
+   Vector<const char*>::iterator avaiIter = availExtNames.begin();
+   for (; avaiIter != availExtNames.end(); avaiIter++)
+   {
+      S32 avExtIdx = -1;
+      for (U32 rqExtIdx = 0; rqExtIdx < reqdExts.size(); rqExtIdx++)
+      {
+         if (String::compare(reqdExts[rqExtIdx], *avaiIter) == 0)
+         {
+            avExtIdx = rqExtIdx;
+            break;
+         }
+      }
+      reqdExts.find_next(*avaiIter, 0);
+
+      if (avExtIdx != -1)
+      {
+         reqdExts.erase(avExtIdx);
+      }
+   }
+   return reqdExts.empty();
+}
+
+bool checkPhysicalDeviceExtensionSupport(VkPhysicalDevice physicalDevice)
+{
+   U32 extensionCount;
+   vkEnumerateDeviceExtensionProperties(physicalDevice, NULL, &extensionCount, NULL);
+   Vector<VkExtensionProperties> availableExts;
+   availableExts.setSize(extensionCount);
+   vkEnumerateDeviceExtensionProperties(physicalDevice, NULL, &extensionCount, availableExts.address());
+
+   Vector<const char*> availExtNames;
+   for (const auto& ext : availableExts)
+   {
+      availExtNames.push_front(ext.extensionName);
+   }
+
+   Vector<const char*> reqdExts;
+   reqdExts.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
    Vector<const char*>::iterator avaiIter = availExtNames.begin();
    for (; avaiIter != availExtNames.end(); avaiIter++)
    {

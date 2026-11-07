@@ -32,13 +32,13 @@ in vec2 uv0;
 in vec3 wsEyeRay;
 in vec3 vsEyeRay;
 
-uniform sampler2D deferredBuffer;
-uniform sampler2D shadowMap;
+layout(binding = 0) uniform sampler2D deferredBuffer;
+layout(binding = 1) uniform sampler2D shadowMap;
 //contains gTapRotationTex sampler 
 #include "softShadow.glsl"
 
-uniform sampler2D colorBuffer;
-uniform sampler2D matInfoBuffer;             
+layout(binding = 2) uniform sampler2D colorBuffer;
+layout(binding = 3) uniform sampler2D matInfoBuffer;             
 uniform float  lightBrightness;
 uniform vec3 lightDirection;
 uniform vec4 lightColor;
@@ -176,7 +176,7 @@ vec4 AL_VectorLightShadowCast( sampler2D _sourceShadowMap,
                   dot( finalMask, overDarkPSSM ) ) );
 }
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 void main()             
 {
    //unpack normal and linear depth  

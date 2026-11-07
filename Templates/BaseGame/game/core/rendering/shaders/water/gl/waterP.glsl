@@ -115,13 +115,13 @@ float fresnel(float NdotV, float bias, float power)
 //-----------------------------------------------------------------------------
 // Uniforms                                                                  
 //-----------------------------------------------------------------------------
-uniform sampler2D      bumpMap;
-uniform sampler2D    deferredTex;
-uniform sampler2D    reflectMap;
-uniform sampler2D      refractBuff;
-uniform samplerCube  skyMap;
-uniform sampler2D      foamMap;
-uniform sampler1D    depthGradMap;
+layout(binding = 0) uniform sampler2D      bumpMap;
+layout(binding = 1) uniform sampler2D    deferredTex;
+layout(binding = 2) uniform sampler2D    reflectMap;
+layout(binding = 3) uniform sampler2D      refractBuff;
+layout(binding = 4) uniform samplerCube  skyMap;
+layout(binding = 5) uniform sampler2D      foamMap;
+layout(binding = 6) uniform sampler1D    depthGradMap;
 uniform vec4         specularParams;
 uniform vec4       baseColor;
 uniform vec4       miscParams;
@@ -145,7 +145,7 @@ uniform vec4	      sunColor;
 uniform float        sunBrightness;
 uniform float        reflectivity;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 //-----------------------------------------------------------------------------
 // Main                                                                        

@@ -19,10 +19,10 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
-in vec4 color;
-in vec2 texCoord;
+layout (location = 2) in vec4 color;
+layout (location = 6) in vec2 texCoord;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 uniform vec2 sizeUni;
 uniform vec2 rectCenter;

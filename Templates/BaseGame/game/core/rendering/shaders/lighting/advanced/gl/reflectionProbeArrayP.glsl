@@ -7,10 +7,10 @@
 
 #line 7
 
-uniform sampler2D deferredBuffer;
-uniform sampler2D colorBuffer;
-uniform sampler2D matInfoBuffer;
-uniform sampler2D BRDFTexture;
+layout(binding = 0) uniform sampler2D deferredBuffer;
+layout(binding = 1) uniform sampler2D colorBuffer;
+layout(binding = 2) uniform sampler2D matInfoBuffer;
+layout(binding = 3) uniform sampler2D BRDFTexture;
 
 uniform vec3 ambientColor;
 uniform vec4 rtParams0;
@@ -22,11 +22,11 @@ uniform float cubeMips;
 
 uniform int numProbes;
 
-uniform samplerCubeArray specularCubemapAR;
-uniform samplerCubeArray irradianceCubemapAR;
-uniform sampler2D WetnessTexture;
+layout(binding = 4) uniform samplerCubeArray specularCubemapAR;
+layout(binding = 5) uniform samplerCubeArray irradianceCubemapAR;
+layout(binding = 6) uniform sampler2D WetnessTexture;
 #ifdef USE_SSAO_MASK
-uniform sampler2D ssaoMask;
+layout(binding = 7) uniform sampler2D ssaoMask;
 uniform vec4 rtParams7;
 #endif
 uniform float accumTime;
@@ -45,7 +45,7 @@ uniform vec4    probeContribColors[MAX_PROBES];
 uniform int skylightCubemapIdx;
 uniform int SkylightDamp;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {

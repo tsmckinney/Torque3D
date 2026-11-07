@@ -22,9 +22,9 @@
 
 #ifdef TORQUE_VERTEX_SHADER
 
-in vec4 vPosition;
-in vec2 vTexCoord0;
-in vec3 vTexCoord1;
+layout (location = 0) in vec4 vPosition;
+layout (location = 6) in vec2 vTexCoord0;
+layout (location = 7) in vec2 vTexCoord1;
 
 #define IN_pos       vPosition
 #define IN_uv        vTexCoord0.st
@@ -34,7 +34,7 @@ out vec2 uv0;
 out vec2 uv1;
 out vec2 uv2;
 out vec2 uv3;
-out vec3 wsEyeRay;
+out vec2 wsEyeRay;
 
 #define OUT_uv0 uv0
 #define OUT_uv1 uv1
@@ -52,7 +52,7 @@ in vec2 uv0;
 in vec2 uv1;
 in vec2 uv2;
 in vec2 uv3;
-in vec3 wsEyeRay;
+in vec2 wsEyeRay;
 
 #define IN_uv0 uv0
 #define IN_uv1 uv1

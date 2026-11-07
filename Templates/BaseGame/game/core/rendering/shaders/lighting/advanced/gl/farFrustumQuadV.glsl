@@ -23,10 +23,10 @@
 #include "../../../gl/hlslCompat.glsl"
 #include "farFrustumQuad.glsl"
 
-in vec4 vPosition;
-in vec3 vNormal;
-in vec3 vTangent;
-in vec2 vTexCoord0;
+layout (location = 0) in vec4 vPosition;
+layout (location = 1) in vec3 vNormal;
+layout (location = 3) in vec3 vTangent;
+layout (location = 6) in vec2 vTexCoord0;
 
 uniform vec4 rtParams0;
 out vec4 hpos;

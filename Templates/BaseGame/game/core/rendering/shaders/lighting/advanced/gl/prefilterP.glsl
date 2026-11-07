@@ -121,7 +121,7 @@ vec3 prefilterEnvMap(vec3 R)
 	return (prefilteredColor / totalWeight);
 }
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {   

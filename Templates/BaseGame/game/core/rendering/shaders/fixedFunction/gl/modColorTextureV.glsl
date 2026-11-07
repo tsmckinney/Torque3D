@@ -21,13 +21,13 @@
 //-----------------------------------------------------------------------------
 #include "../../gl/hlslCompat.glsl"
 
-in vec4 vPosition;
-in vec4 vColor;
-in vec2 vTexCoord0;
+layout (location = 0) in vec4 vPosition;
+layout (location = 2) in vec4 vColor;
+layout (location = 6) in vec2 vTexCoord0;
 
 uniform mat4 modelview;
-out vec4 color;
-out vec2 texCoord;
+layout (location = 2) out vec4 color;
+layout (location = 6) out vec2 texCoord;
 
 void main()
 {

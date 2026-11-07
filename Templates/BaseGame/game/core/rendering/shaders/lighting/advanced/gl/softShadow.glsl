@@ -69,7 +69,7 @@ vec2 sNonUniformTaps[NUM_PRE_TAPS] = vec2[]
 
 /// The texture used to do per-pixel pseudorandom
 /// rotations of the filter taps.
-uniform sampler2D gTapRotationTex ;
+layout(binding = 0) uniform sampler2D gTapRotationTex;
 
 
 float softShadow_sampleTaps(  sampler2D shadowMap,

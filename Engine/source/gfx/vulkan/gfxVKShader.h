@@ -219,17 +219,19 @@ protected:
       const Torque::Path& path,
       FileStream* s,
       const Vector<GFXShaderMacro>& macros,
-      Vector<char*>& buffers);
+      Vector<const char*>& buffers);
 
-   /// @name Internal Vulkan handles
+   /// @name Internal Vulkan handles used for rendering.
    /// @{
    VkShaderModule mVKVertexShader;
    VkShaderModule mVKPixelShader;
    VkShaderModule mVKGeometryShader;
    Vector<VkPipelineShaderStageCreateInfo> mVKShaderStages;
+   VkPipelineLayout mPipelineLayout;
+   VkPipeline mGraphicsPipeline; // We're considering this to be our OpenGL program equivalent; it manages a lot of the same things, and then some.
    /// @}
 
-   /// @name Internal glslang handles
+   /// @name Internal glslang handles used for parsing shaders
    /// @{
    glslang::TShader* mGLSLVertexShader;
    glslang::TShader* mGLSLPixelShader;
@@ -248,5 +250,32 @@ protected:
 
    GFXShaderConstType convertConstType(U32 constType);
 };
+
+namespace Torque {
+   enum VKDescSetLocation
+   {
+      VK_VertexAttrib_Position = 0,
+      VK_VertexAttrib_Normal,
+      VK_VertexAttrib_Color,
+      VK_VertexAttrib_Tangent,
+      VK_VertexAttrib_TangentW,
+      VK_VertexAttrib_Binormal,
+      VK_VertexAttrib_TexCoord0,
+      VK_VertexAttrib_TexCoord1,
+      VK_VertexAttrib_TexCoord2,
+      VK_VertexAttrib_TexCoord3,
+      VK_VertexAttrib_TexCoord4,
+      VK_VertexAttrib_TexCoord5,
+      VK_VertexAttrib_TexCoord6,
+      VK_VertexAttrib_TexCoord7,
+      VK_VertexAttrib_TexCoord8,
+      VK_VertexAttrib_TexCoord9,
+      VK_VertexAttrib_COUNT,
+
+      VK_VertexAttrib_LAST = VK_VertexAttrib_TexCoord9,
+      VK_VertexAttrib_BlendWeight0 = VK_VertexAttrib_TexCoord6,
+      VK_VertexAttrib_BlendIndex0 = VK_VertexAttrib_TexCoord2,
+   };
+}
 
 #endif // _GFXGLSHADER_H_

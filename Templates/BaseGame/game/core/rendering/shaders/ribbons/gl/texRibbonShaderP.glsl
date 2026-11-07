@@ -12,7 +12,7 @@ in float4 _color;
 #define IN_color _color
  
 out float4 OUT_col;
-uniform sampler2D ribTex;
+layout(binding = 0) uniform sampler2D ribTex;
 
 void main()
 {

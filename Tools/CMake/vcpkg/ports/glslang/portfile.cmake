@@ -1,13 +1,13 @@
 vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 
-vcpkg_from_github(
-    OUT_SOURCE_PATH SOURCE_PATH
-    REPO KhronosGroup/glslang
-    REF "${VERSION}"
-    SHA512 ef01dc652e5e6c4406cadf7de4b225c983fa9e3f0b74716844b8107b8ee87d1b80c1a039c47679302ce2244d4c44718e00b23429482bd1b51a3b29a6059358ca
-    HEAD_REF master
+set(LOCAL_ARCHIVE "$ENV{VCPKG_LIB_SOURCE_ROOT}/KhronosGroup-glslang-16.6.0.tar.gz")
+
+vcpkg_extract_source_archive(
+    SOURCE_PATH
+    ARCHIVE "${LOCAL_ARCHIVE}"
     PATCHES
-        fix_entry_points.patch    
+        0001-fix-entry-points.patch    
+        0002-allow-location-at-any-time.patch
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS

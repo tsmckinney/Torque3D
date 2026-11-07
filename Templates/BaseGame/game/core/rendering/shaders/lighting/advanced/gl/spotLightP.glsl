@@ -31,15 +31,15 @@ in vec4 ssPos;
 in vec4 vsEyeDir;
 in vec4 color;
 
-uniform sampler2D deferredBuffer;
-uniform sampler2D shadowMap;
+layout(binding = 0) uniform sampler2D deferredBuffer;
+layout(binding = 1) uniform sampler2D shadowMap;
 //contains gTapRotationTex sampler 
 #include "softShadow.glsl"
-uniform sampler2D colorBuffer;
-uniform sampler2D matInfoBuffer;
+layout(binding = 2) uniform sampler2D colorBuffer;
+layout(binding = 3) uniform sampler2D matInfoBuffer;
 
 #ifdef USE_COOKIE_TEX
-uniform sampler2D cookieMap;
+layout(binding = 4) uniform sampler2D cookieMap;
 #endif
 
 #ifdef UES_PHOTOMETRIC_MASK
@@ -66,7 +66,7 @@ uniform float shadowSoftness;
 uniform mat4 cameraToWorld;
 uniform mat4 worldToCamera;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 void main()
 {   
    // Compute scene UV
