@@ -23,8 +23,8 @@
 /// The vertex shader used in the generation and caching of the
 /// base terrain texture.
 
-in vec4 vPosition;
-in vec2 vTexCoord0;
+layout (location = 0) in vec4 vPosition;
+layout (location = 6) in vec2 vTexCoord0;
 
 out vec2 layerCoord;
 out vec2 texCoord;

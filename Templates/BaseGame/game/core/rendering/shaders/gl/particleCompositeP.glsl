@@ -23,22 +23,22 @@
 #include "torque.glsl"
 #include "hlslCompat.glsl"
 
-in vec4 offscreenPos;
-in vec4 backbufferPos;
+layout (location = 0) in vec4 offscreenPos;
+layout (location = 1) in vec4 backbufferPos;
 
 #define IN_offscreenPos offscreenPos
 #define IN_backbufferPos backbufferPos
 
-uniform sampler2D colorSource;
+layout(binding = 0) uniform sampler2D colorSource;
 uniform vec4 offscreenTargetParams;
 
 #ifdef TORQUE_LINEAR_DEPTH
 #define REJECT_EDGES
-uniform sampler2D edgeSource;
+layout(binding = 1) uniform sampler2D edgeSource;
 uniform vec4 edgeTargetParams;
 #endif
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {  

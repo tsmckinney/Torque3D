@@ -76,8 +76,8 @@ const char* getEngineProductString()
       case 0006:
          return "Torque 3D";
       case 0007:
-	     return "Torque 3D MIT";
-		 
+         return "Torque 3D MIT";
+       
       default:
          return "Torque Engine";
    };
@@ -93,7 +93,7 @@ const char* getCompileTimeString()
 ConsoleFunctionGroupBegin( CompileInformation, "Functions to get version information about the current executable." );
 
 DefineEngineFunction( getVersionNumber, S32, (), , "Get the version of the engine build, as a string.\n\n" 
-				"@ingroup Debugging")
+            "@ingroup Debugging")
 {
    return getVersionNumber();
 }
@@ -106,7 +106,7 @@ DefineEngineFunction( getAppVersionNumber, S32, (), , "Get the version of the ap
 
 
 DefineEngineFunction( getVersionString, const char*, (), , "Get the version of the engine build, as a human readable string.\n\n" 
-				"@ingroup Debugging")
+            "@ingroup Debugging")
 {
    return getVersionString();
 }
@@ -118,19 +118,19 @@ DefineEngineFunction( getAppVersionString, const char*, (), , "Get the version o
 }
 
 DefineEngineFunction( getEngineName, const char*, (), , "Get the name of the engine product that this is running from, as a string.\n\n" 
-				"@ingroup Debugging")
+            "@ingroup Debugging")
 {
    return getEngineProductString();
 }
 
 DefineEngineFunction( getCompileTimeString, const char*, (), , "Get the time of compilation.\n\n" 
-				"@ingroup Debugging")
+            "@ingroup Debugging")
 {
    return getCompileTimeString();
 }
 
 DefineEngineFunction( getBuildString, const char*, (), , "Get the type of build, \"Debug\" or \"Release\".\n\n"
-				"@ingroup Debugging")
+            "@ingroup Debugging")
 {
 #ifdef TORQUE_DEBUG
    return "Debug";

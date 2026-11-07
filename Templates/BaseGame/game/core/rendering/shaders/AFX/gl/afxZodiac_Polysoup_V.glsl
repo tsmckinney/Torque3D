@@ -14,9 +14,9 @@ uniform mat4 modelview;
 
 out vec2 texCoord;
 
-in vec4 vPosition;
-in vec4 vColor;
-in vec2 vTexCoord0;
+layout (location = 0) in vec4 vPosition;
+layout (location = 2) in vec4 vColor;
+layout (location = 6) in vec2 vTexCoord0;
 
 //~~~~~~~~~~~~~~~~~~~~//
 

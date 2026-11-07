@@ -33,7 +33,14 @@
 #include "gfx/gfxStructs.h"
 #include "console/console.h"
 
-//#define CHECK_AARG(pos, name) static StringTableEntry attr_##name = StringTable->insert(#name); if (argName == attr_##name) { glBindAttribLocation(mProgram, pos, attr_##name); continue; }
+#define CHECK_AARG(pos, name, type) \
+   static StringTableEntry attr_##name = StringTable->insert(#name); \
+   if (argName == attr_##name) \
+   { \
+      Con::printf("CHECK_AARG - Found %s at %i", attr_##name, pos);\
+/*    glBindAttribLocation(mProgram, pos, attr_##name); */\
+      continue; \
+   }
 
 GFXVulkanShaderConstHandle::GFXVulkanShaderConstHandle(GFXVulkanShader* shader)
    : mShader(shader),
@@ -602,6 +609,9 @@ bool GFXVulkanShader::_init()
 
                const TBuiltInResource* resources = GetDefaultResources();
                EShMessages messages = (EShMessages)(EShMsgSpvRules | EShMsgVulkanRules);
+
+               // TODO: Try VK_KHR_pipeline_binary!
+
                //linked = shader.parse(resources, 100, false, messages);
 
                //mProgram->addShader(&shader);
@@ -697,16 +707,17 @@ bool GFXVulkanShader::_init()
    // If glslang failed to link our shader, bail.
    if (link == false)
       return false;
-
    mProgram->mapIO();
    mProgram->buildReflection();
 
    glslang::SpvOptions spvCompileOptions;
    spvCompileOptions.optimizeSize = true;
 
+   VkShaderStageFlags shaderStages = NULL;
+
    // Only compile SPIR-V for our shaders if they exist and they compiled successfully in glslang.
    // Also, grrr, why does C++ glslang rely on std vectors!?
-   if (compiledVertexShader && !mVertexFile.isEmpty())
+   if (compiledVertexShader && !mVertexFile.isEmpty() && mProgram->getIntermediate(EShLangVertex))
    {
       std::vector<U32> vertexSPV;
       glslang::GlslangToSpv(*mProgram->getIntermediate(EShLangVertex), vertexSPV, nullptr, &spvCompileOptions);
@@ -717,7 +728,7 @@ bool GFXVulkanShader::_init()
       vShaderCreateInfo.pCode = reinterpret_cast<const U32*>(vertexSPV.data());
       vShaderCreateInfo.pNext = nullptr;
       vShaderCreateInfo.flags = 0;
-      AssertISV(vkCreateShaderModule(GFXVK->getVKLogicalDevice(), &vShaderCreateInfo, nullptr, &mVKVertexShader) == VK_SUCCESS, 
+      AssertISV(vkCreateShaderModule(GFXVK->getVKLogicalDevice(), &vShaderCreateInfo, nullptr, &mVKVertexShader) == VK_SUCCESS,
          String::ToString("GFXVulkanShader::init - Error creating Vulkan-side vertex shader module for \"%s\"!", mVertexFile.getFullFileName().c_str()));
 
       VkPipelineShaderStageCreateInfo vShaderStageInfo{};
@@ -726,8 +737,10 @@ bool GFXVulkanShader::_init()
       vShaderStageInfo.module = mVKVertexShader;
       vShaderStageInfo.pName = "main";
       mVKShaderStages.push_back(vShaderStageInfo);
+
+      shaderStages |= VK_SHADER_STAGE_VERTEX_BIT;
    }
-   if (compiledPixelShader && !mPixelFile.isEmpty())
+   if (compiledPixelShader && !mPixelFile.isEmpty() && mProgram->getIntermediate(EShLangFragment))
    {
       std::vector<U32> pixelSPV;
       glslang::GlslangToSpv(*mProgram->getIntermediate(EShLangFragment), pixelSPV, nullptr, &spvCompileOptions);
@@ -738,7 +751,7 @@ bool GFXVulkanShader::_init()
       pShaderCreateInfo.pCode = reinterpret_cast<const U32*>(pixelSPV.data());
       pShaderCreateInfo.pNext = nullptr;
       pShaderCreateInfo.flags = 0;
-      AssertISV(vkCreateShaderModule(GFXVK->getVKLogicalDevice(), &pShaderCreateInfo, nullptr, &mVKPixelShader) == VK_SUCCESS, 
+      AssertISV(vkCreateShaderModule(GFXVK->getVKLogicalDevice(), &pShaderCreateInfo, nullptr, &mVKPixelShader) == VK_SUCCESS,
          String::ToString("GFXVulkanShader::init - Error creating Vulkan-side pixel shader module for \"%s\"!", mPixelFile.getFullFileName().c_str()));
 
       VkPipelineShaderStageCreateInfo pShaderStageInfo{};
@@ -747,8 +760,10 @@ bool GFXVulkanShader::_init()
       pShaderStageInfo.module = mVKPixelShader;
       pShaderStageInfo.pName = "main";
       mVKShaderStages.push_back(pShaderStageInfo);
+
+      shaderStages |= VK_SHADER_STAGE_FRAGMENT_BIT;
    }
-   if (compiledGeometryShader && !mGeometryFile.isEmpty())
+   if (compiledGeometryShader && !mGeometryFile.isEmpty() && mProgram->getIntermediate(EShLangGeometry))
    {
       std::vector<U32> geoSPV;
       glslang::GlslangToSpv(*mProgram->getIntermediate(EShLangGeometry), geoSPV, nullptr, &spvCompileOptions);
@@ -759,7 +774,7 @@ bool GFXVulkanShader::_init()
       gShaderCreateInfo.pCode = reinterpret_cast<const U32*>(geoSPV.data());
       gShaderCreateInfo.pNext = nullptr;
       gShaderCreateInfo.flags = 0;
-      AssertISV(vkCreateShaderModule(GFXVK->getVKLogicalDevice(), &gShaderCreateInfo, nullptr, &mVKGeometryShader) == VK_SUCCESS, 
+      AssertISV(vkCreateShaderModule(GFXVK->getVKLogicalDevice(), &gShaderCreateInfo, nullptr, &mVKGeometryShader) == VK_SUCCESS,
          String::ToString("GFXVulkanShader::init - Error creating Vulkan-side geometry shader module for \"%s\"!", mGeometryFile.getFullFileName().c_str()));
 
       VkPipelineShaderStageCreateInfo gShaderStageInfo{};
@@ -768,126 +783,57 @@ bool GFXVulkanShader::_init()
       gShaderStageInfo.module = mVKGeometryShader;
       gShaderStageInfo.pName = "main";
       mVKShaderStages.push_back(gShaderStageInfo);
+
+      shaderStages |= VK_SHADER_STAGE_GEOMETRY_BIT;
    }
 
    // TODO: Reimplement this (and the CHECK_AARG macro in general) in Vulkan later!
-   /*
    U32 activeAttribs = mProgram->getNumPipeInputs();
    //glGetProgramiv(mProgram, GL_ACTIVE_ATTRIBUTES, &activeAttribs);
+   if (activeAttribs > 0) {
+      U32 maxLength = 0;
+      for (U32 i = 0; i < activeAttribs; i++)
+      {
+         if (maxLength < mProgram->getPipeInput(i).name.size())
+         {
+            maxLength = mProgram->getPipeInput(i).name.size();
+         }
+      }
+      //glGetProgramiv(mProgram, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &maxLength);
 
-   U32 maxLength = 50;
-   //glGetProgramiv(mProgram, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &maxLength);
+      FrameTemp<const char*> tempData(maxLength+1);
+      *tempData.address() = "\0";
+      // Check atributes
+      for (U32 i = 0; i < activeAttribs; i++)
+      {
+         U32 size = mProgram->getPipeInput(i).size;
+         U32 type = mProgram->getPipeInput(i).glDefineType;
 
-   FrameTemp<String> tempData(maxLength);
-   // Check atributes
-   for (U32 i = 0; i < activeAttribs; i++)
-   {
-      U32 size = mProgram->getPipeInput(i).size;
-      U32 type = mProgram->getPipeInput(i).glDefineType;
+         *tempData.address() = mProgram->getPipeInput(i).name.c_str();
+         //glGetActiveAttrib(mProgram, i, maxLength + 1, NULL, &size, &type, tempData.address());
 
-      *tempData.address() = String(mProgram->getPipeInput(i).name.c_str());
-      //glGetActiveAttrib(mProgram, i, maxLength + 1, NULL, &size, &type, tempData.address());
+         StringTableEntry argName = StringTable->insert(*tempData.address());
 
-      StringTableEntry argName = StringTable->insert(tempData.address()->c_str());
-
-      static StringTableEntry attr_vPosition = StringTable->insert("vPosition");
-      if (argName == attr_vPosition) {
-         mProgram->getPipeInput(i).dump();
-         continue;
+         CHECK_AARG(Torque::VK_VertexAttrib_Position, vPosition, Point4F);
+         CHECK_AARG(Torque::VK_VertexAttrib_Normal, vNormal, VectorF);
+         CHECK_AARG(Torque::VK_VertexAttrib_Color, vColor, Point4F);
+         CHECK_AARG(Torque::VK_VertexAttrib_Tangent, vTangent, VectorF);
+         CHECK_AARG(Torque::VK_VertexAttrib_TangentW, vTangentW, float);
+         CHECK_AARG(Torque::VK_VertexAttrib_Binormal, vBinormal, VectorF);
+         CHECK_AARG(Torque::VK_VertexAttrib_TexCoord0, vTexCoord0, Point2F);
+         CHECK_AARG(Torque::VK_VertexAttrib_TexCoord1, vTexCoord1, Point2F);
+         CHECK_AARG(Torque::VK_VertexAttrib_TexCoord2, vTexCoord2, Point2F);
+         CHECK_AARG(Torque::VK_VertexAttrib_TexCoord3, vTexCoord3, Point2F);
+         CHECK_AARG(Torque::VK_VertexAttrib_TexCoord4, vTexCoord4, Point2F);
+         CHECK_AARG(Torque::VK_VertexAttrib_TexCoord5, vTexCoord5, Point2F);
+         CHECK_AARG(Torque::VK_VertexAttrib_TexCoord6, vTexCoord6, Point2F);
+         CHECK_AARG(Torque::VK_VertexAttrib_TexCoord7, vTexCoord7, Point2F);
+         CHECK_AARG(Torque::VK_VertexAttrib_TexCoord8, vTexCoord8, Point2F);
+         CHECK_AARG(Torque::VK_VertexAttrib_TexCoord9, vTexCoord9, Point2F);
       }
-      static StringTableEntry attr_vNormal = StringTable->insert("vNormal");
-      if (argName == attr_vNormal) {
-         mProgram->getPipeInput(i).dump();
-         continue;
-      }
-      static StringTableEntry attr_vColor = StringTable->insert("vColor");
-      if (argName == attr_vColor) {
-         mProgram->getPipeInput(i).dump();
-         continue;
-      }
-      static StringTableEntry attr_vTangent = StringTable->insert("vTangent");
-      if (argName == attr_vTangent) {
-         mProgram->getPipeInput(i).dump();
-         continue;
-      }
-      static StringTableEntry attr_vTangentW = StringTable->insert("vTangentW");
-      if (argName == attr_vTangentW) {
-         mProgram->getPipeInput(i).dump();
-         continue;
-      }
-      static StringTableEntry attr_vBinormal = StringTable->insert("vBinormal");
-      if (argName == attr_vBinormal) {
-         mProgram->getPipeInput(i).dump();
-         continue;
-      }
-      static StringTableEntry attr_vTexCoord0 = StringTable->insert("vTexCoord0");
-      if (argName == attr_vTexCoord0) {
-         mProgram->getPipeInput(i).dump();
-         continue;
-      }
-      static StringTableEntry attr_vTexCoord1 = StringTable->insert("vTexCoord1");
-      if (argName == attr_vTexCoord1) {
-         mProgram->getPipeInput(i).dump();
-         continue;
-      }
-      static StringTableEntry attr_vTexCoord2 = StringTable->insert("vTexCoord2");
-      if (argName == attr_vTexCoord2) {
-         mProgram->getPipeInput(i).dump();
-         continue;
-      }
-      static StringTableEntry attr_vTexCoord3 = StringTable->insert("vTexCoord3");
-      if (argName == attr_vTexCoord3) {
-         mProgram->getPipeInput(i).dump();
-         continue;
-      }
-      static StringTableEntry attr_vTexCoord4 = StringTable->insert("vTexCoord4");
-      if (argName == attr_vTexCoord4) {
-         mProgram->getPipeInput(i).dump();
-         continue;
-      }
-      static StringTableEntry attr_vTexCoord5 = StringTable->insert("vTexCoord5");
-      if (argName == attr_vTexCoord5) {
-         mProgram->getPipeInput(i).dump();
-         continue;
-      }
-      static StringTableEntry attr_vTexCoord6 = StringTable->insert("vTexCoord6");
-      if (argName == attr_vTexCoord6) {
-         mProgram->getPipeInput(i).dump();
-         continue;
-      }
-      static StringTableEntry attr_vTexCoord7 = StringTable->insert("vTexCoord7");
-      if (argName == attr_vTexCoord7) {
-         mProgram->getPipeInput(i).dump();
-         continue;
-      }
-      static StringTableEntry attr_vTexCoord8 = StringTable->insert("vTexCoord8");
-      if (argName == attr_vTexCoord8) {
-         mProgram->getPipeInput(i).dump();
-         continue;
-      }
-      static StringTableEntry attr_vTexCoord9 = StringTable->insert("vTexCoord9");
-      if (argName == attr_vTexCoord9) {
-         mProgram->getPipeInput(i).dump();
-         continue;
-      }
-
-      //CHECK_AARG(Torque::GL_VertexAttrib_Position, vPosition);
-      //CHECK_AARG(Torque::GL_VertexAttrib_Normal, vNormal);
-      //CHECK_AARG(Torque::GL_VertexAttrib_Color, vColor);
-      //CHECK_AARG(Torque::GL_VertexAttrib_Tangent, vTangent);
-      //CHECK_AARG(Torque::GL_VertexAttrib_TangentW, vTangentW);
-      //CHECK_AARG(Torque::GL_VertexAttrib_Binormal, vBinormal);
-      //CHECK_AARG(Torque::GL_VertexAttrib_TexCoord0, vTexCoord0);
-      //CHECK_AARG(Torque::GL_VertexAttrib_TexCoord1, vTexCoord1);
-      //CHECK_AARG(Torque::GL_VertexAttrib_TexCoord2, vTexCoord2);
-      //CHECK_AARG(Torque::GL_VertexAttrib_TexCoord3, vTexCoord3);
-      //CHECK_AARG(Torque::GL_VertexAttrib_TexCoord4, vTexCoord4);
-      //CHECK_AARG(Torque::GL_VertexAttrib_TexCoord5, vTexCoord5);
-      //CHECK_AARG(Torque::GL_VertexAttrib_TexCoord6, vTexCoord6);
-      //CHECK_AARG(Torque::GL_VertexAttrib_TexCoord7, vTexCoord7);
-      //CHECK_AARG(Torque::GL_VertexAttrib_TexCoord8, vTexCoord8);
-      //CHECK_AARG(Torque::GL_VertexAttrib_TexCoord9, vTexCoord9);
    }
+
+   /*
 
    //always have OUT_col
    //glBindFragDataLocation(mProgram, 0, "OUT_col");
@@ -962,6 +908,9 @@ bool GFXVulkanShader::_init()
    initConstantDescs();
    initHandles();
 
+   // PLAN: Set up the graphics pipeline *here.* As for binaries, I'll need to see how
+   // Vulkan serializes graphics pipelines.
+
    // Notify Buffers we might have changed in size.
    // If this was our first init then we won't have any activeBuffers
    // to worry about unnecessarily calling.
@@ -977,45 +926,58 @@ void GFXVulkanShader::initConstantDescs()
    // clear our vectors.
    mShaderConsts.clear();
 
-   U32 maxNameLength = 50;
+   U32 numUniforms = mProgram->getNumUniformVariables();
+   U32 maxNameLength = 0;
+   for (U32 i = 0; i < numUniforms; i++)
+   {
+      if (maxNameLength < mProgram->getUniform(i).name.size())
+      {
+         maxNameLength = mProgram->getUniform(i).name.size();
+      }
+   }
    //glGetProgramiv(mProgram, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxNameLength);
 
    if (!maxNameLength)
       return;
    maxNameLength++;
 
-   FrameTemp<String> uniformName(maxNameLength);
+   FrameTemp<const char*> uniformName(maxNameLength);
 
    // parse ubos first and add them to our table, same as in dx
    // this is required so that in the other uniform loop we dont add
    // a uniform that exists in a ubo again.
-   U32 numUBOS;
+   U32 numUBOS = mProgram->getNumUniformBlocks();
    //glGetProgramiv(mProgram, GL_ACTIVE_UNIFORM_BLOCKS, &numUBOS);
    for (U32 i = 0; i < numUBOS; i++) 
    {
       GFXShaderConstDesc desc;
-      S32 uboNameLen;
+      S32 uboNameLen = mProgram->getUniformBlock(i).name.size();
       //glGetActiveUniformBlockiv(mProgram, i, GL_UNIFORM_BLOCK_NAME_LENGTH, &uboNameLen);
       if (!uboNameLen)
          return;
       uboNameLen++;
 
       // get the name of the ubo for getting required data.
-      FrameTemp<String> uboName(uboNameLen);
+      FrameTemp<const char*> uboName(uboNameLen);
+      *uboName.address() = mProgram->getUniformBlock(i).name.c_str();
       //glGetActiveUniformBlockName(mProgram, i, uboNameLen, NULL, uboName);
-      //GLint uboBinding;
+      S32 uboBinding = mProgram->getUniformBlock(i).getBinding();
       //glGetActiveUniformBlockiv(mProgram, i, GL_UNIFORM_BLOCK_BINDING, &uboBinding);
-      U32 uboSize;
+      U32 uboSize = mProgram->getUniformBlock(i).size;
       //glGetActiveUniformBlockiv(mProgram, i, GL_UNIFORM_BLOCK_DATA_SIZE, &uboSize);
-      U32 numUboUniforms;
+      U32 numUboUniforms = mProgram->getUniformBlock(i).numMembers;
       //glGetActiveUniformBlockiv(mProgram, i, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &numUboUniforms);
-      //GLint* indices = new GLint[numUboUniforms];
+      S32* indices = new S32[numUboUniforms];
+      for (U32 i = 0; i < numUboUniforms; i++)
+      {
+         indices[i] = mProgram->getUniform(i).index;
+      }
       //glGetActiveUniformBlockiv(mProgram, i, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, indices);
 
       // fill out ubo desc.
-      desc.name = uboName;
-      //desc.bindPoint = uboBinding == 0 ? glGetUniformBlockIndex(mProgram, uboName) : uboBinding;
-      //glUniformBlockBinding(mProgram, glGetUniformBlockIndex(mProgram, uboName), desc.bindPoint);
+      desc.name = String(*uboName.address());
+      desc.bindPoint = uboBinding == 0 ? i : uboBinding;
+      //glUniformBlockBinding(mProgram, i, desc.bindPoint);
       desc.size = uboSize;
       desc.constType = GFXSCT_ConstBuffer;
       desc.samplerReg = -1;
@@ -1027,25 +989,24 @@ void GFXVulkanShader::initConstantDescs()
       {
          GFXShaderConstDesc varDesc;
 
-         //GLint uniformIndex = indices[j];
-         U32 size;
-         //GLenum type;
-         //GLint offset;
+         U32 uniformIndex = indices[j];
+         U32 size = mProgram->getUniform(i).size;
+         U32 type = mProgram->getUniform(i).glDefineType;
+         U32 offset = mProgram->getUniform(i).offset;
          //glGetActiveUniformsiv(mProgram, 1, (const GLuint*)&uniformIndex, GL_UNIFORM_OFFSET, &offset);
          //glGetActiveUniform(mProgram, uniformIndex, maxNameLength, NULL, &size, &type, uniformName);
 
-         varDesc.name = uniformName;
+         varDesc.name = *uniformName.address();
          // remove array brackets.
          varDesc.name = varDesc.name.substr(0, varDesc.name.find('['));
          // Insert $ to match D3D behavior of having a $ prepended to parameters to main.
          varDesc.name.insert(0, '$');
          varDesc.bindPoint = desc.bindPoint; // just set to the buffer bindpoint for uniforms in a ubo.
-         //varDesc.offset = offset;
-         //varDesc.arraySize = size;
-         //varDesc.constType = convertConstType(type);
+         varDesc.offset = offset;
+         varDesc.arraySize = size;
+         varDesc.constType = convertConstType(type);
          varDesc.size = shaderConstTypeSize(varDesc.constType) * size;
          varDesc.samplerReg = -1;
-
 #ifdef VULKAN_DEBUG_SPEW
          Con::printf("Variable Name %s:, offset: %d, size: %d, constantDesc.Elements: %d", varDesc.name.c_str(), varDesc.offset, varDesc.size, varDesc.arraySize);
 #endif
@@ -1053,122 +1014,122 @@ void GFXVulkanShader::initConstantDescs()
       }
    }
 
-   //GLint numUniforms;
    //glGetProgramiv(mProgram, GL_ACTIVE_UNIFORMS, &numUniforms);
 
-   //for (U32 i = 0; i < numUniforms; i++)
-   //{
+   for (U32 i = 0; i < numUniforms; i++)
+   { 
    //   // skip if this uniform is inside a ubo.
-   //   S32 blk;
+      S32 blk = mProgram->getUniformBlockIndex(i);
    //   //glGetActiveUniformsiv(mProgram, 1, (GLuint*)&i, GL_UNIFORM_BLOCK_INDEX, &blk);
-   //   if (blk != -1)
-   //   {
-   //      continue;
-   //   }
+      if (blk != -1)
+      {
+         continue;
+      }
    //
-   //   S32 size;
-   //   U32 type;
+      S32 size = mProgram->getUniform(i).size;
+      U32 type = mProgram->getUniform(i).glDefineType;
+      *uniformName.address() = String::VToString(mProgram->getUniform(i).name.c_str(), {});
       //glGetActiveUniform(mProgram, i, maxNameLength, NULL, &size, &type, uniformName);
 
-   //   GFXShaderConstDesc desc;
-   //   desc.name = String((char*)uniformName);
+      GFXShaderConstDesc desc;
+      desc.name = String((char*)uniformName.address());
       // Remove array brackets from the name
-   //   desc.name = desc.name.substr(0, desc.name.find('['));
+      desc.name = desc.name.substr(0, desc.name.find('['));
       // Insert $ to match D3D behavior of having a $ prepended to parameters to main.
-   //   desc.name.insert(0, '$');
+      desc.name.insert(0, '$');
 
-   //   desc.bindPoint = -1;
-   //   desc.arraySize = size;
-   //   desc.constType = convertConstType(type);
-   //   desc.size = shaderConstTypeSize(desc.constType) * size;
-   //   desc.samplerReg = -1;
-   //   mShaderConsts.push_back(desc);
-   //}
+      desc.bindPoint = -1;
+      desc.arraySize = size;
+      desc.constType = convertConstType(type);
+      desc.size = shaderConstTypeSize(desc.constType) * size;
+      desc.samplerReg = -1;
+      mShaderConsts.push_back(desc);
+   }
 }
 
 GFXShaderConstType GFXVulkanShader::convertConstType(U32 constType)
 {
-   Con::printf("Const type: %i", constType);
+   Con::printf("Const type: %X", constType);
    switch (constType)
    {
-   //case GL_FLOAT:
-   //   return GFXSCT_Float;
-   //   break;
-   //case GL_FLOAT_VEC2:
-   //   return GFXSCT_Float2;
-   //   break;
-   //case GL_FLOAT_VEC3:
-   //   return GFXSCT_Float3;
-   //   break;
-   //case GL_FLOAT_VEC4:
-   //   return GFXSCT_Float4;
-   //   break;
-   //case GL_INT:
-   //   return GFXSCT_Int;
-   //   break;
-   //case GL_INT_VEC2:
-   //   return GFXSCT_Int2;
-   //   break;
-   //case GL_INT_VEC3:
-   //   return GFXSCT_Int3;
-   //   break;
-   //case GL_INT_VEC4:
-   //   return GFXSCT_Int4;
-   //   break;
-   //case GL_UNSIGNED_INT:
-   //   return GFXSCT_UInt;
-   //   break;
-   //case GL_UNSIGNED_INT_VEC2:
-   //   return GFXSCT_UInt2;
-   //   break;
-   //case GL_UNSIGNED_INT_VEC3:
-   //   return GFXSCT_UInt3;
-   //   break;
-   //case GL_UNSIGNED_INT_VEC4:
-   //   return GFXSCT_UInt4;
-   //   break;
-   //case GL_BOOL:
-   //   return GFXSCT_Bool;
-   //   break;
-   //case GL_BOOL_VEC2:
-   //   return GFXSCT_Bool2;
-   //   break;
-   //case GL_BOOL_VEC3:
-   //   return GFXSCT_Bool3;
-   //   break;
-   //case GL_BOOL_VEC4:
-   //   return GFXSCT_Bool4;
-   //   break;
-   //case GL_FLOAT_MAT2:
-   //   return GFXSCT_Float2x2;
-   //   break;
-   //case GL_FLOAT_MAT3:
-   //   return GFXSCT_Float3x3;
-   //   break;
-   //case GL_FLOAT_MAT4:
-   //   return GFXSCT_Float4x4;
-   //   break;
-   //case GL_FLOAT_MAT4x3: // jamesu - columns, rows
-   //   return GFXSCT_Float4x3;
-   //   break;
-   //case GL_SAMPLER_1D:
-   //case GL_SAMPLER_2D:
-   //case GL_SAMPLER_3D:
-   //case GL_SAMPLER_1D_SHADOW:
-   //case GL_SAMPLER_2D_SHADOW:
-   //   return GFXSCT_Sampler;
-   //   break;
-   //case GL_SAMPLER_CUBE:
-   //   return GFXSCT_SamplerCube;
-   //   break;
-   //case GL_SAMPLER_CUBE_MAP_ARRAY_ARB:
-   //   return GFXSCT_SamplerCubeArray;
-   //   break;
-   //case GL_SAMPLER_2D_ARRAY:
-   //   return GFXSCT_SamplerTextureArray;
-   //   break;
+   case 0x1406: // GL_FLOAT
+      return GFXSCT_Float;
+      break;
+   case 0x8B50: // GL_FLOAT_VEC2
+      return GFXSCT_Float2;
+      break;
+   case 0x8B51: // GL_FLOAT_VEC3
+      return GFXSCT_Float3;
+      break;
+   case 0x8B52: // GL_FLOAT_VEC4
+      return GFXSCT_Float4;
+      break;
+   case 0x1404: // GL_INT
+      return GFXSCT_Int;
+      break;
+   case 0x8B53: // GL_INT_VEC2
+      return GFXSCT_Int2;
+      break;
+   case 0x8B54: // GL_INT_VEC3
+      return GFXSCT_Int3;
+      break;
+   case 0x8B55: // GL_INT_VEC4
+      return GFXSCT_Int4;
+      break;
+   case 0x1405: // GL_UNSIGNED_INT
+      return GFXSCT_UInt;
+      break;
+   case 0x8DC6: // GL_UNSIGNED_INT_VEC2
+      return GFXSCT_UInt2;
+      break;
+   case 0x8DC7: // GL_UNSIGNED_INT_VEC3
+      return GFXSCT_UInt3;
+      break;
+   case 0x8DC8: // GL_UNSIGNED_INT_VEC4
+      return GFXSCT_UInt4;
+      break;
+   case 0x8B56: // GL_BOOL
+      return GFXSCT_Bool;
+      break;
+   case 0x8B57: // GL_BOOL_VEC2
+      return GFXSCT_Bool2;
+      break;
+   case 0x8B58: // GL_BOOL_VEC3
+      return GFXSCT_Bool3;
+      break;
+   case 0x8B59: // GL_BOOL_VEC4
+      return GFXSCT_Bool4;
+      break;
+   case 0x8B5A: // GL_FLOAT_MAT2
+      return GFXSCT_Float2x2;
+      break;
+   case 0x8B5B: // GL_FLOAT_MAT3
+      return GFXSCT_Float3x3;
+      break;
+   case 0x8B5C: // GL_FLOAT_MAT4
+      return GFXSCT_Float4x4;
+      break;
+   case 0x8B6A: // jamesu - columns, rows // GL_FLOAT_MAT4x3
+      return GFXSCT_Float4x3;
+      break;
+   case 0x8B5D: // GL_SAMPLER_1D
+   case 0x8B5E: // GL_SAMPLER_2D
+   case 0x8B5F: // GL_SAMPLER_3D
+   case 0x8B61: // GL_SAMPLER_1D_SHADOW
+   case 0x8B62: // GL_SAMPLER_2D_SHADOW
+      return GFXSCT_Sampler;
+      break;
+   case 0x8B60: // GL_SAMPLER_CUBE
+      return GFXSCT_SamplerCube;
+      break;
+   case 0x900C: // GL_SAMPLER_CUBE_MAP_ARRAY_ARB
+      return GFXSCT_SamplerCubeArray;
+      break;
+   case 0x8DC1: // GL_SAMPLER_2D_ARRAY
+      return GFXSCT_SamplerTextureArray;
+      break;
    default:
-      AssertFatal(false, String::ToString("GFXVulkanShader::convertConstType - Unknown shader constant class enum %i! Please report this to a developer for them to implement it here.", constType));
+      AssertFatal(false, String::ToString("GFXVulkanShader::convertConstType - Unknown shader constant class enum %X! Please report this to a developer for them to implement it here.", constType));
       // If we don't recognize the constant don't add its description.
       break;
    }
@@ -1183,16 +1144,30 @@ void GFXVulkanShader::initHandles()
    for (HandleMap::Iterator iter = mHandles.begin(); iter != mHandles.end(); ++iter)
       (iter->value)->setValid(false);
 
+
    // Loop through constants that exist in ubos.
    for (U32 i = 0; i < mShaderConsts.size(); i++)
    {
       GFXShaderConstDesc& desc = mShaderConsts[i];
 
       // Index element 1 of the name to skip the '$' we inserted earier.
+      U32 loc;
+      glslang::TObjectReflection* obj;
+      U32 numUniforms = mProgram->getNumUniformVariables();
+      for (U32 index = 0; index < numUniforms; index++)
+      {
+         const char* testName = mProgram->getUniform(index).name.c_str();
+         const char* desiredName = &desc.name.c_str()[1];
+         if (dStrcmp(testName, desiredName) == 0)
+         {
+            obj = (glslang::TObjectReflection*) & mProgram->getUniform(index);
+         }
+      }
+      loc = obj != nullptr ? obj->layoutLocation() : -1;
       //GLint loc = glGetUniformLocation(mProgram, &desc.name.c_str()[1]);
 
       // The location for uniforms inside a UBO come back as -1.
-      // AssertFatal(loc != -1, avar("uniform %s in shader file Vert: (%s) Frag: (%s)", &desc.name.c_str()[1], mVertexFile.getFullPath().c_str(), mPixelFile.getFullPath().c_str()));
+      AssertFatal(loc != -1, avar("uniform %s in shader file Vert: (%s) Frag: (%s)", &desc.name.c_str()[1], mVertexFile.getFullPath().c_str(), mPixelFile.getFullPath().c_str()));
 
       HandleMap::Iterator handle = mHandles.find(desc.name);
       S32 sampler = -1;
@@ -1211,8 +1186,8 @@ void GFXVulkanShader::initHandles()
       {
          if (desc.bindPoint == -1)
          {
-            //AssertFatal(loc != -1, avar("uniform %s in shader file Vert: (%s) Frag: (%s)", &desc.name.c_str()[1], mVertexFile.getFullPath().c_str(), mPixelFile.getFullPath().c_str()));
-            //desc.bindPoint = loc;
+            AssertFatal(loc != -1, avar("uniform %s in shader file Vert: (%s) Frag: (%s)", &desc.name.c_str()[1], mVertexFile.getFullPath().c_str(), mPixelFile.getFullPath().c_str()));
+            desc.bindPoint = loc;
             mHandles[desc.name]->mUBOUniform = false;
          }
          else
@@ -1226,8 +1201,8 @@ void GFXVulkanShader::initHandles()
       {
          if (desc.bindPoint == -1)
          {
-            //AssertFatal(loc != -1, avar("uniform %s in shader file Vert: (%s) Frag: (%s)", &desc.name.c_str()[1], mVertexFile.getFullPath().c_str(), mPixelFile.getFullPath().c_str()));
-            //desc.bindPoint = loc;
+            AssertFatal(loc != -1, avar("uniform %s in shader file Vert: (%s) Frag: (%s)", &desc.name.c_str()[1], mVertexFile.getFullPath().c_str(), mPixelFile.getFullPath().c_str()));
+            desc.bindPoint = loc;
             mHandles[desc.name] = new GFXVulkanShaderConstHandle(this, desc);
             mHandles[desc.name]->mUBOUniform = false;
          }
@@ -1588,7 +1563,9 @@ char* GFXVulkanShader::_handleIncludes(const Torque::Path& path, FileStream* s)
          //
          // Add a new line pragma to restore the proper
          // file and line number after the include.
-         //sItx += String::ToString( "\r\n#line %d \r\n", includeLine );
+         /*
+         sItx += String::ToString( "\r\n#line %d \r\n", includeLine );
+         */
 
          dFree(includedText);
          manip.insert(q - buffer, sItx);
@@ -1607,26 +1584,28 @@ bool GFXVulkanShader::_loadShaderFromStream(
    const Torque::Path& path,
    FileStream* s,
    const Vector<GFXShaderMacro>& macros,
-   Vector<char*>& buffers)
+   Vector<const char*>& buffers)
 {
-   Vector<U32> lengths;
    // The GLSL version declaration must go first!
-   const char* versionDecl = "#version 330\n";
+   const char* versionDecl = "#version 420\n";
    buffers.push_back(dStrdup(versionDecl));
-   lengths.push_back(dStrlen(versionDecl));
 
    //Required extensions. These are already checked when creating the GFX adapter, if we make it this far it's supported
+   const char* ssoExt = "#extension GL_ARB_separate_shader_objects : enable\n";
+   buffers.push_back(dStrdup(ssoExt));
+   const char* explicitAttrExt = "#extension GL_ARB_explicit_attrib_location : enable\n";
+   buffers.push_back(dStrdup(explicitAttrExt));
+   const char* enhancedLayoutsExt = "#extension GL_ARB_enhanced_layouts : enable\n";
+   buffers.push_back(dStrdup(enhancedLayoutsExt));
+
    const char* cubeArrayExt = "#extension GL_ARB_texture_cube_map_array : enable\n";
    buffers.push_back(dStrdup(cubeArrayExt));
-   lengths.push_back(dStrlen(cubeArrayExt));
 
    const char* gpuShader5Ext = "#extension GL_ARB_gpu_shader5 : enable\n";
    buffers.push_back(dStrdup(gpuShader5Ext));
-   lengths.push_back(dStrlen(gpuShader5Ext));
 
    const char* newLine = "\r\n";
    buffers.push_back(dStrdup(newLine));
-   lengths.push_back(dStrlen(newLine));
 
    // Now add all the macros.
    for (U32 i = 0; i < macros.size(); i++)
@@ -1636,7 +1615,6 @@ bool GFXVulkanShader::_loadShaderFromStream(
 
       String define = String::ToString("#define %s %s\n", macros[i].name.c_str(), macros[i].value.c_str());
       buffers.push_back(dStrdup(define.c_str()));
-      lengths.push_back(define.length());
    }
 
    // Now finally add the shader source.
@@ -1646,7 +1624,6 @@ bool GFXVulkanShader::_loadShaderFromStream(
       return false;
 
    buffers.push_back(buffer);
-   lengths.push_back(shaderLen);
    //glShaderSource(shader, buffers.size(), (const GLchar**)const_cast<const char**>(buffers.address()), NULL);
 
 #if defined(TORQUE_DEBUG) && defined(TORQUE_DEBUG_GFX)
@@ -1694,11 +1671,9 @@ bool GFXVulkanShader::initShader(glslang::TShader* shader,
       break;
    }
    shader = new glslang::TShader(lang);
-   shader->setEnvInput(glslang::EShSourceGlsl, lang, glslang::EShClientVulkan, 100);
+   shader->setEnvInput(glslang::EShSourceGlsl, lang, glslang::EShClientVulkan, 420);
    shader->setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_4);
    shader->setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_6);
-   shader->setAutoMapBindings(true);
-   shader->setAutoMapLocations(true);
    shader->setEnvInputVulkanRulesRelaxed();
    shader->setGlobalUniformBinding(0);
    shader->setGlobalUniformSet(0);
@@ -1717,28 +1692,33 @@ bool GFXVulkanShader::initShader(glslang::TShader* shader,
 
       return false;
    }
-   Vector<char*> buffers;
+   Vector<const char*> buffers;
    if (!_loadShaderFromStream(file, &stream, macros, buffers))
    {
       if (smLogErrors)
          Con::errorf("GFXVulkanShader::initShader - unable to load shader from stream: '%s'.", file.getFullPath().c_str());
       return false;
    }
-   shader->setStrings(buffers.address(), 1);
-   shader->setPreamble("");
+   String buffer = "";
+   for (size_t i = 0; i < buffers.size(); i++)
+   {
+      buffer += buffers[(U32)i];
+   }
+   const char* finalBuffer = buffer.c_str();
+   shader->setStrings(&finalBuffer, 1);
    const TBuiltInResource* resources = GetDefaultResources();
-   EShMessages messages = (EShMessages)(EShMsgDefault);
+   EShMessages messages = (EShMessages)(EShMsgSpvRules | EShMsgVulkanRules);
    //compiled = shader->parse(resources, 100, true, messages);
    shader->setSourceEntryPoint("main");
    shader->setEntryPoint("main");
-   bool compile = shader->parse(resources, 100, ECoreProfile, false, true, messages);
+   bool compile = shader->parse(resources, 420, ECoreProfile, false, true, messages);
    program->addShader(shader);
 
    // Dump the info log to the console
    U32 logLength = 0;
    logLength = dStrlen(shader->getInfoLog());
 
-   if (logLength)
+   if (logLength > 0)
    {
       FrameAllocatorMarker fam;
       const char* log = (char*)fam.alloc(logLength);

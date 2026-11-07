@@ -162,6 +162,16 @@ void GFXVulkanDevice::enumerateVideoModes()
 
 bool GFXVulkanDevice::beginSceneInternal() 
 {
+   VkPhysicalDeviceSurfaceInfo2KHR surfaceInfo{};
+   surfaceInfo.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SURFACE_INFO_2_KHR;
+   surfaceInfo.surface = GFXVK->getVKSurface();
+   VkSurfaceCapabilities2KHR surfaceCaps{};
+   surfaceCaps.sType = VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_2_KHR;
+   AssertFatal(vkGetPhysicalDeviceSurfaceCapabilities2KHR(GFXVK->getVKPhysicalDevice(), &surfaceInfo, &surfaceCaps) == VK_SUCCESS,
+      "GFXVulkanWindowTarget::createSwapChain() - Failed to get the surface capabilities of your graphics card! Please make sure it supports the VK_KHR_surface extension for your operating system.");
+   mWriteToWhichFrame = (mFrameTime->getElapsedMs()) % surfaceCaps.surfaceCapabilities.minImageCount;
+   vkWaitForFences(mVKDevice, 1, &mFramesInFlightF[mWriteToWhichFrame], VK_TRUE, UINT64_MAX);
+   vkResetFences(mVKDevice, 1, &mFramesInFlightF[mWriteToWhichFrame]);
    mCanCurrentlyRender = true;
    return true;
 }

@@ -24,13 +24,13 @@
 #include "hlslCompat.glsl"
 
 //ConnectData
-in vec2 texCoord;
+layout (location = 6) in vec2 texCoord;
 #define IN_texCoord texCoord
 
 
-uniform sampler2D diffuseMap        ;
+layout(binding = 0) uniform sampler2D diffuseMap;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {

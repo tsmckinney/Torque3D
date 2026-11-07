@@ -33,24 +33,24 @@
    
    uniform float oneOverSoftness;
    uniform float oneOverFar;
-   uniform sampler2D deferredTex;   
+   layout(binding = 2) uniform sampler2D deferredTex;   
    //uniform vec3 vEye;
    uniform vec4 deferredTargetParams;
 #endif
 
 #define CLIP_Z // TODO: Make this a proper macro
 
-in vec4 color;
-in vec2 uv0;
-in vec4 pos;
+layout (location = 2) in vec4 vColor;
+layout (location = 6) in vec2 vTexCoord0;
+layout (location = 0) in vec4 vPosition;
 
-#define IN_color color
-#define IN_uv0 uv0
-#define IN_pos pos
+#define IN_color vColor
+#define IN_uv0 vTexCoord0
+#define IN_pos vPosition
 
-uniform sampler2D diffuseMap;
+layout(binding = 0) uniform sampler2D diffuseMap;
 
-uniform sampler2D paraboloidLightMap;
+layout(binding = 1) uniform sampler2D paraboloidLightMap;
 
 vec4 lmSample( vec3 nrm )
 {
@@ -78,7 +78,7 @@ uniform float alphaFactor;
 uniform float alphaScale;
 uniform bool glow;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {

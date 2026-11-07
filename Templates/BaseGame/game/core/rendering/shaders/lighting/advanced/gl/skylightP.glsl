@@ -31,12 +31,12 @@ in vec4 wsEyeDir;
 in vec4 ssPos;
 in vec4 vsEyeDir;
 
-uniform sampler2D deferredBuffer;
-uniform sampler2D colorBuffer;
-uniform sampler2D matInfoBuffer;
-uniform samplerCube cubeMap;
-uniform samplerCube irradianceCubemap;
-uniform sampler2D BRDFTexture;
+layout(binding = 0) uniform sampler2D deferredBuffer;
+layout(binding = 1) uniform sampler2D colorBuffer;
+layout(binding = 2) uniform sampler2D matInfoBuffer;
+layout(binding = 3) uniform samplerCube cubeMap;
+layout(binding = 4) uniform samplerCube irradianceCubemap;
+layout(binding = 5) uniform sampler2D BRDFTexture;
 
 uniform vec4 rtParams0;
 
@@ -51,7 +51,7 @@ vec3 iblSpecular(in Surface surface, vec3 F)
 	return prefilteredColor * (F * envBRDF.x + envBRDF.y);
 }
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 void main()
 {
     // Compute scene UV

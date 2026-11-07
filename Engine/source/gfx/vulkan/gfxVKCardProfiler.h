@@ -51,8 +51,8 @@ protected:
     bool _queryFormat(const GFXFormat fmt, const GFXTextureProfile *profile, bool &inOutAutogenMips) override;
 
     VkPhysicalDevice mPhysicalDevice = VK_NULL_HANDLE;
-    VkPhysicalDeviceProperties2 mDeviceProperties;
-    VkPhysicalDeviceFeatures2KHR mDeviceFeatures;
+    VkPhysicalDeviceProperties2 mDeviceProperties{};
+    VkPhysicalDeviceFeatures2KHR mDeviceFeatures{};
 
 public:
     void init() override;

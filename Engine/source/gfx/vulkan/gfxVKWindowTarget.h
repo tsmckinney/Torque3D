@@ -84,11 +84,12 @@ public:
 
     void createSwapChain();
     void setupRenderPassAndFramebuffer();
+    void resetSwapchain();
 
     GFXDevice* mDevice;
     GFXVulkanSwapChain mSwapchain;
     GFXFormat mDepthFormat;
-    VkRenderPass mRenderPass;
+    VkRenderPass mMainRenderPass;
 };
 
 #endif

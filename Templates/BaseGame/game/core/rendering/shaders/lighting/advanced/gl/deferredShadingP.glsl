@@ -25,13 +25,13 @@
 #include "../../../postFX/gl/postFx.glsl"
 #include "../../../gl/torque.glsl"
 
-uniform sampler2D colorBufferTex;
-uniform sampler2D diffuseLightingBuffer;
-uniform sampler2D matInfoTex;
-uniform sampler2D specularLightingBuffer;
-uniform sampler2D deferredTex;
+layout(binding = 0) uniform sampler2D colorBufferTex;
+layout(binding = 1) uniform sampler2D diffuseLightingBuffer;
+layout(binding = 2) uniform sampler2D matInfoTex;
+layout(binding = 3) uniform sampler2D specularLightingBuffer;
+layout(binding = 4) uniform sampler2D deferredTex;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {

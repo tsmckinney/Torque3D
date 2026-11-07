@@ -28,12 +28,12 @@ in vec2 layerCoord;
 in vec2 texCoord;
 #define IN_texCoord texCoord
 
-uniform sampler2D layerTex;
-uniform sampler2D textureMap;
+layout(binding = 0) uniform sampler2D layerTex;
+layout(binding = 1) uniform sampler2D textureMap;
 uniform float texId;
 uniform float layerSize;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {

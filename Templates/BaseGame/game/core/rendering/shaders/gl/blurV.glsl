@@ -24,14 +24,17 @@
 // Glow shader
 //*****************************************************************************
 
-in vec4 vPosition;
-in vec4 vColor;
-in vec2 vTexCoord0;
+layout (location = 0) in vec4 vPosition;
+layout (location = 2) in vec4 vColor;
+layout (location = 6) in vec2 vTexCoord0;
 
 uniform mat4 modelview;
 uniform vec2 offset0, offset1, offset2, offset3;
 
-out vec2 texc0, texc1, texc2, texc3;
+layout (location = 6) out vec2 texc0;
+layout (location = 7) out vec2 texc1;
+layout (location = 8) out vec2 texc2;
+layout (location = 9) out vec2 texc3;
 
 void main()
 {

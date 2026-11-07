@@ -40,6 +40,63 @@ GFXVulkanStateBlock::GFXVulkanStateBlock(const GFXStateBlockDesc& desc)
    mDesc = desc;
    mCachedHash = desc.getHashValue();
 
+   mDynamicStates.push_back(VK_DYNAMIC_STATE_VIEWPORT);
+   if (mDesc.stencilEnable) {
+      mDynamicStates.push_back(VK_DYNAMIC_STATE_STENCIL_TEST_ENABLE);
+   }
+   mDynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+   mDynamicState.dynamicStateCount = mDynamicStates.size();
+   mDynamicState.pDynamicStates = mDynamicStates.address();
+
+   // TODO: Probably a good idea to move this to the vertex buffer code when I implement it! ;)
+   mVertexInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+   mVertexInputState.vertexAttributeDescriptionCount = 0;
+   mVertexInputState.pVertexBindingDescriptions = nullptr;
+   mVertexInputState.vertexBindingDescriptionCount = 0;
+   mVertexInputState.pVertexAttributeDescriptions = nullptr;
+
+   VkViewport viewport{};
+   viewport.x = GFXVK->getViewport().point.x;
+   viewport.y = GFXVK->getViewport().point.y;
+   viewport.width = (F32)GFXVK->getViewport().extent.x;
+   viewport.height = (F32)GFXVK->getViewport().extent.y;
+   viewport.minDepth = 0.0f;
+   viewport.maxDepth = 1.0f;
+   mViewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+   mViewportState.viewportCount = 1;
+   mViewportState.pViewports = &viewport;
+   mViewportState.scissorCount = 0; // Torque3D doesn't use scissors. Unsure if that's a planned feature or not.
+
+   mRasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+   mRasterizer.depthClampEnable = VK_FALSE; // TODO: Figure out whether shadow rendering needs this enabled!
+   mRasterizer.rasterizerDiscardEnable = VK_FALSE;
+   mRasterizer.polygonMode = GFXVulkanFillMode[mDesc.fillMode];
+   mRasterizer.lineWidth = 1.0f;
+   mRasterizer.cullMode = GFXVulkanCullMode[mDesc.cullMode];
+   mRasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE; // FIXME: Hardcoded for now, see if this is defined in the state block!
+   mRasterizer.depthBiasEnable = mDesc.zBias != 0.0f;
+   mRasterizer.depthBiasConstantFactor = mDesc.zBias;
+   mRasterizer.depthBiasSlopeFactor = mDesc.zSlopeBias;
+
+   mMultisampleState.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+   mMultisampleState.sampleShadingEnable = VK_FALSE; // TODO: Implement later!
+   mMultisampleState.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+
+   mColorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+   mColorBlendAttachment.blendEnable = VK_FALSE; // TODO: Implement later!
+
+   mColorBlendState.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+   mColorBlendState.logicOpEnable = VK_FALSE;
+   mColorBlendState.attachmentCount = 1;
+   mColorBlendState.pAttachments = &mColorBlendAttachment;
+
+   GFXVK->getVKPipelineInterface()->mDynamicState = mDynamicState;
+   GFXVK->getVKPipelineInterface()->mViewportState = mViewportState;
+   GFXVK->getVKPipelineInterface()->mRasterizer = mRasterizer;
+   GFXVK->getVKPipelineInterface()->mMultisampleState = mMultisampleState;
+   GFXVK->getVKPipelineInterface()->mColorBlendAttachment = mColorBlendAttachment;
+   GFXVK->getVKPipelineInterface()->mColorBlendState = mColorBlendState;
+
    static Map<GFXSamplerStateDesc, VkSampler> mSamplersMap;
 
    for (int i = 0; i < GFX_TEXTURE_STAGE_COUNT; ++i)
@@ -102,7 +159,7 @@ GFXVulkanStateBlock::~GFXVulkanStateBlock()
 void GFXVulkanStateBlock::activate(GFXVulkanStateBlock* oldState)
 {
 #define STATE_CHANGE(state) (!oldState || oldState->mDesc.state != mDesc.state)
-
+   Con::printf("Activating state block!");
 #undef STATE_CHANGE
 }
 

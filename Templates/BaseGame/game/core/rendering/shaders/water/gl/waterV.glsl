@@ -38,10 +38,10 @@ struct VertData
 // Defines                                                                  
 //-----------------------------------------------------------------------------
 //VertData IN
-in vec4 vPosition;
-in vec3 vNormal;
-in vec2 vTexCoord0;
-in vec4 vTexCoord1;
+layout (location = 0) in vec4 vPosition;
+layout (location = 1) in vec3 vNormal;
+layout (location = 6) in vec2 vTexCoord0;
+layout (location = 7) in vec2 vTexCoord1;
 
 #define IN_position_       vPosition
 #define IN_normal          vNormal

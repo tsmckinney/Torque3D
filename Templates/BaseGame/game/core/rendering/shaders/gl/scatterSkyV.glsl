@@ -35,7 +35,7 @@ float vernierScale(float fCos)
 	return 0.25 * outx;
 }
 
-in vec4 vPosition;
+layout (location = 0) in vec4 vPosition;
 
 // This is the shader input vertex structure.
 #define IN_position vPosition

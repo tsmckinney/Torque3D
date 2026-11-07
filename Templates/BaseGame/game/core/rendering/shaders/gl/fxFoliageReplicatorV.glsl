@@ -23,20 +23,22 @@
 //-----------------------------------------------------------------------------
 // Data
 //-----------------------------------------------------------------------------
-in vec4 vPosition;
-in vec3 vNormal;
-in vec4 vColor;
-in vec2 vTexCoord0;
-in vec2 vTexCoord1;
-in vec2 vTexCoord2;
+layout (location = 0) in vec4 vPosition;
+layout (location = 1) in vec3 vNormal;
+layout (location = 2) in vec4 vColor;
+layout (location = 6) in vec2 vTexCoord0;
+layout (location = 7) in vec2 vTexCoord1;
+layout (location = 8) in vec2 vTexCoord2;
 
 uniform mat4 projection, world;
 uniform vec3 CameraPos;
 uniform float GlobalSwayPhase, SwayMagnitudeSide, SwayMagnitudeFront,
               GlobalLightPhase, LuminanceMagnitude, LuminanceMidpoint, DistanceRange;
               
-out vec4 color, groundAlphaCoeff;
-out vec2 outTexCoord, alphaLookup;
+layout (location = 2) out vec4 color
+layout (location = 0) out vec4 groundAlphaCoeff;
+layout (location = 6) out vec2 outTexCoord;
+layout (location = 1) out vec2 alphaLookup;
 
 //-----------------------------------------------------------------------------
 // Main                                                                        

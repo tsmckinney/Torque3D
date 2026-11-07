@@ -24,11 +24,14 @@
 // Glow Shader
 //*****************************************************************************
 uniform vec4 kernel;
-uniform sampler2D diffuseMap;
+layout(binding = 0) uniform sampler2D diffuseMap;
 
-in vec2 texc0, texc1, texc2, texc3;
+layout (location = 6) in vec2 texc0;
+layout (location = 7) in vec2 texc1;
+layout (location = 8) in vec2 texc2;
+layout (location = 9) in vec2 texc3;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {

@@ -23,12 +23,12 @@
 //-----------------------------------------------------------------------------
 // Data
 //-----------------------------------------------------------------------------
-uniform sampler2D diffuseMap;
+layout(binding = 0) uniform sampler2D diffuseMap;
 
 in vec4 color;
 in vec2 texCoord;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 //-----------------------------------------------------------------------------
 // Main                                                                        

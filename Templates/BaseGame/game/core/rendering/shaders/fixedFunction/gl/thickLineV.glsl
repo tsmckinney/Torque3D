@@ -21,12 +21,12 @@
 //-----------------------------------------------------------------------------
 #include "../../gl/hlslCompat.glsl"
 
-in vec4 vPosition;
-in vec4 vColor;
+layout (location = 0) in vec4 vPosition;
+layout (location = 2) in vec4 vColor;
 
 uniform mat4 modelview;
 
-out VS_OUT {
+layout (location = 0) out VS_OUT {
     vec4 color;
 } vs_out;
 
