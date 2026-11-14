@@ -27,12 +27,12 @@
 
 #include "core/rendering/shaders/gl/hlslCompat.glsl"
 
-uniform sampler2D colorSampler;  // Output of DofNearCoc()  
+layout(binding = 0) uniform sampler2D colorSampler;  // Output of DofNearCoc()  
 
-in vec4 texCoords;
+layout (location = 0) in vec4 texCoords;
 #define IN_texCoords texCoords
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {  

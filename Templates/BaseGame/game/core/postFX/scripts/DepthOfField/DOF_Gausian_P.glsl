@@ -23,28 +23,28 @@
 #include "core/rendering/shaders/gl/hlslCompat.glsl"
 #include "shadergen:/autogenConditioners.h"
 
-in vec3 wsEyeRay;
+layout (location = 4) in vec3 wsEyeRay;
 #define IN_wsEyeRay wsEyeRay
-in vec2 uv0;
+layout (location = 0) in vec2 uv0;
 #define IN_uv0 uv0
-in vec2 uv1;
+layout (location = 1) in vec2 uv1;
 #define IN_uv1 uv1
-in vec2 uv2;
+layout (location = 2) in vec2 uv2;
 #define IN_uv2 uv2
-in vec2 uv3;
+layout (location = 3) in vec2 uv3;
 #define IN_uv3 uv3
-in vec2 uv4;
+layout (location = 4) in vec2 uv4;
 #define IN_uv4 uv4
-in vec2 uv5;
+layout (location = 5) in vec2 uv5;
 #define IN_uv5 uv5
-in vec2 uv6;
+layout (location = 6) in vec2 uv6;
 #define IN_uv6 uv6
-in vec2 uv7;
+layout (location = 7) in vec2 uv7;
 #define IN_uv7 uv7
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
-uniform sampler2D diffuseMap;
+layout(binding = 0) uniform sampler2D diffuseMap;
 
 void main()
 {

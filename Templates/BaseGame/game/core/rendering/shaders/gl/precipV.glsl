@@ -31,7 +31,7 @@ uniform vec3 cameraPos, ambient;
 uniform vec2 fadeStartEnd;
 
 layout (location = 2) out vec4 color;
-out vec2 texCoord;
+layout (location = 6) out vec2 texCoord;
 
 //-----------------------------------------------------------------------------
 // Main

@@ -26,9 +26,9 @@
 
 uniform float damageFlash;
 uniform float whiteOut;
-uniform sampler2D backBuffer;
+layout(binding = 0) uniform sampler2D backBuffer;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {

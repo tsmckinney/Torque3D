@@ -22,10 +22,10 @@
 
 #include "../../../gl/torque.glsl"
 
-in vec2 uv0;
+layout (location = 0) in vec2 uv0;
 uniform int face;
 
-uniform samplerCube environmentMap;
+layout(binding = 0) uniform samplerCube environmentMap;
 
 layout (location = 0) out vec4 OUT_col;
 

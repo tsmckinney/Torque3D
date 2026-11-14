@@ -112,8 +112,8 @@ void updateSurface(inout Surface surface)
 {
 	surface.NdotV = clamp( dot(surface.N, surface.V), 0.0009765625f,0.9990234375f);  //0.5f/512.0f (512 is size of dfg/brdf lookup tex)
 
-    surface.linearRoughness = surface.roughness * surface.roughness;
-    surface.linearRoughnessSq = surface.linearRoughness * surface.linearRoughness;
+   surface.linearRoughness = surface.roughness * surface.roughness;
+   surface.linearRoughnessSq = surface.linearRoughness * surface.linearRoughness;
 
 	surface.albedo = max(toLinear(surface.baseColor.rgb),0.04f);
 	surface.f0 = mix(vec3(0.04f,0.04f,0.04f), surface.baseColor.rgb, surface.metalness);
@@ -139,7 +139,7 @@ Surface createSurface(vec4 gbuffer0, sampler2D gbufferTex1, sampler2D gbufferTex
    surface.ao = gbuffer2.g;
    surface.matFlag = gbuffer2.r;
 
-      updateSurface(surface);
+   updateSurface(surface);
    return surface;
 }
 

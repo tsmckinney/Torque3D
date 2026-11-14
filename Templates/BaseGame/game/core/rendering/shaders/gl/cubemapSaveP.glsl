@@ -23,7 +23,7 @@
 #include "hlslCompat.glsl"
 #include "torque.glsl"
 
-uniform samplerCube cubemapTex;
+layout(binding = 0) uniform samplerCube cubemapTex;
 
 layout(location = 0) in float3 face_pos_x;
 layout(location = 1) in float3 face_neg_x;

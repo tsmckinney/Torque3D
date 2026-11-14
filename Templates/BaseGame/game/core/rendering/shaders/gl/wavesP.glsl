@@ -22,16 +22,16 @@
 
 layout(binding = 0) uniform sampler2D diffMap;
 layout(binding = 1) uniform sampler2D bumpMap;
-uniform samplerCube cubeMap;
+layout(binding = 2) uniform samplerCube cubeMap;
 uniform vec4 specularColor;
 uniform float specularPower;
 uniform vec4 ambient;
 uniform float accumTime;
 
-in vec2 TEX0;
-in vec4 outLightVec;
-in vec3 outPos;
-in vec3 outEyePos;
+layout (location = 0) in vec2 TEX0;
+layout (location = 1) in vec4 outLightVec;
+layout (location = 2) in vec3 outPos;
+layout (location = 3) in vec3 outEyePos;
 
 layout (location = 0) out vec4 OUT_col;
 

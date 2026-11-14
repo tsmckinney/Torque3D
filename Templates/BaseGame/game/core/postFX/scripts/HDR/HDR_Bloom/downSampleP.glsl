@@ -26,11 +26,11 @@
 #include "core/postFX/scripts/HDR/HDR_colorUtils.glsl"
 #include "shadergen:/autogenConditioners.h"
 #line 28
-uniform sampler2D inputTex;
+layout(binding = 0) uniform sampler2D inputTex;
 uniform vec2 oneOverTargetSize;
 uniform int mipCount0;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
  
 void main()
 {

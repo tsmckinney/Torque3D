@@ -168,7 +168,7 @@ bool GFXVulkanDevice::beginSceneInternal()
    VkSurfaceCapabilities2KHR surfaceCaps{};
    surfaceCaps.sType = VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_2_KHR;
    AssertFatal(vkGetPhysicalDeviceSurfaceCapabilities2KHR(GFXVK->getVKPhysicalDevice(), &surfaceInfo, &surfaceCaps) == VK_SUCCESS,
-      "GFXVulkanWindowTarget::createSwapChain() - Failed to get the surface capabilities of your graphics card! Please make sure it supports the VK_KHR_surface extension for your operating system.");
+      "GFXVulkanWindowTarget::beginSceneInternal() - Failed to check your graphics card's minimum image count! Please make sure it supports the VK_KHR_surface extension for your operating system.");
    mWriteToWhichFrame = (mFrameTime->getElapsedMs()) % surfaceCaps.surfaceCapabilities.minImageCount;
    vkWaitForFences(mVKDevice, 1, &mFramesInFlightF[mWriteToWhichFrame], VK_TRUE, UINT64_MAX);
    vkResetFences(mVKDevice, 1, &mFramesInFlightF[mWriteToWhichFrame]);

@@ -27,10 +27,10 @@
 #include "../../../gl/lighting.glsl"
 #include "../../shadowMap/shadowMapIO_GLSL.h"
 #line 30
-in vec4 hpos;
-in vec2 uv0;
-in vec3 wsEyeRay;
-in vec3 vsEyeRay;
+layout (location = 1) in vec4 hpos;
+layout (location = 0) in vec2 uv0;
+layout (location = 4) in vec3 wsEyeRay;
+layout (location = 5) in vec3 vsEyeRay;
 
 layout(binding = 0) uniform sampler2D deferredBuffer;
 layout(binding = 1) uniform sampler2D shadowMap;

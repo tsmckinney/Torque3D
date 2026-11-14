@@ -25,17 +25,25 @@
 #include "shadergen:/autogenConditioners.h"
 #include "core/rendering/shaders/postFX/gl/postFX.glsl"
 
-uniform sampler2D inputTex;
+layout(binding = 0) uniform sampler2D inputTex;
+uniform float sharpness;
+uniform vec2 targetSize;
 
-in vec4 modColor;
-
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {
-   vec4 color = texture(inputTex, IN_uv0);
+   vec2 st = 1.0 / targetSize.xy;
+
+   vec3 texA = texture( inputTex, IN_uv0 + vec2(-st.x, -st.y) * 1.5 ).rgb;
+   vec3 texB = texture( inputTex, IN_uv0 + vec2( st.x, -st.y) * 1.5 ).rgb;
+   vec3 texC = texture( inputTex, IN_uv0 + vec2(-st.x,  st.y) * 1.5 ).rgb;
+   vec3 texD = texture( inputTex, IN_uv0 + vec2( st.x,  st.y) * 1.5 ).rgb;
+
+   vec3 around = 0.25 * (texA + texB + texC + texD);
+   vec3 center  = texture( inputTex, IN_uv0 ).rgb;
+
+   vec3 col = center + (center - around) * sharpness;
    
-   color *= modColor;
-   
-   OUT_col = hdrEncode( color );
+   OUT_col = hdrEncode( vec4(col, 1.0) );
 }

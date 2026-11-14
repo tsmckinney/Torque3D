@@ -1,10 +1,10 @@
 #include "../../gl/hlslCompat.glsl"
  
-in float2 vTexCoord0;
-in float2 vTexCoord1;
-in float3 vNormal;
-in float4 vPosition;
-in float4 vColor;
+layout (location = 6) in float2 vTexCoord0;
+layout (location = 7) in float2 vTexCoord1;
+layout (location = 1) in float3 vNormal;
+layout (location = 0) in float4 vPosition;
+layout (location = 2) in float4 vColor;
  
 #define IN_texCoord vTexCoord0
 #define IN_shiftdata vTexCoord1
@@ -12,10 +12,10 @@ in float4 vColor;
 #define IN_position vPosition
 #define IN_color vColor
  
-out float4 _hpos;
-out float2 _texCoord;
-out float2 _shiftdata;
-out float4 _color;
+layout (location = 0) out float4 _hpos;
+layout (location = 1) out float2 _texCoord;
+layout (location = 2) out float2 _shiftdata;
+layout (location = 3) out float4 _color;
  
 #define OUT_hpos _hpos
 #define OUT_texCoord _texCoord

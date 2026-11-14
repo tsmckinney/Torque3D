@@ -23,9 +23,9 @@
 #include "../terrain.glsl"
 #include "../../gl/hlslCompat.glsl"
 
-in vec2 layerCoord;
+layout (location = 0) in vec2 layerCoord;
 #define IN_layerCoord layerCoord
-in vec2 texCoord;
+layout (location = 1) in vec2 texCoord;
 #define IN_texCoord texCoord
 
 layout(binding = 0) uniform sampler2D layerTex;

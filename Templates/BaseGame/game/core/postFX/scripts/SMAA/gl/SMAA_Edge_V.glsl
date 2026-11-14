@@ -23,12 +23,12 @@
 #include "core/rendering/shaders/gl/hlslCompat.glsl"
 #include "core/rendering/shaders/gl/torque.glsl"
 
-in vec4 vPosition;
-in vec2 vTexCoord0;
+layout (location = 0) in vec4 vPosition;
+layout (location = 6) in vec2 vTexCoord0;
 
-out vec4 hpos;
-out vec2 uv0;
-out vec4 offset[3];
+layout (location = 1) out vec4 hpos;
+layout (location = 0) out vec2 uv0;
+layout (location = 2) out vec4 offset[3];
 
 uniform vec4 rtParams0;
 

@@ -24,7 +24,7 @@
 #include "core/rendering/shaders/postFX/postFx.hlsl"  
 #include "core/rendering/shaders/torque.hlsl"
 
-uniform sampler2D backBuffer : register(S0);
+layout(binding = 0) uniform sampler2D backBuffer : register(S0);
 
 uniform vec2 LensXOffsets;
 

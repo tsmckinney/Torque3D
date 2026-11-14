@@ -39,6 +39,7 @@
 #include "gfx/vulkan/gfxVKPipelineInterface.h"
 #include "gfx/vulkan/gfxVKStateBlock.h"
 #include "gfx/vulkan/gfxVKShader.h"
+#include "gfx/vulkan/gfxVKVertexDecl.h"
 #include "gfx/vulkan/gfxVKWindowTarget.h"
 #include <vk_mem_alloc.h>
 
@@ -227,6 +228,25 @@ GFXPrimitiveBuffer *GFXVulkanDevice::allocPrimitiveBuffer( U32 numIndices,
    GFXVulkanPrimitiveBuffer* primitiveBuffer = new GFXVulkanPrimitiveBuffer(this, numIndices, numPrimitives, bufferType);
    primitiveBuffer->registerResourceWithDevice(this);
    return primitiveBuffer;
+}
+
+GFXVertexDecl* GFXVulkanDevice::allocVertexDecl(const GFXVertexFormat* vertexFormat)
+{
+   PROFILE_SCOPE(GFXVulkanDevice_allocVertexDecl);
+   typedef Map<void*, GFXVulkanVertexDecl> GFXGLVertexDeclMap;
+   static GFXGLVertexDeclMap declMap;
+   GFXGLVertexDeclMap::Iterator itr = declMap.find((void*)vertexFormat->getDescription().c_str()); // description string are interned, safe to use c_str()
+   if (itr != declMap.end())
+      return &itr->value;
+
+   GFXVulkanVertexDecl& decl = declMap[(void*)vertexFormat->getDescription().c_str()];
+   decl.init(vertexFormat);
+   return &decl;
+}
+
+void GFXVulkanDevice::setVertexDecl(const GFXVertexDecl* decl)
+{
+   static_cast<const GFXVulkanVertexDecl*>(decl)->prepareVertexFormat();
 }
 
 GFXCubemap* GFXVulkanDevice::createCubemap()
@@ -436,7 +456,13 @@ void GFXVulkanDevice::init( const GFXVideoMode &mode, PlatformWindow *window )
    logDevExts.push_back(VK_EXT_MEMORY_PRIORITY_EXTENSION_NAME);
    logDevExts.push_back(VK_EXT_PAGEABLE_DEVICE_LOCAL_MEMORY_EXTENSION_NAME);
    logDevExts.push_back(VK_EXT_SHADER_DEMOTE_TO_HELPER_INVOCATION_EXTENSION_NAME);
+
+   VkPhysicalDeviceShaderDemoteToHelperInvocationFeaturesEXT demoteToHelperFeatures{};
+   demoteToHelperFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DEMOTE_TO_HELPER_INVOCATION_FEATURES;
+   demoteToHelperFeatures.shaderDemoteToHelperInvocation = VK_TRUE;
+
    VkDeviceCreateInfo logicalDeviceCreateInfo{};
+   logicalDeviceCreateInfo.pNext = &demoteToHelperFeatures;
    logicalDeviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
    logicalDeviceCreateInfo.pQueueCreateInfos = queueCreateInfos.address();
    logicalDeviceCreateInfo.queueCreateInfoCount = static_cast<U32>(queueCreateInfos.size());

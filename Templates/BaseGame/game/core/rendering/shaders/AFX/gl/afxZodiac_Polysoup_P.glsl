@@ -11,8 +11,8 @@
 layout(binding = 0) uniform sampler2D zodiacMap;
 uniform vec4 zodiacColor;
 
-in vec4 hpos;
-in vec2 texCoord;
+layout (location = 0) in vec4 hpos;
+layout (location = 6) in vec2 texCoord;
 
 out vec4 OUT_FragColor0;
 //~~~~~~~~~~~~~~~~~~~~//

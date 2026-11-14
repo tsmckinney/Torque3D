@@ -22,7 +22,7 @@
 
 #include "../../gl/hlslCompat.glsl"
 
-in vec2 uv0;
+layout (location = 0) in vec2 uv0;
 layout(binding = 0) uniform sampler2D inputTex;
 
 layout (location = 0) out vec4 OUT_col;

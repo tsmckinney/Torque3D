@@ -115,8 +115,8 @@ protected:
                                                       GFXBufferType bufferType,
                                                       void* data = NULL ) override;
 
-   GFXVertexDecl* allocVertexDecl( const GFXVertexFormat *vertexFormat ) override { return NULL; }
-   void setVertexDecl( const GFXVertexDecl *decl ) override {  }
+   GFXVertexDecl* allocVertexDecl(const GFXVertexFormat* vertexFormat) override;
+   void setVertexDecl(const GFXVertexDecl* decl) override;
    void setVertexStream( U32 stream, GFXVertexBuffer *buffer ) override { }
    void setVertexStreamFrequency( U32 stream, U32 frequency ) override { }
 

@@ -33,16 +33,16 @@ uniform mat4 matWorldToScreen;
 
 // Passed in from setShaderConsts()
 uniform float velocityMultiplier;
+uniform float samples;
 
-uniform sampler2D backBuffer;
-uniform sampler2D deferredTex;
+layout(binding = 0) uniform sampler2D backBuffer;
+layout(binding = 1) uniform sampler2D deferredTex;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {
    vec2 IN_uv0 = _IN_uv0;
-   float samples = 5;
    
    // First get the deferred texture for uv channel 0
    vec4 deferred = deferredUncondition( deferredTex, IN_uv0 );

@@ -28,8 +28,8 @@ layout (location = 6) in vec2 vTexCoord0;
 
 uniform mat4 modelview;
 
-out vec2 TEX0;
-out vec4 TEX1;
+layout (location = 0) out vec2 TEX0;
+layout (location = 1) out vec4 TEX1;
 
 //-----------------------------------------------------------------------------
 // Main                                                                        

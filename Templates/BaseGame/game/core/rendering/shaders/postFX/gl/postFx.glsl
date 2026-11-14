@@ -24,17 +24,17 @@
 
 layout (location = 0) in vec4 vPosition;
 layout (location = 6) in vec2 vTexCoord0;
-layout (location = 7) in vec2 vTexCoord1;
+layout (location = 7) in vec3 vTexCoord1;
 
 #define IN_pos       vPosition
 #define IN_uv        vTexCoord0.st
 #define IN_wsEyeRay  vTexCoord1.xyz
 
-out vec2 uv0;
-out vec2 uv1;
-out vec2 uv2;
-out vec2 uv3;
-out vec2 wsEyeRay;
+layout (location = 0) out vec2 uv0;
+layout (location = 1) out vec2 uv1;
+layout (location = 2) out vec2 uv2;
+layout (location = 3) out vec2 uv3;
+layout (location = 4) out vec3 wsEyeRay;
 
 #define OUT_uv0 uv0
 #define OUT_uv1 uv1
@@ -48,11 +48,11 @@ out vec2 wsEyeRay;
 
 #ifdef TORQUE_PIXEL_SHADER
 
-in vec2 uv0;
-in vec2 uv1;
-in vec2 uv2;
-in vec2 uv3;
-in vec2 wsEyeRay;
+layout (location = 0) in vec2 uv0;
+layout (location = 1) in vec2 uv1;
+layout (location = 2) in vec2 uv2;
+layout (location = 3) in vec2 uv3;
+layout (location = 4) in vec3 wsEyeRay;
 
 #define IN_uv0 uv0
 #define IN_uv1 uv1

@@ -21,7 +21,7 @@
 //-----------------------------------------------------------------------------
 
 #include "../../../gl/hlslCompat.glsl"
-out vec2 uv0;
+layout (location = 0) out vec2 uv0;
 
 void main()
 {

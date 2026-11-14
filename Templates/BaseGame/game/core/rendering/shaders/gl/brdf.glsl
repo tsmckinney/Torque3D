@@ -104,7 +104,7 @@ vec3 OrenNayarDiffuse(vec3 albedo, vec3 N, vec3 V, vec3 L, float roughnessSq) {
 
 vec3 Fr_DisneyDiffuse(vec3 F0, float NdotV, float NdotL, float LdotH, float linearRoughness)
 {
-	float energyBias = lerp (0 , 0.5 , linearRoughness );
+	float energyBias = lerp (0.0, 0.5 , linearRoughness );
 	float energyFactor = lerp (1.0 , 1.0 / 1.51 , linearRoughness );
 	float fd90 = energyBias + 2.0 * LdotH * LdotH * linearRoughness ;
 	vec3 lightScatter = F_Schlick( F0 , fd90 );

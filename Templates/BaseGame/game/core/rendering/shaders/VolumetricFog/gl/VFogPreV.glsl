@@ -25,7 +25,7 @@
 layout (location = 0) in vec4 vPosition;
 #define IN_position vPosition
 
-out vec4 _hpos;
+layout (location = 0) out vec4 _hpos;
 #define OUT_hpos _hpos
 
 uniform mat4 modelView;

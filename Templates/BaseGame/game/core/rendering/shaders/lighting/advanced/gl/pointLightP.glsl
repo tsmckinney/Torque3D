@@ -29,10 +29,10 @@
 #include "../../../gl/torque.glsl"
 #line 31
 
-in vec4 wsEyeDir;
-in vec4 ssPos;
-in vec4 vsEyeDir;
-in vec4 color;
+layout (location = 0) in vec4 wsEyeDir;
+layout (location = 1) in vec4 ssPos;
+layout (location = 2) in vec4 vsEyeDir;
+layout (location = 3) in vec4 color;
 
 
 
