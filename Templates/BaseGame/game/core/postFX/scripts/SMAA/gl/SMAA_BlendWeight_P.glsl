@@ -29,16 +29,16 @@
 
 #include "SMAA.glsl"
 
-uniform sampler2D edgesTex;
-uniform sampler2D areaTex;
-uniform sampler2D searchTex;
+layout(binding = 0) uniform sampler2D edgesTex;
+layout(binding = 1) uniform sampler2D areaTex;
+layout(binding = 2) uniform sampler2D searchTex;
 
-in vec4 hpos;
-in vec2 uv0;
-in vec2 pix_uv;
-in vec4 offset[3];
+layout (location = 1) in vec4 hpos;
+layout (location = 0) in vec2 uv0;
+layout (location = 2) in vec2 pix_uv;
+layout (location = 3) in vec4 offset[3];
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {   

@@ -25,10 +25,10 @@
 #include "shadergen:/autogenConditioners.h"
 #include "core/rendering/shaders/postFX/gl/postFx.glsl"
 
-uniform sampler2D inputTex;
+layout(binding = 0) uniform sampler2D inputTex;
 uniform float brightPassThreshold;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {

@@ -43,7 +43,7 @@ uniform float numtiles;
 uniform float fadesize;
 uniform vec2 PixelSize;
 
-in vec4 _hpos;
+layout (location = 0) in vec4 _hpos;
 #define IN_hpos _hpos
 layout (location = 0) out vec4 OUT_col;
 

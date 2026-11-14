@@ -26,7 +26,7 @@ layout(binding = 0) uniform sampler2D diffuseMap0;
 uniform float texSize;
 uniform vec2 blurDimension;
 
-in vec2 tex0;
+layout (location = 0) in vec2 tex0;
 
 layout (location = 0) out vec4 OUT_col;
 

@@ -23,10 +23,10 @@
 #include "core/rendering/shaders/gl/hlslCompat.glsl"
 #include "core/rendering/shaders/postFX/gl/postFx.glsl"
 
-uniform sampler2D inputTex;
+layout(binding = 0) uniform sampler2D inputTex;
 uniform vec2 oneOverTargetSize;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 const vec2 gTapOffsets[16] = vec2[]
 (

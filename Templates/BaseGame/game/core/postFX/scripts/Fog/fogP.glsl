@@ -25,16 +25,16 @@
 #include "shadergen:/autogenConditioners.h"
 #include "core/rendering/shaders/gl/torque.glsl"
 
-uniform sampler2D deferredTex ;
+layout(binding = 0) uniform sampler2D deferredTex;
 uniform vec3    eyePosWorld;
 uniform vec4    fogColor;
 uniform vec3    fogData;
 uniform vec4    rtParams0;
 
-in vec2 uv0;
-in vec3 wsEyeRay;
+layout (location = 0) in vec2 uv0;
+layout (location = 4) in vec3 wsEyeRay;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {   

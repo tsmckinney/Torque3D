@@ -25,8 +25,8 @@
 
 // These are set by the game engine.  
 // The render target size is one-quarter the scene rendering size.  
-uniform sampler2D colorSampler;  
-uniform sampler2D depthSampler;  
+layout(binding = 0) uniform sampler2D colorSampler;  
+layout(binding = 1) uniform sampler2D depthSampler;  
 uniform vec2 dofEqWorld;  
 uniform float depthOffset;
 uniform vec2 targetSize;
@@ -34,20 +34,20 @@ uniform float maxWorldCoC;
 //uniform vec2 dofEqWeapon;  
 //uniform vec2 dofRowDelta;  // vec2( 0, 0.25 / renderTargetHeight )  
 
-in vec2 tcColor0;
+layout (location = 0) in vec2 tcColor0;
 #define IN_tcColor0 tcColor0
-in vec2 tcColor1;
+layout (location = 1) in vec2 tcColor1;
 #define IN_tcColor1 tcColor1
-in vec2 tcDepth0;
+layout (location = 2) in vec2 tcDepth0;
 #define IN_tcDepth0 tcDepth0
-in vec2 tcDepth1;
+layout (location = 3) in vec2 tcDepth1;
 #define IN_tcDepth1 tcDepth1
-in vec2 tcDepth2;
+layout (location = 4) in vec2 tcDepth2;
 #define IN_tcDepth2 tcDepth2
-in vec2 tcDepth3;
+layout (location = 5) in vec2 tcDepth3;
 #define IN_tcDepth3 tcDepth3
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {  

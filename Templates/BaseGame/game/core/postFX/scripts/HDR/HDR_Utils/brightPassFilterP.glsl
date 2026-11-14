@@ -25,15 +25,15 @@
 #include "shadergen:/autogenConditioners.h"
 #include "core/rendering/shaders/postFX/gl/postFx.glsl"
 
-uniform sampler2D inputTex ;
-uniform sampler2D luminanceTex  ;
+layout(binding = 0) uniform sampler2D inputTex;
+layout(binding = 1) uniform sampler2D luminanceTex;
 uniform vec2 oneOverTargetSize;
 uniform float brightPassThreshold;
 uniform float g_fMiddleGray;
 
 const vec3 LUMINANCE_VECTOR = vec3(0.3125, 0.6154, 0.0721);
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 
 const vec2 gTapOffsets[4] = vec2[]

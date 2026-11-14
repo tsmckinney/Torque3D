@@ -26,9 +26,9 @@ layout (location = 0) in vec4 vPosition;
 
 #define IN_pos vPosition
 
-out vec4 wsEyeDir;
-out vec4 ssPos;
-out vec4 vsEyeDir;
+layout (location = 0) out vec4 wsEyeDir;
+layout (location = 1) out vec4 ssPos;
+layout (location = 2) out vec4 vsEyeDir;
 
 #define OUT_hpos gl_Position
 #define OUT_wsEyeDir wsEyeDir

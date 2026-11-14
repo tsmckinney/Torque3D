@@ -26,10 +26,10 @@
 #include "../../../gl/lighting.glsl"
 #include "../../../gl/torque.glsl"
 
-in vec4 wsEyeDir;
-in vec4 ssPos;
-in vec4 vsEyeDir;
-in vec4 color;
+layout (location = 0) in vec4 wsEyeDir;
+layout (location = 1) in vec4 ssPos;
+layout (location = 2) in vec4 vsEyeDir;
+layout (location = 3) in vec4 color;
 
 layout(binding = 0) uniform sampler2D deferredBuffer;
 layout(binding = 1) uniform sampler2D shadowMap;
@@ -43,7 +43,7 @@ layout(binding = 4) uniform sampler2D cookieMap;
 #endif
 
 #ifdef UES_PHOTOMETRIC_MASK
-uniform sampler1D iesProfile;
+layout(binding = 5) uniform sampler1D iesProfile;
 #endif
 
 uniform vec4 rtParams0;

@@ -24,12 +24,12 @@
 #include "core/rendering/shaders/postFX/gl/postFx.glsl"
 #include "shadergen:/autogenConditioners.h"
 #line 26
-uniform sampler2D hdrbloomDown;
+layout(binding = 0) uniform sampler2D hdrbloomDown;
 uniform float filterRadius;
 uniform vec2 oneOverTargetSize;
 uniform int mipCount0;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {

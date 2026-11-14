@@ -23,12 +23,12 @@
 #include "core/rendering/shaders/gl/hlslCompat.glsl"
 #include "shadergen:/autogenConditioners.h"
 
-in vec2 uv0;
+layout (location = 0) in vec2 uv0;
 #define IN_uv0 uv0
 
-uniform sampler2D edgeBuffer;
+layout(binding = 0) uniform sampler2D edgeBuffer;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {

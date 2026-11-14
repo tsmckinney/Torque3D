@@ -22,11 +22,11 @@
 
 #include "../../../gl/torque.glsl"
 
-in vec4 hpos;
-in vec2 uv0;
+layout (location = 1) in vec4 hpos;
+layout (location = 0) in vec2 uv0;
 #line 27
 
-uniform samplerCube environmentMap;
+layout(binding = 0) uniform samplerCube environmentMap;
 
 uniform float roughness;
 uniform int face;

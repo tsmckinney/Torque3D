@@ -137,11 +137,11 @@ void GFXGLDevice::enumerateAdapters( Vector<GFXAdapter*> &adapterList )
    loadGLCore();
    loadGLExtensions(tempContext);
 
-   //check minimun Opengl 3.3
+   //check minimun Opengl 4.2
    int major, minor;
    glGetIntegerv(GL_MAJOR_VERSION, &major);
    glGetIntegerv(GL_MINOR_VERSION, &minor);
-   if( major < 3 || ( major == 3 && minor < 3 ) )
+   if( major < 4 || ( major == 4 && minor < 2 ) )
    {
       return;
    }

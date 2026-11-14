@@ -65,5 +65,5 @@ void main()
 
    OUT_wsEyeRay = IN_wsEyeRay;
    
-   correctSSP(gl_Position);;
+   correctSSP(gl_Position);
 }

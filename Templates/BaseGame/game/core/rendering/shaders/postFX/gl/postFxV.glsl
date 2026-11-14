@@ -24,18 +24,18 @@
 
 layout (location = 0) in vec4 vPosition;
 layout (location = 6) in vec2 vTexCoord0;
-layout (location = 7) in vec2 vTexCoord1;
+layout (location = 7) in vec3 vTexCoord1;
 
 uniform vec4 rtParams0;
 uniform vec4 rtParams1;
 uniform vec4 rtParams2;
 uniform vec4 rtParams3;
 
-out vec2 uv0;
-out vec2 uv1;
-out vec2 uv2;
-out vec2 uv3;
-out vec2 wsEyeRay;                 
+layout (location = 0) out vec2 uv0;
+layout (location = 1) out vec2 uv1;
+layout (location = 2) out vec2 uv2;
+layout (location = 3) out vec2 uv3;
+layout (location = 4) out vec3 wsEyeRay;                 
 
 
 void main()

@@ -24,10 +24,10 @@
 #include "core/rendering/shaders/postFX/gl/postFx.glsl"
 
 // These are set by the game engine.  
-uniform sampler2D shrunkSampler;  // Output of DofDownsample()  
-uniform sampler2D blurredSampler; // Blurred version of the shrunk sampler  
+layout(binding = 0) uniform sampler2D shrunkSampler;  // Output of DofDownsample()  
+layout(binding = 1) uniform sampler2D blurredSampler; // Blurred version of the shrunk sampler  
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 // This is the pixel shader function that calculates the actual  
 // value used for the near circle of confusion.  

@@ -39,9 +39,9 @@
 // Uniforms                                                                  
 //-----------------------------------------------------------------------------
 
-uniform sampler2D deferredTex ; 
-uniform sampler2D backbuffer ;
-uniform sampler1D waterDepthGradMap;
+layout(binding = 0) uniform sampler2D deferredTex; 
+layout(binding = 1) uniform sampler2D backbuffer;
+layout(binding = 2) uniform sampler1D waterDepthGradMap;
 uniform vec3    eyePosWorld;
 uniform vec3    ambientColor;     
 uniform vec4    waterColor;       
@@ -51,7 +51,7 @@ uniform vec2    nearFar;
 uniform vec4    rtParams0;
 uniform float     waterDepthGradMax;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main() 
 {    

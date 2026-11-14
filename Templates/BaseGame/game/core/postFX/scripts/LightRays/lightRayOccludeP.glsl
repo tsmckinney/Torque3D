@@ -24,14 +24,14 @@
 #include "shadergen:/autogenConditioners.h"
 #include "../../../rendering/shaders/postFX/gl/postFx.glsl"
 
-uniform sampler2D backBuffer;   // The original backbuffer.
-uniform sampler2D deferredTex;   // The pre-pass depth and normals.
+layout(binding = 0) uniform sampler2D backBuffer;   // The original backbuffer.
+layout(binding = 1) uniform sampler2D deferredTex;   // The pre-pass depth and normals.
 
 uniform float brightScalar;
 
 const vec3 LUMINANCE_VECTOR = vec3(0.3125f, 0.6154f, 0.0721f);
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {

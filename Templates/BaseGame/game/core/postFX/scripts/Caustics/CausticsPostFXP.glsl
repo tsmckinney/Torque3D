@@ -24,17 +24,17 @@
 #include "core/rendering/shaders/postFX/gl/postFx.glsl"
 #include "shadergen:/autogenConditioners.h"
 
-uniform vec3    eyePosWorld;
-uniform vec4    rtParams0;
-uniform vec4    waterFogPlane;
 uniform float     accumTime;
+uniform vec3      eyePosWorld;
+uniform vec4      rtParams0;
+uniform vec4      waterFogPlane;
 
-uniform sampler2D deferredTex;
-uniform sampler2D causticsTex0;
-uniform sampler2D causticsTex1;
+layout(binding = 0) uniform sampler2D deferredTex;
+layout(binding = 1) uniform sampler2D causticsTex0;
+layout(binding = 2) uniform sampler2D causticsTex1;
 uniform vec2 targetSize;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 float distanceToPlane(vec4 plane, vec3 pos)
 {

@@ -25,7 +25,7 @@ layout (location = 6) in vec2 vTexCoord0;
 
 uniform mat4 modelview;
 
-out vec2 tex0;
+layout (location = 0) out vec2 tex0;
 
 void main()
 {

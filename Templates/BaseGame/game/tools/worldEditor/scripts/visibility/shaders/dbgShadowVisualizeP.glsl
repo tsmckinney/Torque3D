@@ -21,11 +21,11 @@
 //-----------------------------------------------------------------------------
 #include "../../../../core/rendering/shaders/gl/hlslCompat.glsl"
 
-in vec2 uv0;
-uniform sampler2D shadowMap;
-uniform sampler1D depthViz;
+layout(location = 0) in vec2 uv0;
+layout(binding = 0) uniform sampler2D shadowMap;
+layout(binding = 1) uniform sampler1D depthViz;
 
-out vec4 OUT_col;
+layout(location = 0) out vec4 OUT_col;
 
 void main()
 {

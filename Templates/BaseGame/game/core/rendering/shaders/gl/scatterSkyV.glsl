@@ -41,13 +41,13 @@ layout (location = 0) in vec4 vPosition;
 #define IN_position vPosition
 
 // This is the shader output data.
-out vec4  rayleighColor;
+layout (location = 1) out vec4  rayleighColor;
 #define OUT_rayleighColor rayleighColor
-out vec4  mieColor;
+layout (location = 2) out vec4  mieColor;
 #define OUT_mieColor mieColor
-out vec3  v3Direction;
+layout (location = 3) out vec3  v3Direction;
 #define OUT_v3Direction v3Direction
-out vec3  pos;
+layout (location = 0) out vec3  pos;
 #define OUT_pos pos
  
 uniform mat4 modelView;

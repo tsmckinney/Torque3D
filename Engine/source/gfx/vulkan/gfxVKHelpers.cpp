@@ -182,7 +182,16 @@ bool checkPhysicalDeviceCompatibility(VkPhysicalDevice physicalDevice)
          reqdExts.erase(avExtIdx);
       }
    }
-   return reqdExts.empty();
+
+   VkPhysicalDeviceFeatures2KHR mDeviceFeatures{};
+   mDeviceFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+   VkPhysicalDeviceShaderDemoteToHelperInvocationFeaturesEXT demoteToHelperFeatures{};
+   demoteToHelperFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DEMOTE_TO_HELPER_INVOCATION_FEATURES;
+   mDeviceFeatures.pNext = &demoteToHelperFeatures;
+   vkGetPhysicalDeviceFeatures2(physicalDevice, &mDeviceFeatures);
+   VkPhysicalDeviceShaderDemoteToHelperInvocationFeaturesEXT& d2hf = (VkPhysicalDeviceShaderDemoteToHelperInvocationFeaturesEXT&)mDeviceFeatures.pNext;
+
+   return reqdExts.empty() && d2hf.shaderDemoteToHelperInvocation;
 }
 
 bool checkPhysicalDeviceExtensionSupport(VkPhysicalDevice physicalDevice)

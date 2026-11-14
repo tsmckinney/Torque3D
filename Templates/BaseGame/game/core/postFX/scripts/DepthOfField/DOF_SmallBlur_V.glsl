@@ -28,14 +28,14 @@
 #include "core/rendering/shaders/gl/hlslCompat.glsl"
 #include "core/rendering/shaders/gl/torque.glsl"
 
-in vec4 vPosition;
-in vec2 vTexCoord0;
+layout (location = 0) in vec4 vPosition;
+layout (location = 6) in vec2 vTexCoord0;
 
 #define IN_position  vPosition
 #define IN_texCoords vTexCoord0
 
 #define OUT_position gl_Position
-out vec4 texCoords;
+layout (location = 0) out vec4 texCoords;
 #define OUT_texCoords texCoords
 
 uniform vec2 oneOverTargetSize;  

@@ -24,10 +24,11 @@
 #include "shadergen:/autogenConditioners.h"
 #include "core/rendering/shaders/postFX/gl/postFx.glsl"
 
-uniform sampler2D colorSampler; // Original source image  
-uniform sampler2D smallBlurSampler; // Output of SmallBlurPS()  
-uniform sampler2D largeBlurSampler; // Blurred output of DofDownsample()  
-uniform sampler2D depthSampler; // 
+layout(binding = 0) uniform sampler2D colorSampler; // Original source image  
+layout(binding = 1) uniform sampler2D smallBlurSampler; // Output of SmallBlurPS()  
+layout(binding = 2) uniform sampler2D largeBlurSampler; // Blurred output of DofDownsample()  
+layout(binding = 3) uniform sampler2D depthSampler;
+
 uniform vec2 oneOverTargetSize;  
 uniform vec4 dofLerpScale;  
 uniform vec4 dofLerpBias;  
@@ -41,7 +42,7 @@ uniform float maxFarCoC;
 //static vec4 dofLerpBias = vec4( 1.0, (1.0 - d2) / d1, 1.0 / d2, (d2 - 1.0) / d2 );
 //static vec3 dofEqFar = vec3( 2.0, 0.0, 1.0 ); 
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 vec4 tex2Doffset( sampler2D s, vec2 tc, vec2 offset )  
 {  
@@ -75,7 +76,7 @@ half4 InterpolateDof( half3 small, half3 med, half3 large, half t )
    //vec4 dofLerpScale = vec4( -1 / d0, -1 / d1, -1 / d2, 1 / d2 );  
    //vec4 dofLerpBias = vec4( 1, (1 � d2) / d1, 1 / d2, (d2 � 1) / d2 );  
    
-   weights = saturate( t * dofLerpScale + dofLerpBias );  
+   weights = half4(saturate( t * dofLerpScale + dofLerpBias ));  
    weights.yz = min( weights.yz, 1 - weights.xy );  
    
    // Unblurred sample with weight "weights.x" done by alpha blending  

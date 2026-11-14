@@ -28,13 +28,13 @@
 
 #include "core/rendering/shaders/gl/hlslCompat.glsl"
 
-in vec2 texcoord;
+layout (location = 0) in vec2 texcoord;
 
-uniform sampler2D edgesMap;
-uniform sampler2D edgesMapL;
-uniform sampler2D areaMap;
+layout(binding = 0) uniform sampler2D edgesMap;
+layout(binding = 1) uniform sampler2D edgesMapL;
+layout(binding = 2) uniform sampler2D areaMap;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 #include "./functions.glsl"
 

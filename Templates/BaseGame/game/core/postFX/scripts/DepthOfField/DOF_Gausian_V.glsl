@@ -23,9 +23,9 @@
 #include "core/rendering/shaders/gl/hlslCompat.glsl"
 #include "core/rendering/shaders/gl/torque.glsl"
 
-in vec4 vPosition;
-in vec2 vTexCoord0;
-in vec3 vTexCoord1;
+layout (location = 0) in vec4 vPosition;
+layout (location = 6) in vec2 vTexCoord0;
+layout (location = 7) in vec2 vTexCoord1;
 
 #define IN_pos  vPosition
 #define _IN_uv vTexCoord0
@@ -34,21 +34,21 @@ in vec3 vTexCoord1;
 #define OUT_hpos gl_Position
 out vec3 wsEyeRay;
 #define OUT_wsEyeRay wsEyeRay
-out vec2 uv0;
+layout (location = 0) out vec2 uv0;
 #define OUT_uv0 uv0
-out vec2 uv1;
+layout (location = 1) out vec2 uv1;
 #define OUT_uv1 uv1
-out vec2 uv2;
+layout (location = 2) out vec2 uv2;
 #define OUT_uv2 uv2
-out vec2 uv3;
+layout (location = 2) out vec2 uv3;
 #define OUT_uv3 uv3
-out vec2 uv4;
+layout (location = 4) out vec2 uv4;
 #define OUT_uv4 uv4
-out vec2 uv5;
+layout (location = 5) out vec2 uv5;
 #define OUT_uv5 uv5
-out vec2 uv6;
+layout (location = 6) out vec2 uv6;
 #define OUT_uv6 uv6
-out vec2 uv7;
+layout (location = 7) out vec2 uv7;
 #define OUT_uv7 uv7
 
 uniform vec2 texSize0;

@@ -24,11 +24,11 @@
 #include "shadergen:/autogenConditioners.h"
 #include "core/rendering/shaders/postFX/gl/postFx.glsl"
 
-uniform sampler2D edgeBuffer;
-uniform sampler2D backBuffer;
+layout(binding = 0) uniform sampler2D edgeBuffer;
+layout(binding = 1) uniform sampler2D backBuffer;
 uniform vec2 targetSize;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {

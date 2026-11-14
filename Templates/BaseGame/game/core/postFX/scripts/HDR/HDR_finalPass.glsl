@@ -27,9 +27,9 @@
 #include "HDR_Tonemap.glsl"   
 #include "HDR_colorUtils.glsl"
 #line 29
-uniform sampler2D sceneTex;
-uniform sampler2D luminanceTex;
-uniform sampler2D bloomTex;
+layout(binding = 0) uniform sampler2D sceneTex;
+layout(binding = 1) uniform sampler2D luminanceTex;
+layout(binding = 2) uniform sampler2D bloomTex;
 
 uniform vec2 texSize0;
 uniform vec2 texSize2;
@@ -55,7 +55,7 @@ uniform float brightnessValue;
 uniform float saturationValue;
 uniform vec3 colorFilter;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 
 vec3 Tonemap(vec3 x)

@@ -22,8 +22,8 @@
 #include "core/rendering/shaders/gl/torque.glsl"
 #include "core/rendering/shaders/postFX/gl/postFx.glsl"
 #line 24
-uniform sampler2D backBuffer; 
-out vec4 OUT_col;
+layout(binding = 0) uniform sampler2D backBuffer; 
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {

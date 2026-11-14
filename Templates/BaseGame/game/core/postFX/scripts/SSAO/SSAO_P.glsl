@@ -27,9 +27,9 @@
 #define DOSMALL
 #define DOLARGE
 
-uniform sampler2D deferredMap ;
-uniform sampler2D randNormalTex ;
-uniform sampler1D powTable ;
+layout(binding = 0) uniform sampler2D deferredMap;
+layout(binding = 1) uniform sampler2D randNormalTex;
+layout(binding = 2) uniform sampler1D powTable;
 
 uniform vec2 nearFar;
 uniform vec2 worldToScreenScale;
@@ -57,7 +57,7 @@ uniform float lDepthPow;
 uniform float lNormalTol;
 uniform float lNormalPow;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 
 #ifndef QUALITY
