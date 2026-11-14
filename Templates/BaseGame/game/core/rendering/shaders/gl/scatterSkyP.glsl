@@ -24,16 +24,16 @@
 #include "hlslCompat.glsl"
 #line 25
 // Conn
-in vec4 rayleighColor;
+layout (location = 1) in vec4 rayleighColor;
 #define IN_rayleighColor rayleighColor
-in vec4 mieColor;
+layout (location = 2) in vec4 mieColor;
 #define IN_mieColor mieColor
-in vec3 v3Direction;
+layout (location = 3) in vec3 v3Direction;
 #define IN_v3Direction v3Direction
 layout (location = 0) in vec3 vPosition;
 #define IN_pos vPosition
 
-uniform samplerCube nightSky;
+layout(binding = 0) uniform samplerCube nightSky;
 uniform vec4 nightColor;
 uniform vec2 nightInterpAndExposure;
 uniform float useCubemap;

@@ -27,9 +27,9 @@ layout (location = 2) in vec4 vColor;
 layout (location = 6) in vec2 vTexCoord0;
 layout (location = 7) in vec2 vTexCoord1;
 
-out vec2 texCoord;
+layout (location = 6) out vec2 texCoord;
 layout (location = 2) out vec4 color;
-out float fade;
+layout (location = 0) out float fade;
 
 uniform mat4 modelview;
 uniform float shadowLength;

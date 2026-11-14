@@ -28,19 +28,19 @@
 
 #include "core/rendering/shaders/gl/hlslCompat.glsl"
 
-in vec2 texcoord;
-in vec4 offset[2];
+layout (location = 0) in vec2 texcoord;
+layout (location = 1) in vec4 offset[2];
 
-uniform sampler2D blendMap;
-uniform sampler2D colorMapL;
-uniform sampler2D colorMap;
+layout(binding = 0) uniform sampler2D blendMap;
+layout(binding = 1) uniform sampler2D colorMapL;
+layout(binding = 2) uniform sampler2D colorMap;
 
 // Dummy sampers to please include.
-uniform sampler2D areaMap;
-uniform sampler2D edgesMapL;
+layout(binding = 3) uniform sampler2D areaMap;
+layout(binding = 4) uniform sampler2D edgesMapL;
 #include "./functions.glsl"
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {

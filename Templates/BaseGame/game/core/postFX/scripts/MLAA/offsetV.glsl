@@ -28,16 +28,16 @@
 
 #include "core/rendering/shaders/gl/hlslCompat.glsl"
 
-in vec4 vPosition;
-in vec2 vTexCoord0;
+layout (location = 0) in vec4 vPosition;
+layout (location = 6) in vec2 vTexCoord0;
 
 #define IN_position  vPosition
 #define IN_texcoord  vTexCoord0
 
 #define OUT_position gl_Position
-out vec2 texcoord;
+layout (location = 0) out vec2 texcoord;
 #define OUT_texcoord texcoord
-out vec4 offset[2];
+layout (location = 1) out vec4 offset[2];
 #define OUT_offset offset
 
 uniform vec2 texSize0;

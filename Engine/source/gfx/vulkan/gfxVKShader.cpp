@@ -1597,6 +1597,8 @@ bool GFXVulkanShader::_loadShaderFromStream(
    buffers.push_back(dStrdup(explicitAttrExt));
    const char* enhancedLayoutsExt = "#extension GL_ARB_enhanced_layouts : enable\n";
    buffers.push_back(dStrdup(enhancedLayoutsExt));
+   const char* pack420Ext = "#extension GL_ARB_shading_language_420pack : enable\n";
+   buffers.push_back(dStrdup(pack420Ext));
 
    const char* cubeArrayExt = "#extension GL_ARB_texture_cube_map_array : enable\n";
    buffers.push_back(dStrdup(cubeArrayExt));

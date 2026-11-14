@@ -20,9 +20,9 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-in vec2 texCoord;
-in vec4 color;
-in float fade;
+layout (location = 6) in vec2 texCoord;
+layout (location = 2) in vec4 color;
+layout (location = 0) in float fade;
 
 layout (location = 0) out vec4 OUT_col;
 

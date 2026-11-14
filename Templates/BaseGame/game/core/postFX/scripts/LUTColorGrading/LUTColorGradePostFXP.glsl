@@ -25,11 +25,16 @@
 #include "shadergen:/autogenConditioners.h"
 #include "core/rendering/shaders/postFX/gl/postFX.glsl"
 
-uniform sampler2D inputTex;
+layout(binding = 0) uniform sampler2D inputTex;
+layout(binding = 1) uniform sampler1D colorCorrectionTex;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {
-   OUT_col = hdrEncode( vec4(1,1,1,1) );
+   vec3 color = texture(inputTex, IN_uv0).rgb;
+   color.r = texture( colorCorrectionTex, color.r ).r;
+   color.g = texture( colorCorrectionTex, color.g ).g;
+   color.b = texture( colorCorrectionTex, color.b ).b;
+   OUT_col = vec4(color,1);
 }

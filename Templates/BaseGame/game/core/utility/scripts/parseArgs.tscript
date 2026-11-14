@@ -342,6 +342,10 @@ function parseArgs()
          case "-directX":
             $pref::Video::displayDevice = "D3D";
             $argUsed[%i]++;
+         
+         case "-vulkan":
+            $pref::Video::displayDevice = "Vulkan";
+            $argUsed[%i]++;
 
          case "-autoVideo":
             $pref::Video::displayDevice = "";

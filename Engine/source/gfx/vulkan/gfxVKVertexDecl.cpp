@@ -32,8 +32,8 @@ void GFXVulkanVertexDecl::init(const GFXVertexFormat *format)
    AssertFatal(!mFormat, "");
    mFormat = format;
   
-   //for(int i = 0; i < GFXVK->getNumVertexStreams(); ++i)
-   //   _initVerticesFormat(i);   
+   for(int i = 0; i < 2; ++i)
+      _initVerticesFormat(i);   
 }
 
 void GFXVulkanVertexDecl::prepareVertexFormat() const
@@ -111,10 +111,10 @@ void GFXVulkanVertexDecl::updateActiveVertexAttrib(U32 lastActiveMask) const
 
 void GFXVulkanVertexDecl::_initVerticesFormat2()
 {
-   /*for (U32 i = 0; i < GFXVK->getNumVertexStreams(); ++i)
+   for (U32 i = 0; i < 2; ++i)
    {
       _initVerticesFormat(i);
-   }*/
+   }
 }
 
 void GFXVulkanVertexDecl::_initVerticesFormat(U32 stream)
@@ -149,7 +149,7 @@ void GFXVulkanVertexDecl::_initVerticesFormat(U32 stream)
 
       if ( element.isSemantic( GFXSemantic::POSITION ) )
       {           
-         //vkElement.attrIndex = Torque::VK_VertexAttrib_Position;
+         vkElement.attrIndex = Torque::VK_VertexAttrib_Position;
          vkElement.elementCount = element.getSizeInBytes() / 4;
          vkElement.normalized = false;
          //vkElement.type = GL_FLOAT;
@@ -160,7 +160,7 @@ void GFXVulkanVertexDecl::_initVerticesFormat(U32 stream)
       }
       else if ( element.isSemantic( GFXSemantic::NORMAL ) )
       {
-         //vkElement.attrIndex = Torque::VK_VertexAttrib_Normal;
+         vkElement.attrIndex = Torque::VK_VertexAttrib_Normal;
          vkElement.elementCount = 3;
          vkElement.normalized = false;
          //vkElement.type = GL_FLOAT;
@@ -171,7 +171,7 @@ void GFXVulkanVertexDecl::_initVerticesFormat(U32 stream)
       }
       else if ( element.isSemantic( GFXSemantic::TANGENT ) )
       {
-         //vkElement.attrIndex = Torque::VK_VertexAttrib_Tangent;
+         vkElement.attrIndex = Torque::VK_VertexAttrib_Tangent;
          vkElement.elementCount = 3;
          vkElement.normalized = false;
          //vkElement.type = GL_FLOAT;
@@ -182,7 +182,7 @@ void GFXVulkanVertexDecl::_initVerticesFormat(U32 stream)
       }
       else if ( element.isSemantic( GFXSemantic::TANGENTW ) )
       {
-         //vkElement.attrIndex = Torque::VK_VertexAttrib_TangentW;
+         vkElement.attrIndex = Torque::VK_VertexAttrib_TangentW;
          vkElement.elementCount = element.getSizeInBytes()/4;
          vkElement.normalized = false;
          //vkElement.type = GL_FLOAT;
@@ -193,7 +193,7 @@ void GFXVulkanVertexDecl::_initVerticesFormat(U32 stream)
       }
       else if ( element.isSemantic( GFXSemantic::BINORMAL ) )
       {
-         //vkElement.attrIndex = Torque::VK_VertexAttrib_Binormal;
+         vkElement.attrIndex = Torque::VK_VertexAttrib_Binormal;
          vkElement.elementCount = 3;
          vkElement.normalized = false;
          //vkElement.type = GL_FLOAT;
@@ -204,7 +204,7 @@ void GFXVulkanVertexDecl::_initVerticesFormat(U32 stream)
       }
       else if ( element.isSemantic( GFXSemantic::COLOR ) )
       {
-         //vkElement.attrIndex = Torque::VK_VertexAttrib_Color;
+         vkElement.attrIndex = Torque::VK_VertexAttrib_Color;
          vkElement.elementCount = element.getSizeInBytes();
          vkElement.normalized = true;
          //vkElement.type = GL_UNSIGNED_BYTE;
@@ -215,7 +215,7 @@ void GFXVulkanVertexDecl::_initVerticesFormat(U32 stream)
       }
       else if ( element.isSemantic( GFXSemantic::BLENDWEIGHT ) )
       {
-         //vkElement.attrIndex = Torque::VK_VertexAttrib_BlendWeight0 + element.getSemanticIndex();
+         vkElement.attrIndex = Torque::VK_VertexAttrib_BlendWeight0 + element.getSemanticIndex();
          vkElement.elementCount = 4;
          vkElement.normalized = false;
          //vkElement.type = GL_FLOAT;
@@ -226,7 +226,7 @@ void GFXVulkanVertexDecl::_initVerticesFormat(U32 stream)
       }
       else if ( element.isSemantic( GFXSemantic::BLENDINDICES ) )
       {
-         //vkElement.attrIndex = Torque::VK_VertexAttrib_BlendIndex0 + element.getSemanticIndex();
+         vkElement.attrIndex = Torque::VK_VertexAttrib_BlendIndex0 + element.getSemanticIndex();
          vkElement.elementCount = 4;
          vkElement.normalized = false;
          //vkElement.type = GL_UNSIGNED_BYTE;
@@ -240,7 +240,7 @@ void GFXVulkanVertexDecl::_initVerticesFormat(U32 stream)
          String name = element.getSemantic();
          vkElement.elementCount = element.getSizeInBytes() / 4;
          texCoordIndex = getMax(texCoordIndex, element.getSemanticIndex());
-         //vkElement.attrIndex = Torque::VK_VertexAttrib_TexCoord0 + texCoordIndex;
+         vkElement.attrIndex = Torque::VK_VertexAttrib_TexCoord0 + texCoordIndex;
             
          vkElement.normalized = false;
          //vkElement.type = GL_FLOAT;
@@ -251,8 +251,8 @@ void GFXVulkanVertexDecl::_initVerticesFormat(U32 stream)
          ++texCoordIndex;
       }
 
-      //AssertFatal(!( mVertexAttribActiveMask & BIT(glElement.attrIndex) ), "GFXGLVertexBuffer::_initVerticesFormat - Duplicate vertex attrib index");
-      //mVertexAttribActiveMask |= BIT(glElement.attrIndex);
+      AssertFatal(!( mVertexAttribActiveMask & BIT(vkElement.attrIndex) ), "GFXGLVertexBuffer::_initVerticesFormat - Duplicate vertex attrib index");
+      mVertexAttribActiveMask |= BIT(vkElement.attrIndex);
    }
 
    mVertexSize[stream] = vertexSize;

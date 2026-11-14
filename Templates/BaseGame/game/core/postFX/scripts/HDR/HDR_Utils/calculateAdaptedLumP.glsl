@@ -24,13 +24,13 @@
 #include "shadergen:/autogenConditioners.h"
 #include "core/rendering/shaders/postFX/gl/postFx.glsl"
 
-uniform sampler2D currLum;
-uniform sampler2D lastAdaptedLum;
+layout(binding = 0) uniform sampler2D currLum;
+layout(binding = 1) uniform sampler2D lastAdaptedLum;
 
 uniform float adaptRate;
 uniform float deltaTime;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {

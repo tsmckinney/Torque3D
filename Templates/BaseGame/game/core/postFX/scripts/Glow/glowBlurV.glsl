@@ -23,20 +23,20 @@
 #include "core/rendering/shaders/gl/hlslCompat.glsl"
 #include "core/rendering/shaders/gl/torque.glsl"
 
-in vec4 vPosition;
-in vec2 vTexCoord0;
+layout (location = 0) in vec4 vPosition;
+layout (location = 6) in vec2 vTexCoord0;
 
 uniform vec2 texSize0;
 
-out vec4 hpos; //POSITION;
-out vec2 uv0; //TEXCOORD0;
-out vec2 uv1; //TEXCOORD1;
-out vec2 uv2; //TEXCOORD2;
-out vec2 uv3; //TEXCOORD3;
-out vec2 uv4; //TEXCOORD4;
-out vec2 uv5; //TEXCOORD5;
-out vec2 uv6; //TEXCOORD6;
-out vec2 uv7; //TEXCOORD7;
+layout (location = 8) out vec4 hpos; //POSITION;
+layout (location = 0) out vec2 uv0; //TEXCOORD0;
+layout (location = 1) out vec2 uv1; //TEXCOORD1;
+layout (location = 2) out vec2 uv2; //TEXCOORD2;
+layout (location = 3) out vec2 uv3; //TEXCOORD3;
+layout (location = 4) out vec2 uv4; //TEXCOORD4;
+layout (location = 5) out vec2 uv5; //TEXCOORD5;
+layout (location = 6) out vec2 uv6; //TEXCOORD6;
+layout (location = 7) out vec2 uv7; //TEXCOORD7;
 
 void main()
 {  

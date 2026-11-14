@@ -24,7 +24,7 @@
 
 layout(binding = 0) uniform sampler2D diffuseMap;
 
-in vec2 uv;
+layout (location = 0) in vec2 uv;
 
 uniform vec2 oneOverTargetSize;
 

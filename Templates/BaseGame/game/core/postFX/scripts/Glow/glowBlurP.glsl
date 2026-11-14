@@ -22,19 +22,19 @@
 
 #include "core/rendering/shaders/gl/hlslCompat.glsl"
 
-uniform sampler2D diffuseMap ;
+layout(binding = 0) uniform sampler2D diffuseMap;
 
-in vec4 hpos; //POSITION;
-in vec2 uv0; //TEXCOORD0;
-in vec2 uv1; //TEXCOORD1;
-in vec2 uv2; //TEXCOORD2;
-in vec2 uv3; //TEXCOORD3;
-in vec2 uv4; //TEXCOORD4;
-in vec2 uv5; //TEXCOORD5;
-in vec2 uv6; //TEXCOORD6;
-in vec2 uv7; //TEXCOORD7;
+layout (location = 8) in vec4 hpos; //POSITION;
+layout (location = 0) in vec2 uv0; //TEXCOORD0;
+layout (location = 1) in vec2 uv1; //TEXCOORD1;
+layout (location = 2) in vec2 uv2; //TEXCOORD2;
+layout (location = 3) in vec2 uv3; //TEXCOORD3;
+layout (location = 4) in vec2 uv4; //TEXCOORD4;
+layout (location = 5) in vec2 uv5; //TEXCOORD5;
+layout (location = 6) in vec2 uv6; //TEXCOORD6;
+layout (location = 7) in vec2 uv7; //TEXCOORD7;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {

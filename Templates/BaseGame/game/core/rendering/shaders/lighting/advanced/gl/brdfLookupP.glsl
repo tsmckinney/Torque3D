@@ -22,8 +22,8 @@
 
 #include "../../../torque.glsl"
 #line 24
-in vec4 hpos;
-in vec2 uv0;
+layout (location = 0) in vec4 hpos;
+layout (location = 6) in vec2 uv0;
 
 // ----------------------------------------------------------------------------
 // http://holger.dammertz.org/stuff/notes_HammersleyOnHemisphere.html

@@ -28,13 +28,13 @@ uniform float  accumTime;
 uniform vec2 projectionOffset;
 uniform vec4 targetViewport;
 
-uniform sampler2D inputTex;
+layout(binding = 0) uniform sampler2D inputTex;
 
-in vec2 uv0;
+layout (location = 0) in vec2 uv0;
 
 #define IN_uv0 uv0
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main() 
 {

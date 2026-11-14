@@ -29,10 +29,10 @@ layout (location = 3) in vec3 vTangent;
 layout (location = 6) in vec2 vTexCoord0;
 
 uniform vec4 rtParams0;
-out vec4 hpos;
-out vec2 uv0;
-out vec3 wsEyeRay;
-out vec3 vsEyeRay;
+layout (location = 1) out vec4 hpos;
+layout (location = 0) out vec2 uv0;
+layout (location = 4) out vec3 wsEyeRay;
+layout (location = 5) out vec3 vsEyeRay;
 
 void main()
 {   

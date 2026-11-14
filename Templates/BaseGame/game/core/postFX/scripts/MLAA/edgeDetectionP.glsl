@@ -29,17 +29,17 @@
 #include "core/rendering/shaders/gl/hlslCompat.glsl"
 #include "shadergen:/autogenConditioners.h"
 
-uniform sampler2D colorMapG;
-uniform sampler2D deferredMap;
+layout(binding = 0) uniform sampler2D colorMapG;
+layout(binding = 1) uniform sampler2D deferredMap;
 
 uniform vec3 lumaCoefficients;
 uniform float threshold;
 uniform float depthThreshold;
 
-in vec2 texcoord;
-in vec4 offset[2];
+layout (location = 0) in vec2 texcoord;
+layout (location = 1) in vec4 offset[2];
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {

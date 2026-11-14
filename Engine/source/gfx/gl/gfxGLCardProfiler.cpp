@@ -64,6 +64,15 @@ void GFXGLCardProfiler::setupCardCapabilities()
    // Check for vertex attrib binding
    setCapability("GL_ARB_vertex_attrib_binding", gglHasExtension(ARB_vertex_attrib_binding));
 
+   // Check for separate shader object support
+   setCapability("GL_ARB_separate_shader_objects", gglHasExtension(ARB_separate_shader_objects));
+
+   // Check for explicit attribute location support
+   setCapability("GL_ARB_explicit_attrib_location", gglHasExtension(ARB_explicit_attrib_location));
+
+   // Check for enhanced layout support
+   setCapability("ARB_enhanced_layouts", gglHasExtension(ARB_enhanced_layouts));
+
    //check for KHR debug
    setCapability("GL_KHR_debug", gglHasExtension(KHR_debug));
    

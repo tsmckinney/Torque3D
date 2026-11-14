@@ -27,11 +27,11 @@
 
 #line 27
 
-uniform sampler2D deferredBuffer;
-uniform sampler2D colorBuffer;
-uniform sampler2D matInfoBuffer;
-uniform sampler2D ssaoMaskTex;
-uniform sampler2D backbufferTex;
+layout(binding = 0) uniform sampler2D deferredBuffer;
+layout(binding = 1) uniform sampler2D colorBuffer;
+layout(binding = 2) uniform sampler2D matInfoBuffer;
+layout(binding = 3) uniform sampler2D ssaoMaskTex;
+layout(binding = 4) uniform sampler2D backbufferTex;
 
 uniform float mode;
 uniform vec3 eyePosWorld;

@@ -27,8 +27,8 @@
 
 #line 28
 
-uniform sampler2D inputTex;
-uniform sampler2D dirtTex;
+layout(binding = 0) uniform sampler2D inputTex;
+layout(binding = 1) uniform sampler2D dirtTex;
 uniform float strength;
 // XY: Dirt Texture Size/Scale
 // Z: Dirt Effect Strength
@@ -38,7 +38,7 @@ uniform vec3 dirtParams;
 uniform vec3 edgeParams;
 uniform vec2 oneOverTargetSize;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
   
 void main()
 {

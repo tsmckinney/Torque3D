@@ -22,10 +22,10 @@
 
 #include "core/rendering/shaders/gl/hlslCompat.glsl"
 
-in vec2 uv0;
+layout (location = 0) in vec2 uv0;
 #define IN_uv0 uv0
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {  

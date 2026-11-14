@@ -28,15 +28,15 @@
                 
 #include "SMAA.glsl" 
       
-uniform sampler2D sceneTex;
-uniform sampler2D blendTex;
+layout(binding = 0) uniform sampler2D sceneTex;
+layout(binding = 1) uniform sampler2D blendTex;
 
 
-in vec4 hpos;
-in vec2 uv0;
-in vec4 offset;   
+layout (location = 1) in vec4 hpos;
+layout (location = 0) in vec2 uv0;
+layout (location = 2) in vec4 offset;   
                 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
                                                        
 void main() 
 {                                    

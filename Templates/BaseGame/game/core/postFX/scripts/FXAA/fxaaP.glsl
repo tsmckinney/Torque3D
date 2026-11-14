@@ -28,13 +28,13 @@
 #include "Fxaa3_11.h"
 #include "core/rendering/shaders/gl/hlslCompat.glsl"
 
-uniform sampler2D colorTex ;
+layout(binding = 0) uniform sampler2D colorTex;
 uniform vec2 oneOverTargetSize;
 
-in vec4 hpos;
-in vec2 uv0;
+layout(location = 1) in vec4 hpos;
+layout(location = 0) in vec2 uv0;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {

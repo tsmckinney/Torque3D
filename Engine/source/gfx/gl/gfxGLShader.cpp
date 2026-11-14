@@ -1397,7 +1397,7 @@ bool GFXGLShader::_loadShaderFromStream(GLuint shader,
    Vector<U32> lengths;
 
    // The GLSL version declaration must go first!
-   const char* versionDecl = "#version 330\n";
+   const char* versionDecl = "#version 420\n";
    buffers.push_back(dStrdup(versionDecl));
    lengths.push_back(dStrlen(versionDecl));
 

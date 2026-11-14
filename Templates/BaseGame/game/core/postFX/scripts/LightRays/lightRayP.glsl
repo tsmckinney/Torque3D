@@ -23,8 +23,8 @@
 #include "core/rendering/shaders/gl/hlslCompat.glsl"
 #include "core/rendering/shaders/postFX/gl/postFx.glsl"
 
-uniform sampler2D frameSampler;
-uniform sampler2D backBuffer;
+layout(binding = 0) uniform sampler2D frameSampler;
+layout(binding = 1) uniform sampler2D backBuffer;
 
 uniform vec3 camForward;
 uniform vec3 lightDirection;
@@ -36,7 +36,7 @@ uniform float weight;
 uniform float decay;
 uniform float exposure;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {  
@@ -56,10 +56,10 @@ void main()
 	int samples = int(numSamples * amount);
 	
 	if ( samples <= 0 )
-   {
-	   OUT_col = bbCol;
-      return;
-   }
+    {
+	    OUT_col = bbCol;
+        return;
+    }
 
 	// Calculate vector from pixel to light source in screen space.
     half2 deltaTexCoord = half2( texCoord.xy - screenSunPos );  

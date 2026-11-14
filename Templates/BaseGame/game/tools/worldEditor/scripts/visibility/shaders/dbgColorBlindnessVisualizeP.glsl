@@ -26,12 +26,12 @@
 #include "../../../../core/rendering/shaders/gl/hlslCompat.glsl"
 #include "shadergen:/autogenConditioners.h"
 
-in vec2 uv0;
-uniform sampler2D backBufferTex;
+layout(location = 0) in vec2 uv0;
+layout(binding = 0) uniform sampler2D backBufferTex;
 
-in float mode;
+layout(location = 1) in float mode;
 
-out vec4 OUT_col;
+layout(location = 0) out vec4 OUT_col;
 
 void main()
 {   

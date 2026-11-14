@@ -57,29 +57,29 @@
 //-----------------------------------------------------------------------------
 
 // TexCoord 0 and 1 (xy,zw) for ripple texture lookup
-in vec4 rippleTexCoord01;
+layout (location = 0) in vec4 rippleTexCoord01;
 #define IN_rippleTexCoord01 rippleTexCoord01
 
 // TexCoord 2 for ripple texture lookup
-in vec2 rippleTexCoord2;
+layout (location = 1) in vec2 rippleTexCoord2;
 #define IN_rippleTexCoord2 rippleTexCoord2
 
 // Screenspace vert position BEFORE wave transformation
-in vec4 posPreWave;
+layout (location = 2) in vec4 posPreWave;
 #define IN_posPreWave posPreWave
 
 // Screenspace vert position AFTER wave transformation
-in vec4 posPostWave;
+layout (location = 3) in vec4 posPostWave;
 #define IN_posPostWave posPostWave 
 
 // Worldspace unit distance/depth of this vertex/pixel
-in float  pixelDist;
+layout (location = 4) in float  pixelDist;
 #define IN_pixelDist pixelDist
 
-in vec4 objPos;
+layout (location = 5) in vec4 objPos;
 #define IN_objPos objPos
 
-in vec3 misc;
+layout (location = 6) in vec3 misc;
 #define IN_misc misc
 
 //-----------------------------------------------------------------------------

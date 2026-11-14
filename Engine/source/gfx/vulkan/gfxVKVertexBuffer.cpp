@@ -20,14 +20,24 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
+#include "platform/platform.h"
+
 #include "gfx/vulkan/gfxVKVertexBuffer.h"
 #include <vk_mem_alloc.h>
+#include "console/console.h"
 
 //-----------------------------------------------------------------------------
 
 GFXVulkanVertexBuffer::GFXVulkanVertexBuffer(GFXDevice* device, U32 numVerts, const GFXVertexFormat* vertexFormat, U32 vertexSize, GFXBufferType bufferType)
    : GFXVertexBuffer(device, numVerts, vertexFormat, vertexSize, bufferType)
 {
+   if (getOwningDevice() != NULL)
+   {
+      if (mBufferType != GFXBufferTypeVolatile)
+      {
+         mVolatileBuffer = NULL;
+      }
+   }
    tempBuf = NULL;
 }
 

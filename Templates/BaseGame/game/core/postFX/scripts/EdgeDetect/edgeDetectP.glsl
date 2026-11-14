@@ -82,13 +82,13 @@ float GetEdgeWeight(vec2 uv0, in sampler2D deferredBuffer, in vec2 targetSize)
    return dot(normalResults, vec4(1.0, 1.0, 1.0, 1.0)) * 0.25;
 }
 
-in vec2 uv0;
+layout (location = 0) in vec2 uv0;
 #define IN_uv0 uv0
 
-uniform sampler2D deferredBuffer;
+layout(binding = 0) uniform sampler2D deferredBuffer;
 uniform vec2 targetSize;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {

@@ -26,8 +26,8 @@
 layout (location = 0) in vec4 vPosition;
 layout (location = 6) in vec2 vTexCoord0;
 
-out vec2 layerCoord;
-out vec2 texCoord;
+layout (location = 0) out vec2 layerCoord;
+layout (location = 1) out vec2 texCoord;
 
 uniform vec2 texScale;
 

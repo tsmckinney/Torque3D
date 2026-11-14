@@ -24,15 +24,15 @@
 #include "core/rendering/shaders/gl/torque.glsl"
 #include "shadergen:/autogenConditioners.h"
 
-uniform sampler2D backBuffer;
+layout(binding = 0) uniform sampler2D backBuffer;
 
 uniform float OneOverGamma;
 uniform float Brightness;
 uniform float Contrast;
 
-in vec2 uv0;
+layout(location = 0) in vec2 uv0;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
 
 void main()
 {

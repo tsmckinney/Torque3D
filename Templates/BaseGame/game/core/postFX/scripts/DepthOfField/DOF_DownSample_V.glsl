@@ -23,9 +23,9 @@
 #include "core/rendering/shaders/gl/hlslCompat.glsl"
 #include "core/rendering/shaders/gl/torque.glsl"
 
-in vec4 vPosition;
-in vec2 vTexCoord0;
-in vec3 vTexCoord1;
+layout (location = 0) in vec4 vPosition;
+layout (location = 6) in vec2 vTexCoord0;
+layout (location = 7) in vec3 vTexCoord1;
 
 #define IN_pos  vPosition
 #define IN_tc vTexCoord0
@@ -33,17 +33,17 @@ in vec3 vTexCoord1;
 
 #define OUT_position gl_Position
 
-out vec2 tcColor0;
+layout (location = 0) out vec2 tcColor0;
 #define OUT_tcColor0 tcColor0
-out vec2 tcColor1;
+layout (location = 1) out vec2 tcColor1;
 #define OUT_tcColor1 tcColor1
-out vec2 tcDepth0;
+layout (location = 2) out vec2 tcDepth0;
 #define OUT_tcDepth0 tcDepth0
-out vec2 tcDepth1;
+layout (location = 3) out vec2 tcDepth1;
 #define OUT_tcDepth1 tcDepth1
-out vec2 tcDepth2;
+layout (location = 4) out vec2 tcDepth2;
 #define OUT_tcDepth2 tcDepth2
-out vec2 tcDepth3;
+layout (location = 5) out vec2 tcDepth3;
 #define OUT_tcDepth3 tcDepth3
 
 

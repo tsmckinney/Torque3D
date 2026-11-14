@@ -33,12 +33,12 @@ const vec2 KERNEL[KERNEL_SAMPLES] = vec2[](
   vec2(-0.5, 0.5)
 );
 
-uniform sampler2D inputTex;
-uniform sampler2D luminanceTex;
+layout(binding = 0) uniform sampler2D inputTex;
+layout(binding = 1) uniform sampler2D luminanceTex;
 uniform float g_fMiddleGray;
 uniform vec2 oneOverTargetSize;
 
-out vec4 OUT_col;
+layout (location = 0) out vec4 OUT_col;
  
 void main()
 {
