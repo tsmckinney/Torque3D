@@ -12,6 +12,7 @@ public:
 
    Dictionary::Entry *currentVariable;
    Dictionary::Entry *copyVariable;
+   Dictionary::Entry returnVariable;
 
    U32 mStackDepth;
    bool mShouldReset; ///< Designates if the value stack should be reset
@@ -45,6 +46,18 @@ public:
    void setIntVariable(S32 val);
    void setFloatVariable(F64 val);
    void setStringVariable(const char *str);
+
+   const char* getStringRet() { return returnVariable.getStringValue(); }
+   S32 getIntRet() { return returnVariable.getIntValue(); }
+   F64 getFloatRet() { return returnVariable.getFloatValue(); }
+   bool getBoolRet() { return returnVariable.getIntValue(); }
+
+   void setRetVal(const char* val) { returnVariable.setStringValue(val); }
+   void setRetVal(S64 val) { returnVariable.setIntValue(val); }
+   void setRetVal(F64 val) { returnVariable.setFloatValue(val); }
+   void setRetVal(bool val) { returnVariable.setIntValue(val); }
+
+   void clearRet() { returnVariable.value.setEmptyString(); }
 
    TORQUE_FORCEINLINE S32 getLocalIntVariable(S32 reg)
    {

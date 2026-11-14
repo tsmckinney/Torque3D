@@ -1748,6 +1748,12 @@ void AssetImporter::processMaterialAsset(AssetImportObject* assetItem)
       //check to see if the definition for this already exists
       StringTableEntry existingMatAsset = MaterialAsset::getAssetIdByMaterialName(StringTable->insert(assetName));
 
+      if (existingMatAsset == StringTable->EmptyString() && activeImportConfig->AlwaysAddMaterialSuffix)
+      {
+         //Fall back to the un-suffixed name for checking against if it matches the pattern lookup below.
+         existingMatAsset = MaterialAsset::getAssetIdByMaterialName(StringTable->insert(assetItem->cleanAssetName.c_str()));
+      }
+
       if (existingMatAsset != StringTable->EmptyString() && existingMatAsset != StringTable->insert("Core_Rendering:NoMaterial"))
       {
          assetItem->importStatus = AssetImportObject::UseForDependencies;
@@ -2010,7 +2016,31 @@ void AssetImporter::processShapeAsset(AssetImportObject* assetItem)
       GuiTreeViewCtrl* shapeInfo = new GuiTreeViewCtrl();
       shapeInfo->registerObject();
 
-      enumDTSForImport(filePath, shapeInfo);
+      bool handled = false;
+      if (fileExt.equal("dts", String::NoCase))
+      {
+         handled = enumDTSForImport(filePath, shapeInfo);
+      }
+      else
+      {
+         Torque::Path path(filePath);
+         if(fileExt.equal("dae", String::NoCase))
+         {
+         	if(!ColladaShapeLoader::canLoadCachedDTS(path))
+         		handled = enumColladaForImport(filePath, shapeInfo, false);
+         }
+         else
+         {
+         	if(!AssimpShapeLoader::canLoadCachedDTS(path))
+         	{
+         	   AssimpShapeLoader loader;
+               handled = loader.fillGuiTreeView(filePath.c_str(), shapeInfo);
+         	}
+         }
+      }
+
+      if (!handled)
+         enumDTSForImport(filePath, shapeInfo);
 
       assetItem->shapeInfo = shapeInfo;
    }

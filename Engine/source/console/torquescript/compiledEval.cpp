@@ -163,6 +163,40 @@ namespace Con
    }
 }
 
+//------------------------------------------------------------
+// Map a suffix character to a component index.
+static S32 tscriptSuffixMap(char c)
+{
+   //store these off for case insensitive comparison
+   static const StringTableEntry X = StringTable->insert("x");
+   static const StringTableEntry Y = StringTable->insert("y");
+   static const StringTableEntry Z = StringTable->insert("z");
+   static const StringTableEntry W = StringTable->insert("w");
+
+   static const StringTableEntry R = StringTable->insert("r");
+   static const StringTableEntry G = StringTable->insert("g");
+   static const StringTableEntry B = StringTable->insert("b");
+   static const StringTableEntry A = StringTable->insert("a");
+
+   static const StringTableEntry U = StringTable->insert("u");
+   static const StringTableEntry V = StringTable->insert("v");
+
+   char suffix[2] = { c, 0 };
+   StringTableEntry entry = StringTable->insert(suffix);
+   //StringTabe table of the suffixes, and their mapped indexes.
+   if (entry == X || entry == R || entry == U)
+      return 0;
+   if (entry == Y || entry == G || entry == V)
+      return 1;
+   if (entry == Z || entry == B)
+      return 2;
+   if (entry == W || entry == A)
+      return 3;
+
+   return -1;
+}
+
+//------------------------------------------------------------
 static void getFieldComponent(SimObject* object, StringTableEntry field, const char* array, StringTableEntry subField, char val[], S32 currentLocalRegister)
 {
    const char* prevVal = NULL;
@@ -173,42 +207,44 @@ static void getFieldComponent(SimObject* object, StringTableEntry field, const c
       prevVal = Script::gEvalState.getLocalStringVariable(currentLocalRegister);
    else if (Script::gEvalState.currentVariable)
       prevVal = Script::gEvalState.getStringVariable();
+   else if (*Script::gEvalState.getStringRet())
+      prevVal = Script::gEvalState.getStringRet();
 
    // Make sure we got a value.
    if (prevVal && *prevVal)
    {
-      static const StringTableEntry xyzw[] =
+      const char* suffix = subField;
+      S32 suffixLen = dStrlen(suffix);
+      if (suffixLen == 1)
       {
-         StringTable->insert("x"),
-         StringTable->insert("y"),
-         StringTable->insert("z"),
-         StringTable->insert("w")
-      };
-
-      static const StringTableEntry rgba[] =
-      {
-         StringTable->insert("r"),
-         StringTable->insert("g"),
-         StringTable->insert("b"),
-         StringTable->insert("a")
-      };
-
-      // Translate xyzw and rgba into the indexed component
-      // of the variable or field.
-      if (subField == xyzw[0] || subField == rgba[0])
-         dStrcpy(val, StringUnit::getUnit(prevVal, 0, " \t\n"), 128);
-
-      else if (subField == xyzw[1] || subField == rgba[1])
-         dStrcpy(val, StringUnit::getUnit(prevVal, 1, " \t\n"), 128);
-
-      else if (subField == xyzw[2] || subField == rgba[2])
-         dStrcpy(val, StringUnit::getUnit(prevVal, 2, " \t\n"), 128);
-
-      else if (subField == xyzw[3] || subField == rgba[3])
-         dStrcpy(val, StringUnit::getUnit(prevVal, 3, " \t\n"), 128);
-
+         S32 id = tscriptSuffixMap(suffix[0]);
+         if (id != -1)
+            dStrcpy(val, StringUnit::getUnit(prevVal, id, " \t\n"), 128);
+         else
+            val[0] = 0;
+         return;
+      }
       else
-         val[0] = 0;
+      {
+         char outVal[128];
+         outVal[0] = 0;
+         for (S32 i = 0; i < suffixLen; i++)
+         {
+            S32 id = tscriptSuffixMap(suffix[i]);
+            if (id == -1)
+            {
+               val[0] = 0;
+               return;
+            }
+            const char* unit = StringUnit::getUnit(prevVal, id, " \t\n");
+            if (i > 0)
+            {
+               dStrcat(outVal, " ", 128);
+            }
+            dStrcat(outVal, unit, 128);
+         }
+         dStrcpy(val, outVal, 128);
+      }
    }
    else
       val[0] = 0;
@@ -235,35 +271,46 @@ static void setFieldComponent(SimObject* object, StringTableEntry field, const c
    if (!prevVal)
       return;
 
-   static const StringTableEntry xyzw[] =
+   const char* suffix = subField;
+   S32 suffixLen = dStrlen(suffix);
+
+   if (suffixLen == 1)
    {
-      StringTable->insert("x"),
-      StringTable->insert("y"),
-      StringTable->insert("z"),
-      StringTable->insert("w")
-   };
-
-   static const StringTableEntry rgba[] =
+      S32 id = tscriptSuffixMap(suffix[0]);
+      if (id != -1)
+         dStrcpy(val, StringUnit::setUnit(prevVal, id, strValue, " \t\n"), 1024);
+   }
+   else
    {
-      StringTable->insert("r"),
-      StringTable->insert("g"),
-      StringTable->insert("b"),
-      StringTable->insert("a")
-   };
+      char outVal[1024];
+      dStrcpy(outVal, prevVal, 1024);
 
-   // Insert the value into the specified
-   // component of the string.
-   if (subField == xyzw[0] || subField == rgba[0])
-      dStrcpy(val, StringUnit::setUnit(prevVal, 0, strValue, " \t\n"), 128);
+      S32 unitCount = StringUnit::getUnitCount(strValue, " \t\n");
 
-   else if (subField == xyzw[1] || subField == rgba[1])
-      dStrcpy(val, StringUnit::setUnit(prevVal, 1, strValue, " \t\n"), 128);
+      for (S32 i = 0; i < suffixLen; i++)
+      {
+         S32 id = tscriptSuffixMap(suffix[i]);
+         if (id == -1)
+         {
+            return;
+         }
 
-   else if (subField == xyzw[2] || subField == rgba[2])
-      dStrcpy(val, StringUnit::setUnit(prevVal, 2, strValue, " \t\n"), 128);
+         const char* unit = StringUnit::getUnit(strValue, i, " \t\n");
+         if (!unit || !*unit)
+            continue;
 
-   else if (subField == xyzw[3] || subField == rgba[3])
-      dStrcpy(val, StringUnit::setUnit(prevVal, 3, strValue, " \t\n"), 128);
+         dStrcpy(outVal, StringUnit::setUnit(outVal, id, unit , " \t\n"), 1024);
+      }
+
+      if (unitCount != suffixLen)
+      {
+         Con::warnf(ConsoleLogEntry::General,
+            "setFieldComponent: component count mismatch - suffix '%s' expects %d value(s), got %d ('%s')!",
+            suffix, suffixLen, unitCount, strValue);
+      }
+
+      dStrcpy(val, outVal, 1024);
+   }
 
    if (val[0] != 0)
    {
@@ -379,7 +426,6 @@ void ExprEvalState::setStringVariable(const char *val)
    AssertFatal(currentVariable != NULL, "Invalid evaluator state - trying to set null variable!");
    currentVariable->setStringValue(val);
 }
-
 //-----------------------------------------------------------------------------
 
 enum class FloatOperation
@@ -1501,6 +1547,7 @@ Con::EvalResult CodeBlock::exec(U32 ip, const char* functionName, Namespace* thi
          prevField = NULL;
          prevObject = NULL;
          curObject = NULL;
+         Script::gEvalState.clearRet();
 
          // Used for local variable caching of what is active...when we
          // set a global, we aren't active
@@ -1523,6 +1570,7 @@ Con::EvalResult CodeBlock::exec(U32 ip, const char* functionName, Namespace* thi
          prevField = NULL;
          prevObject = NULL;
          curObject = NULL;
+         Script::gEvalState.clearRet();
 
          // Used for local variable caching of what is active...when we
          // set a global, we aren't active
@@ -1542,6 +1590,7 @@ Con::EvalResult CodeBlock::exec(U32 ip, const char* functionName, Namespace* thi
          prevField = NULL;
          prevObject = NULL;
          curObject = NULL;
+         Script::gEvalState.clearRet();
 
          // Used for local variable caching of what is active...when we
          // set a global, we aren't active
@@ -1561,7 +1610,7 @@ Con::EvalResult CodeBlock::exec(U32 ip, const char* functionName, Namespace* thi
          prevField = NULL;
          prevObject = NULL;
          curObject = NULL;
-
+         Script::gEvalState.clearRet();
          // Used for local variable caching of what is active...when we
          // set a global, we aren't active
          currentRegister = -1;
@@ -1611,6 +1660,7 @@ Con::EvalResult CodeBlock::exec(U32 ip, const char* functionName, Namespace* thi
          prevField = NULL;
          prevObject = NULL;
          curObject = NULL;
+         Script::gEvalState.clearRet();
 
          stack[_STK + 1].setInt(Script::gEvalState.getLocalIntVariable(reg));
          _STK++;
@@ -1624,7 +1674,7 @@ Con::EvalResult CodeBlock::exec(U32 ip, const char* functionName, Namespace* thi
          prevField = NULL;
          prevObject = NULL;
          curObject = NULL;
-
+         Script::gEvalState.clearRet();
          stack[_STK + 1].setFloat(Script::gEvalState.getLocalFloatVariable(reg));
          _STK++;
          break;
@@ -1637,7 +1687,7 @@ Con::EvalResult CodeBlock::exec(U32 ip, const char* functionName, Namespace* thi
          prevField = NULL;
          prevObject = NULL;
          curObject = NULL;
-
+         Script::gEvalState.clearRet();
          val = Script::gEvalState.getLocalStringVariable(reg);
          stack[_STK + 1].setString(val);
          _STK++;
@@ -1651,7 +1701,7 @@ Con::EvalResult CodeBlock::exec(U32 ip, const char* functionName, Namespace* thi
          prevField = NULL;
          prevObject = NULL;
          curObject = NULL;
-
+         Script::gEvalState.clearRet();
          Script::gEvalState.setLocalIntVariable(reg, stack[_STK].getInt());
          break;
 
@@ -1663,7 +1713,7 @@ Con::EvalResult CodeBlock::exec(U32 ip, const char* functionName, Namespace* thi
          prevField = NULL;
          prevObject = NULL;
          curObject = NULL;
-
+         Script::gEvalState.clearRet();
          Script::gEvalState.setLocalFloatVariable(reg, stack[_STK].getFloat());
          break;
 
@@ -1676,7 +1726,7 @@ Con::EvalResult CodeBlock::exec(U32 ip, const char* functionName, Namespace* thi
          prevField = NULL;
          prevObject = NULL;
          curObject = NULL;
-
+         Script::gEvalState.clearRet();
          Script::gEvalState.setLocalStringVariable(reg, val, (S32)dStrlen(val));
          break;
 
@@ -1697,6 +1747,10 @@ Con::EvalResult CodeBlock::exec(U32 ip, const char* functionName, Namespace* thi
             }
          }
          curObject = Sim::findObject(val);
+         if (curObject)
+            Script::gEvalState.clearRet();
+         else
+            Script::gEvalState.setRetVal(stack[_STK].getString());
          break;
 
       case OP_SETCUROBJECT_INTERNAL:
@@ -1726,6 +1780,8 @@ Con::EvalResult CodeBlock::exec(U32 ip, const char* functionName, Namespace* thi
 
       case OP_SETCUROBJECT_NEW:
          curObject = currentNewObject;
+         if (curObject)
+            Script::gEvalState.clearRet();
          break;
 
       case OP_SETCURFIELD:
@@ -1782,6 +1838,7 @@ Con::EvalResult CodeBlock::exec(U32 ip, const char* functionName, Namespace* thi
          {
             val = curObject->getDataField(curField, curFieldArray);
             stack[_STK + 1].setString(val);
+            Script::gEvalState.clearRet();
          }
          else
          {
@@ -2050,9 +2107,13 @@ Con::EvalResult CodeBlock::exec(U32 ip, const char* functionName, Namespace* thi
             {
                ConsoleValue returnFromFn = nsEntry->mModule->exec(nsEntry->mFunctionOffset, fnName, nsEntry->mNamespace, callArgc, callArgv, false, nsEntry->mPackage).value;
                stack[_STK + 1] = (returnFromFn);
+               Script::gEvalState.setRetVal(returnFromFn.getString());
             }
-            else // no body
+            else
+            {// no body
                stack[_STK + 1].setEmptyString();
+               Script::gEvalState.clearRet();
+            }
             _STK++;
 
             gCallStack.popFrame();
@@ -2078,6 +2139,7 @@ Con::EvalResult CodeBlock::exec(U32 ip, const char* functionName, Namespace* thi
                   gCallStack.popFrame();
                   stack[_STK + 1].setString(result);
                   _STK++;
+                  Script::gEvalState.setRetVal(result);
                   break;
                }
                case Namespace::Entry::IntCallbackType:
@@ -2088,11 +2150,13 @@ Con::EvalResult CodeBlock::exec(U32 ip, const char* functionName, Namespace* thi
                   if (code[ip] == OP_POP_STK)
                   {
                      ip++;
+                     Script::gEvalState.setRetVal(result);
                      break;
                   }
 
                   stack[_STK + 1].setInt(result);
                   _STK++;
+                  Script::gEvalState.setRetVal(result);
                   break;
                }
                case Namespace::Entry::FloatCallbackType:
@@ -2103,11 +2167,13 @@ Con::EvalResult CodeBlock::exec(U32 ip, const char* functionName, Namespace* thi
                   if (code[ip] == OP_POP_STK)
                   {
                      ip++;
+                     Script::gEvalState.setRetVal(result);
                      break;
                   }
 
                   stack[_STK + 1].setFloat(result);
                   _STK++;
+                  Script::gEvalState.setRetVal(result);
                   break;
                }
                case Namespace::Entry::VoidCallbackType:
@@ -2118,6 +2184,7 @@ Con::EvalResult CodeBlock::exec(U32 ip, const char* functionName, Namespace* thi
                   if (code[ip] == OP_POP_STK)
                   {
                      ip++;
+                     Script::gEvalState.clearRet();
                      break;
                   }
 
@@ -2128,7 +2195,7 @@ Con::EvalResult CodeBlock::exec(U32 ip, const char* functionName, Namespace* thi
 
                   stack[_STK + 1].setEmptyString();
                   _STK++;
-
+                  Script::gEvalState.clearRet();
                   break;
                }
                case Namespace::Entry::BoolCallbackType:
@@ -2139,17 +2206,19 @@ Con::EvalResult CodeBlock::exec(U32 ip, const char* functionName, Namespace* thi
                   if (code[ip] == OP_POP_STK)
                   {
                      ip++;
+                     Script::gEvalState.setRetVal(result);
                      break;
                   }
 
                   stack[_STK + 1].setBool(result);
                   _STK++;
-
+                  Script::gEvalState.setRetVal(result);
                   break;
                }
                }
             }
          }
+         Script::gEvalState.currentVariable = NULL;
          break;
       }
 
